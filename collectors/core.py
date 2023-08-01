@@ -65,8 +65,8 @@ def remap_dc_info(info: dict):
     remapped_info['us_north']['northeast']['sterling'] = info['US Northeast']
     remapped_info['us_north']['northwest']['moses_lake'] = info['US Northwest']
 
-    remapped_info['us_south']['southeast']['los_angeles'] = info['US Southeast']
-    remapped_info['us_south']['southwest']['atlanta'] = info['US Southwest']
+    remapped_info['us_south']['southwest']['los_angeles'] = info['US Southeast']
+    remapped_info['us_south']['southeast']['atlanta'] = info['US Southwest']
 
     remapped_info['south_america']['brazil']['sao_paulo'] = info['Brazil']
     remapped_info['south_america']['chile']['santiago'] = info['Chile']
