@@ -40,5 +40,4 @@ async def log_inline(client: Client, inline_query: InlineQuery):
         f"Language: {inline_query.from_user.language_code}\n"
         f"Inline query: {inline_query.query}"
     )
-    if not config.TEST_MODE:
-        await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
+    await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
