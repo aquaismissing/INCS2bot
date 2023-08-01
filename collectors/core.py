@@ -136,7 +136,7 @@ async def info_updater():
                 cache['player_24h_peak'] = player_24h_peak
 
             with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(cache, f)
+                json.dump(cache, f, indent=4)
 
             time.sleep(40)
         except Exception:
@@ -165,10 +165,10 @@ async def unique_monthly():
             if data != cache.get("monthly_unique_players"):
                 cache['monthly_unique_players'] = data
                 await send_alert("monthly_unique_players",
-                                 (cache["monthly_unique_players"], data["monthly_unique_players"]))
+                                 (cache["monthly_unique_players"], data))
 
             with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(cache, f)
+                json.dump(cache, f, indent=4)
         except Exception:
             logging.exception("Caught exception while gathering monthly players!")
             time.sleep(45)
@@ -191,7 +191,7 @@ def check_currency():
                 cache['key_price'] = new_prices
 
             with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(cache, f)
+                json.dump(cache, f, indent=4)
         except Exception:
             logging.exception("Caught exception while gathering key price!")
             time.sleep(45)

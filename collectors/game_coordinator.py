@@ -69,7 +69,7 @@ def gc_ready(status):
         cache['game_coordinator'] = game_coordinator.literal
 
     with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-        json.dump(cache, f)
+        json.dump(cache, f, indent=4)
 
     logging.info(f'GC: Successfully dumped game coordinator status: {game_coordinator.literal}')
 
@@ -152,7 +152,7 @@ async def depots():
             Thread(target=gv_updater).start()
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f)
+            json.dump(cache, f, indent=4)
 
         logging.info('GC: Successfully dumped game build IDs.')
 
@@ -179,7 +179,7 @@ def gv_updater():
                     cache[key] = value
 
             with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(cache, f)
+                json.dump(cache, f, indent=4)
         except Exception:
             logging.exception("GC: Caught an exception while trying to get new version!")
             time.sleep(45)
@@ -199,7 +199,7 @@ def online_players():
             cache['online_players'] = value
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f)
+            json.dump(cache, f, indent=4)
 
         logging.info(f'GC: Successfully dumped player count: {value}')
         time.sleep(45)

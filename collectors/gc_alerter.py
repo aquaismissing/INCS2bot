@@ -70,7 +70,7 @@ async def scan_for_gc_update():
                 await send_alert('public_build_id', cache['public_build_id'])
 
             with open(config.GC_PREV_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(prev_cache, f)
+                json.dump(prev_cache, f, indent=4)
 
         except Exception:
             logging.exception(f"Caught an exception while scanning GC info!")

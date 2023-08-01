@@ -96,7 +96,7 @@ def graph_maker():
         cache['graph_url'] = url
 
     with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-        json.dump(cache, f)
+        json.dump(cache, f, indent=4)
 
     time.sleep(8 * MINUTE)
 

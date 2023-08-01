@@ -419,7 +419,7 @@ class L10n:
             with open(file, 'w', encoding='utf8') as f:
                 data = {key: data[key] for key in Locale._fields + tuple(used_reserved_fields)
                         + tuple(unexpected_keys)}  # fixing pairs order
-                json.dump(data, f, indent=2, ensure_ascii=False)
+                json.dump(data, f, indent=4, ensure_ascii=False)
 
         # Remove unexpected keys
         for key in tuple(unexpected_keys) + cls._reserved_fields:
@@ -461,7 +461,7 @@ class L10n:
             return
 
         with open(path, 'w', encoding='utf8') as f:
-            json.dump(sample.to_dict(), f, indent=2, ensure_ascii=False)
+            json.dump(sample.to_dict(), f, indent=4, ensure_ascii=False)
 
 
 def locale(lang: str = None) -> Locale:
