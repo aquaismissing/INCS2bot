@@ -263,7 +263,7 @@ def drop_cap_reset_timer():
     wanted_time = 2
 
     now = dt.datetime.utcnow()
-    days_left = (wanted_weekday - now.weekday()) % 7
+    days_left = (wanted_weekday - now.weekday()) % 7 - 1
     wanted_date = (now + dt.timedelta(days=days_left)).replace(hour=wanted_time, minute=0, second=0, microsecond=0)
 
     time_left = wanted_date - now
