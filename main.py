@@ -314,8 +314,16 @@ async def send_dc_south_korea(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def send_dc_state(client: BClient, callback_query: CallbackQuery,
                         state: str | States, reply_markup: TranslatableIKM):
-    if state == States.UNKNOWN:
+    lang_code = callback_query.from_user.language_code
+
+    game_servers_datetime = GameServersData.latest_info_update()
+    if game_servers_datetime == States.UNKNOWN:
         return await something_went_wrong(client, callback_query)
+
+    game_servers_datetime = (f'{format_datetime(game_servers_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()}'
+                             f' (UTC)')
+
+    state += f'\n\n{client.locale.latest_data_update.format(game_servers_datetime)}'
 
     await callback_query.edit_message_text(state, reply_markup=reply_markup)
 

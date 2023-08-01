@@ -1,3 +1,5 @@
+from babel.dates import format_datetime
+
 from utypes import (
     States, DatacenterAtlas, DatacenterState,
     DatacenterRegionState, DatacenterGroupState,
@@ -6,16 +8,12 @@ from l10n import Locale
 
 
 def _format_dc_data(state: DatacenterState | DatacenterRegionState | DatacenterGroupState, loc: Locale):
-    game_servers_datetime = GameServersData.latest_info_update()
-    if game_servers_datetime == States.UNKNOWN:
-        return States.UNKNOWN
-    
     if isinstance(state, DatacenterState):
         header = loc.dc_status_text_title.format(state.dc.symbol,
                                                  loc.get(state.dc.l10n_key_title))
         summary = loc.dc_status_text_summary_city.format(loc.get(state.load.l10n_key),
                                                          loc.get(state.capacity.l10n_key))
-        return '\n\n'.join((header, summary, loc.latest_data_update.format(game_servers_datetime)))
+        return '\n\n'.join((header, summary))
 
     if isinstance(state, DatacenterRegionState):
         header = loc.dc_status_text_title.format(state.region.symbol,
@@ -26,7 +24,7 @@ def _format_dc_data(state: DatacenterState | DatacenterRegionState | DatacenterG
                                                         loc.get(dc_state.load.l10n_key),
                                                         loc.get(dc_state.capacity.l10n_key))
             summaries.append(summary)
-        return '\n\n'.join((header, '\n\n'.join(summaries), loc.latest_data_update.format(game_servers_datetime)))
+        return '\n\n'.join((header, '\n\n'.join(summaries)))
     
     if isinstance(state, DatacenterGroupState):
         infos = []
@@ -40,7 +38,7 @@ def _format_dc_data(state: DatacenterState | DatacenterRegionState | DatacenterG
                                                             loc.get(dc_state.capacity.l10n_key))
                 summaries.append(summary)
             infos.append(header + '\n\n' + '\n\n'.join(summaries))
-        return '\n\n'.join((*infos, loc.latest_data_update.format(game_servers_datetime)))
+        return '\n\n'.join(infos)
 
 
 def africa(loc: Locale):
