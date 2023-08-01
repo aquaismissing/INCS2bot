@@ -3,12 +3,20 @@ import datetime as dt
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 from pyrogram.types import CallbackQuery, Message, MessageEntity, InlineKeyboardMarkup, ReplyKeyboardMarkup, \
-    ReplyKeyboardRemove, ForceReply
+    ReplyKeyboardRemove, ForceReply, User
 
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
-
+from functions.locale import locale
 from l10n import Locale
+
+
+class UserSession:
+    def __init__(self, user: User):
+        self.user = user
+        self.timestamp = dt.datetime.now().timestamp()
+        self.came_from: callable = None
+        self.locale: Locale | None = locale(user.language_code)
 
 
 class BClient(Client):
@@ -19,8 +27,33 @@ class BClient(Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.came_from: callable = None
-        self.locale: Locale | None = None
+        self._sessions: dict[int, UserSession] = {}
+        self.current_session: UserSession | None = None
+
+    @property
+    def came_from(self):
+        return self.current_session.came_from
+
+    @property
+    def locale(self):
+        return self.current_session.locale
+
+    @property
+    def sessions(self) -> dict[int, UserSession]:
+        return self._sessions
+
+    def register_session(self, user: User):
+        self._sessions[user.id] = UserSession(user)
+
+    def clear_timeout_sessions(self):
+        now = dt.datetime.now()
+        for _id in self._sessions:
+            session_time = dt.datetime.fromtimestamp(self._sessions[_id].timestamp)
+            if (now - session_time).seconds > 10 * 60:
+                del self._sessions[_id]
+
+    def clear_sessions(self):
+        self._sessions.clear()
 
     async def listen_message(self,
                              chat_id: int,

@@ -17,7 +17,7 @@ from telegraph import Telegraph
 import config
 import keyboards
 from keyboards import TranslatableIKB, TranslatableIKM
-from functions import datacenter_handlers, locale, server_stats_handlers, ufilters
+from functions import datacenter_handlers, server_stats_handlers, ufilters
 from functions.askers import *
 from functions.decorators import *
 from functions.logs import *
@@ -63,7 +63,6 @@ def log_exception_callback(func):
 @bot.on_message(~filters.me)
 async def sync_user_data(client: BClient, message: Message):
     user = message.from_user
-    # print(message.chat)
     await log(client, message)
 
     data = pd.read_csv(config.USER_DB_FILE_PATH)
@@ -80,8 +79,11 @@ async def sync_user_data(client: BClient, message: Message):
         )
         pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
 
-    if getattr(client, 'locale', None) is None:
-        client.locale = locale(user.language_code)
+    client.clear_timeout_sessions()
+    if user.id not in client.sessions:
+        client.register_session(user)
+
+    client.current_session = client.sessions[user.id]
 
     message.continue_propagation()
 
@@ -109,8 +111,11 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
         )
         pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
 
-    if client.locale is None:
-        client.locale = locale(user.language_code)
+    client.clear_timeout_sessions()
+    if user.id not in client.sessions:
+        client.register_session(user)
+
+    client.current_session = client.sessions[user.id]
 
     callback_query.continue_propagation()
 
@@ -788,6 +793,7 @@ async def unknown_request(client: BClient, callback_query: CallbackQuery, reply_
 @bot.on_callback_query(ufilters.callback_data_equals(LK.bot_back))
 @ignore_message_not_modified
 async def back(client: BClient, callback_query: CallbackQuery):
+
     if client.came_from is None:
         return await main(client, callback_query)
     await client.came_from(client, callback_query)

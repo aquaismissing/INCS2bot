@@ -13,7 +13,7 @@ from pyrogram.enums import ParseMode
 import env
 import config
 import keyboards
-from functions import datacenter_handlers, locale, log_inline, server_stats_handlers
+from functions import datacenter_handlers, log_inline, server_stats_handlers
 from l10n import dump_tags
 from utypes import (BClient, ExchangeRate, GameServersData,
                     GameVersionData, DatacenterInlineResult,
@@ -86,8 +86,11 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
         )
         pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
 
-    if client.locale is None:
-        client.locale = locale(user.language_code)
+    client.clear_timeout_sessions()
+    if user.id not in client.sessions:
+        client.register_session(user)
+
+    client.current_session = client.sessions[user.id]
 
     inline_query.continue_propagation()
 

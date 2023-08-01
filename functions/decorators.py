@@ -14,7 +14,7 @@ def came_from(f):
     """
     def decorator(func):
         async def inner(client: BClient, callback_query: CallbackQuery, *args, **kwargs):
-            client.came_from = f
+            client.current_session.came_from = f
             await func(client, callback_query, *args, **kwargs)
 
         return inner
