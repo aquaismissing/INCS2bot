@@ -237,7 +237,7 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
             resulted_articles.append(
                 InlineQueryResultArticle(
                     _dc.title,
-                    InputTextMessageContent(_dc.summary_from(client.locale), parse_mode=ParseMode.HTML),
+                    InputTextMessageContent(_dc.summary_from(client.session_lang_code), parse_mode=ParseMode.HTML),
                     description=client.locale.dc_status_inline_description,
                     reply_markup=inline_btn,
                     thumb_url=_dc.thumbnail
@@ -252,7 +252,7 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
                 resulted_articles.append(
                     InlineQueryResultArticle(
                         _dc.title,
-                        InputTextMessageContent(_dc.summary_from(client.locale), parse_mode=ParseMode.HTML),
+                        InputTextMessageContent(_dc.summary_from(client.session_lang_code), parse_mode=ParseMode.HTML),
                         description=client.locale.dc_status_inline_description,
                         reply_markup=inline_btn,
                         thumb_url=_dc.thumbnail

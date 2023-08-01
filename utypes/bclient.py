@@ -17,6 +17,7 @@ class UserSession:
         self.user = user
         self.timestamp = dt.datetime.now().timestamp()
         self.came_from: callable = None
+        self.lang_code: str = user.language_code
         self.locale: Locale | None = locale(user.language_code)
 
 
@@ -34,6 +35,10 @@ class BClient(Client):
     @property
     def came_from(self):
         return self.current_session.came_from
+
+    @property
+    def session_lang_code(self):
+        return self.current_session.lang_code
 
     @property
     def locale(self):
