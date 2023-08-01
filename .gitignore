@@ -1,16 +1,18 @@
-# venv
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*$py.class
 
+# venv
 .idea/
 .venv/
 
 # secrets
-
 data/
 !l10n/data/
 config.py
 
 # bot sessions
-
 incs2bot.session
 incs2bot.session-journal
 incs2bot_core.session

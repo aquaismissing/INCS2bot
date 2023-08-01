@@ -40,7 +40,7 @@ async def unban(client: Client, message: Message):
 @Client.on_message(filters.channel & filters.text)
 async def cs_l10n_update(client: Client, message: Message):
     if message.from_user.id == 777000 \
-        and message.forward_from_chat.id == config.CSGOBETACHANNEL \
+        and message.forward_from_chat.id == config.INCS2CHANNEL \
             and "Обновлены файлы локализации" in message.text:
         await message.reply_sticker("CAACAgIAAxkBAAID-l_9tlLJhZQSgqs"
                                     "MUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ")

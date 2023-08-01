@@ -92,13 +92,6 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
     inline_query.continue_propagation()
 
 
-@BClient.on_inline_query(filters.regex(config.SAID_INLINE_TRIGGER))
-async def said_inline(client: BClient, inline_query: InlineQuery):
-    r = InlineQueryResultArticle("@d1az1337 пидор",
-                                 InputTextMessageContent("@d1az1337 пидор"))
-    await inline_query.answer([r], cache_time=5)
-
-
 # noinspection PyTypeChecker
 @BClient.on_inline_query(is_user_stats_page_filter)
 async def share_inline(client: BClient, inline_query: InlineQuery):
