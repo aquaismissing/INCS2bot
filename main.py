@@ -62,8 +62,12 @@ def log_exception_callback(func):
 
 @bot.on_message(~filters.me)
 async def sync_user_data(client: BClient, message: Message):
+    if message.chat.type != ChatType.PRIVATE:
+        return
+
     user = message.from_user
     await log(client, message)
+    await client.send_chat_action(message.chat.id, ChatAction.TYPING)
 
     data = pd.read_csv(config.USER_DB_FILE_PATH)
     if not data["UserID"].isin([user.id]).any():
