@@ -533,12 +533,14 @@ async def send_dropcap_timer(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def send_game_version(client: BClient, callback_query: CallbackQuery):
     """Send a current version of CS:GO/CS 2"""
+    lang_code = callback_query.from_user.language_code
 
     data = GameVersionData.cached_data()
+
     if data == States.UNKNOWN:
         return await something_went_wrong(client, callback_query)
 
-    text = client.locale.game_version_text.format(*data)
+    text = server_stats_handlers.get_game_version_summary(data, lang_code)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.markup_extra(client.locale),
                                            disable_web_page_preview=True)

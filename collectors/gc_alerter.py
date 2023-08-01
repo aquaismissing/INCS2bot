@@ -7,6 +7,7 @@ import asyncio
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 
+import env
 import config
 from functions import locale
 

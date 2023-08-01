@@ -9,6 +9,7 @@ import pandas as pd
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 
+import env
 import config
 from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServersData,

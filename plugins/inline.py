@@ -10,13 +10,14 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from pyrogram.enums import ParseMode
 
+import env
 import config
 import keyboards
 from functions import datacenter_handlers, locale, log_inline, server_stats_handlers
 from l10n import dump_tags
 from utypes import (BClient, ExchangeRate, GameServersData,
                     GameVersionData, DatacenterInlineResult,
-                    States, drop_cap_reset_timer)
+                    drop_cap_reset_timer)
 
 
 VALVE_TIMEZONE = ZoneInfo("America/Los_Angeles")
@@ -284,10 +285,7 @@ async def default_inline(client: BClient, inline_query: InlineQuery):
     valve_hq_time_text = client.locale.valve_hqtime_text.format(CLOCKS[valve_hq_datetime.hour % 12],
                                                                 valve_hq_dt_formatted)
     drop_cap_reset_timer_text = client.locale.game_dropcaptimer_text.format(*drop_cap_reset_timer())
-    if game_version_data != States.UNKNOWN:
-        game_version_text = client.locale.game_version_text.format(*game_version_data)
-    else:
-        game_version_text = client.locale.error_internal
+    game_version_text = server_stats_handlers.get_game_version_summary(game_version_data, lang_code)
 
     inline_btn = keyboards.markup_inline_button(client.locale)
 

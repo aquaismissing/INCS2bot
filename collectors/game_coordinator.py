@@ -13,7 +13,7 @@ from csgo.client import CSGOClient
 from steam.client import SteamClient
 from steam.enums import EResult
 
-# import env
+import env
 import config
 from utypes import GameVersionData, States
 

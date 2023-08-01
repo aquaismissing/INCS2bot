@@ -95,8 +95,8 @@ class GameVersionData(NamedTuple):
         cs2_patch_version = cache_file["cs2_patch_version"]
         cs2_version_dt = dt.datetime.utcfromtimestamp(cache_file["cs2_version_timestamp"]) + dt.timedelta(hours=8)
 
-        return (csgo_client_version, csgo_patch_version, csgo_version_dt,
-                cs2_client_version, cs2_patch_version, cs2_version_dt)
+        return (csgo_patch_version, csgo_client_version, csgo_version_dt,
+                cs2_patch_version, cs2_client_version, cs2_version_dt)
 
     def asdict(self):
         return self._asdict()

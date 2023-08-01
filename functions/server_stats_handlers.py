@@ -54,3 +54,21 @@ def get_matchmaking_stats_summary(data, lang_code: str):
         text += f'\n\n{loc.valve_steam_maintenance_text}'
 
     return text
+
+
+def get_game_version_summary(data, lang_code: str):
+    loc = locale(lang_code)
+
+    if data == States.UNKNOWN:
+        return loc.error_internal
+
+    (csgo_patch_version, csgo_client_version, csgo_version_dt,
+     cs2_patch_version, cs2_client_version, cs2_version_dt) = data
+
+    csgo_version_dt = f'{format_datetime(csgo_version_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
+    cs2_version_dt = f'{format_datetime(cs2_version_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
+
+    data = (csgo_patch_version, csgo_client_version, csgo_version_dt,
+            cs2_patch_version, cs2_client_version, cs2_version_dt)
+
+    return loc.game_version_text.format(*data)

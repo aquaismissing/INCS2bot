@@ -1,10 +1,9 @@
-# import env
-
 import logging
 import time
 import json
 import datetime as dt
 
+import env
 import config
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
