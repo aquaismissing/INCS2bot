@@ -1,5 +1,5 @@
+from dataclasses import asdict, dataclass
 import json
-from typing import NamedTuple
 
 import config
 from l10n import LocaleKeys as LK
@@ -15,7 +15,8 @@ gun_origins = {'Germany': LK.gun_origin_germany, 'Austria': LK.gun_origin_austri
                'United Kingdom': LK.gun_origin_uk, 'South Africa': LK.gun_origin_south_africa}
 
 
-class GunInfo(NamedTuple):
+@dataclass(slots=True)
+class GunInfo:
     id: str
     name: str
 
@@ -49,7 +50,7 @@ class GunInfo(NamedTuple):
     armored_damage_legs: int
     
     def as_dict(self):
-        return self._asdict()
+        return asdict(self)
     
     @staticmethod
     def load():
