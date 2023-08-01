@@ -16,12 +16,18 @@ config.py
 incs2bot.session
 incs2bot.session-journal
 incs2bot_core.session
+incs2bot_core.session-journal
 incs2bot_gc.session
+incs2bot_gc.session-journal
 incs2bot_wm.session
+incs2bot_wm.session-journal
 
 # experimental bot sessions
 incs2bot_experimental.session
 incs2bot_experimental.session-journal
 incs2bot_experimental_core.session
+incs2bot_experimental_core.session-journal
 incs2bot_experimental_gc.session
+incs2bot_experimental_gc.session-journal
 incs2bot_experimental_wm.session
+incs2bot_experimental_wm.session-journal
