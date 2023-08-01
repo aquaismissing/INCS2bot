@@ -63,7 +63,7 @@ def log_exception_callback(func):
 @bot.on_message(~filters.me)
 async def sync_user_data(client: BClient, message: Message):
     if message.chat.type != ChatType.PRIVATE:
-        return
+        message.continue_propagation()
 
     user = message.from_user
     await log(client, message)
