@@ -7,12 +7,13 @@ from pyrogram.types import CallbackQuery, Message, MessageEntity, InlineKeyboard
 
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
-from functions.locale import locale
 from l10n import Locale
 
 
 class UserSession:
     def __init__(self, user: User):
+        from functions import locale
+
         self.user = user
         self.timestamp = dt.datetime.now().timestamp()
         self.came_from: callable = None
