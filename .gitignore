@@ -31,3 +31,6 @@ incs2bot_experimental_gc.session
 incs2bot_experimental_gc.session-journal
 incs2bot_experimental_wm.session
 incs2bot_experimental_wm.session-journal
+
+# misc
+init.sh

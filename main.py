@@ -36,7 +36,7 @@ bot = BClient(config.BOT_NAME,
               api_id=config.API_ID,
               api_hash=config.API_HASH,
               bot_token=config.BOT_TOKEN,
-              plugins={'root': 'plugins', 'exclude': ['env']})
+              plugins={'root': 'plugins'})
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(threadName)s: %(message)s",
