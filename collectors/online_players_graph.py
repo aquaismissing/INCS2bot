@@ -28,7 +28,7 @@ def graph_maker():
     old_player_data = pd.read_csv(config.PLAYER_CHART_FILE_PATH,
                                   parse_dates=['DateTime'])
 
-    if len(old_player_data.index) > 10:
+    if len(old_player_data.index) >= 10:
         old_player_data.drop(0, axis=0, inplace=True)
 
     temp_player_data = pd.DataFrame(
@@ -106,16 +106,16 @@ def main():
         minutes = dt.datetime.now().minute
         if minutes % 10 == 0:
             try:
-                return graph_maker()
+                graph_maker()
             except Exception:
                 logging.exception(f"Caught exception in graph maker!")
                 time.sleep(2 * MINUTE)
-        
-        # sleep to closest (minute % 10 == 0) time
-        seconds = dt.datetime.now().second
-        microseconds = dt.datetime.now().microsecond
-        snooze = ((10 - minutes % 10) * MINUTE) - (seconds + microseconds / 1000000.0)
-        time.sleep(snooze)
+        else:
+            # sleep to closest (minute % 10 == 0) time
+            seconds = dt.datetime.now().second
+            microseconds = dt.datetime.now().microsecond
+            snooze = ((10 - minutes % 10) * MINUTE) - (seconds + microseconds / 1000000.0)
+            time.sleep(snooze)
 
 
 if __name__ == "__main__":
