@@ -37,7 +37,7 @@ Here you can see translations' progress and contributors' list:
         >    - [List of ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
         >
         > 3. Run the script. Your file will be created and placed in `l10n/data/`.  
-             When you're done, make sure to delete the script.
+             When you're done, make sure to delete the script and `__pycache__` folder (it was created by Python itself).
 
         </details>
 5. Open the file and start translating it based on string keys and original text.
