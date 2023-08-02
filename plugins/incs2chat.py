@@ -1,3 +1,4 @@
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from pyrogram.enums import ChatMembersFilter
@@ -6,7 +7,7 @@ import env
 import config
 
 
-@Client.on_message(filters.command("ban") & filters.chat(config.INCS2CHAT))
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("ban"))
 async def ban(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
 
@@ -22,7 +23,7 @@ async def ban(client: Client, message: Message):
         await message.reply(f"{og_msg.from_user.first_name} получил(а) VAC бан.")
 
 
-@Client.on_message(filters.command("unban") & filters.chat(config.INCS2CHAT))
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("unban"))
 async def unban(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
     admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
@@ -34,7 +35,27 @@ async def unban(client: Client, message: Message):
     if message.reply_to_message:
         og_msg = message.reply_to_message
         await chat.unban_member(og_msg.from_user.id)
-        await message.reply(f"VAC бан {og_msg.from_user.first_name} был удалён.")
+        await message.reply(f"VAC бан у {og_msg.from_user.first_name} был удалён.")
+
+
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("echo"))
+async def echo(client: Client, message: Message):
+    chat = await client.get_chat(config.INCS2CHAT)
+    admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
+    admins = {admin.user.id async for admin in admins}
+
+    await message.delete()
+    if message.from_user.id not in admins:
+        return
+
+    text = message.text.removeprefix('/echo').strip()
+    if not text:
+        msg = await message.reply("Пустой текст.")
+        await asyncio.sleep(5)
+        await msg.delete()
+        return
+
+    await message.reply(text, quote=False)
 
 
 @Client.on_message(filters.channel & filters.text)
