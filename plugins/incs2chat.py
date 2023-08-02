@@ -14,7 +14,7 @@ async def ban(client: Client, message: Message):
     admins = {admin.user.id async for admin in admins}
 
     if message.from_user.id not in admins:
-        await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
+        return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.reply_to_message:
         og_msg = message.reply_to_message
@@ -29,7 +29,7 @@ async def unban(client: Client, message: Message):
     admins = {admin.user.id async for admin in admins}
 
     if message.from_user.id not in admins:
-        await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
+        return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.reply_to_message:
         og_msg = message.reply_to_message
