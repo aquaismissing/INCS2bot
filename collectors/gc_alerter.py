@@ -11,6 +11,17 @@ import env
 import config
 from functions import locale
 
+loc = locale('ru')
+available_alerts = {'public_build_id': loc.notifs_build_public,
+                    'dpr_build_id': loc.notifs_build_dpr,
+                    'dprp_build_id': loc.notifs_build_dprp,
+                    'dpr_build_sync_id': f'{loc.notifs_build_dpr} 🔃',
+                    'sdk_build_id': loc.notifs_build_sdk,
+                    'ds_build_id': loc.notifs_build_ds,
+                    'valve_ds_changenumber': loc.notifs_build_valve_ds,
+                    'cs2_app_changenumber': loc.notifs_build_cs2_client,
+                    'cs2_server_changenumber': loc.notifs_build_cs2_server}
+
 bot = Client(config.BOT_GC_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,
@@ -94,29 +105,14 @@ async def send(chat_list, text):
 
 async def send_alert(key: str, new_value: int):
     logging.info(f'GC Alerter: Found new change: {key}, sending alert...')
-    loc = locale('ru')
 
-    if key == "public_build_id":
-        text = loc.notifs_build_public.format(new_value)
-    elif key == "dpr_build_id":
-        text = loc.notifs_build_dpr.format(new_value)
-    elif key == "dprp_build_id":
-        text = loc.notifs_build_dprp.format(new_value)
-    elif key == "dpr_build_sync_id":
-        text = f"{loc.notifs_build_dpr.format(new_value)} 🔃"
-    elif key == "sdk_build_id":
-        text = loc.notifs_build_sdk.format(new_value)
-    elif key == "ds_build_id":
-        text = loc.notifs_build_ds.format(new_value)
-    elif key == "valve_ds_changenumber":
-        text = loc.notifs_build_valve_ds.format(new_value)
-    elif key == "cs2_app_changenumber":
-        text = loc.notifs_build_cs2_client.format(new_value)
-    elif key == "cs2_server_changenumber":
-        text = loc.notifs_build_cs2_server.format(new_value)
-    else:
+    alert_sample = available_alerts.get(key)
+
+    if alert_sample is None:
         logging.warning(f"GC Alerter: Got wrong key to send alert: {key}")
         return
+
+    text = alert_sample.format(new_value)
 
     if not config.TEST_MODE:
         chat_list = [config.INCS2CHAT, config.CSTRACKER]
