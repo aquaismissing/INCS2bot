@@ -360,16 +360,6 @@
   "notifs_new_monthlyunique": [
     "notifs_new_monthlyunique"
   ],
-  "notifs_new_hiddenpost": [
-    "🔍 New hidden CS:GO blog post found!",
-    "",
-    "ID: {}"
-  ],
-  "notifs_new_hiddenpost_multiple": [
-    "🔍 New hidden CS:GO blog posts found!",
-    "",
-    "IDs: {}"
-  ],
   "notifs_tw_tweet": [
     "notifs_tw_tweet"
   ],

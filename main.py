@@ -158,7 +158,7 @@ async def server_stats(client: BClient, callback_query: CallbackQuery):
 @bot.on_callback_query(ufilters.callback_data_equals(LK.game_status_button_title))
 @ignore_message_not_modified
 async def send_server_status(client: BClient, callback_query: CallbackQuery):
-    """Send the status of CS:GO servers"""
+    """Send the status of Counter-Strike servers"""
 
     lang_code = callback_query.from_user.language_code
 
@@ -176,7 +176,7 @@ async def send_server_status(client: BClient, callback_query: CallbackQuery):
 @bot.on_callback_query(ufilters.callback_data_equals(LK.stats_matchmaking_button_title))
 @ignore_message_not_modified
 async def send_matchmaking_stats(client: BClient, callback_query: CallbackQuery):
-    """Send CS:GO/CS2 matchamaking statistics"""
+    """Send Counter-Strike matchamaking statistics"""
 
     lang_code = callback_query.from_user.language_code
 

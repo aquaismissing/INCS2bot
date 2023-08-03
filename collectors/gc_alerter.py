@@ -87,7 +87,7 @@ async def send(chat_list, text):
         await asyncio.sleep(4)
 
     for chat_id in chat_list:
-        msg = await bot.send_message(chat_id, text, parse_mode=ParseMode.HTML)
+        msg = await bot.send_message(chat_id, text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
         if chat_id == config.INCS2CHAT:
             await msg.pin(disable_notification=True)
 

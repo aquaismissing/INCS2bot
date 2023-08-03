@@ -182,7 +182,7 @@ class GameServersData(NamedTuple):
         
     @staticmethod
     def cached_server_status():
-        """Get the status of CS:GO servers"""
+        """Get the status of Counter-Strike servers"""
 
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
