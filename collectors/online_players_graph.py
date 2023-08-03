@@ -9,6 +9,7 @@ import pandas as pd
 import seaborn as sns
 from html_telegraph_poster.upload_images import upload_image
 
+# noinspection PyUnresolvedReferences
 import env
 import config
 

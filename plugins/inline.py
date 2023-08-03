@@ -10,6 +10,7 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from pyrogram.enums import ParseMode
 
+# noinspection PyUnresolvedReferences
 import env
 import config
 import keyboards
