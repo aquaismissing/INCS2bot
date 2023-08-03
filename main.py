@@ -38,6 +38,8 @@ bot = BClient(config.BOT_NAME,
               bot_token=config.BOT_TOKEN,
               plugins={'root': 'plugins'})
 
+ALL_COMMANDS = ['start', 'help', 'feedback']
+
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(threadName)s: %(message)s",
                     datefmt="%H:%M:%S — %d/%m/%Y")
@@ -88,6 +90,24 @@ async def sync_user_data(client: BClient, message: Message):
         client.register_session(user)
 
     client.current_session = client.sessions[user.id]
+
+    message.continue_propagation()
+
+
+@bot.on_message(filters.command(ALL_COMMANDS))
+async def any_command(client: BClient, message: Message):
+    await client.send_chat_action(message.chat.id, ChatAction.TYPING)
+
+    if message.chat.type != ChatType.PRIVATE:
+        user = message.from_user
+
+        client.clear_timeout_sessions()
+        if user.id not in client.sessions:
+            client.register_session(user)
+
+        client.current_session = client.sessions[user.id]
+
+        await log(client, message)
 
     message.continue_propagation()
 
@@ -689,23 +709,6 @@ async def welcome(client: BClient, message: Message):
 
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, message)
-
-    await log(client, message)
-    await client.send_chat_action(message.chat.id, ChatAction.TYPING)
-
-    data = pd.read_csv(config.USER_DB_FILE_PATH)
-    if not data["UserID"].isin([message.from_user.id]).any():
-        new_data = pd.DataFrame(
-            [
-                [
-                    message.from_user.first_name,
-                    message.from_user.id,
-                    message.from_user.language_code,
-                ]
-            ],
-            columns=["Name", "UserID", "Language"],
-        )
-        pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
 
     text = client.locale.bot_start_text.format(message.from_user.first_name)
 
