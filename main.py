@@ -69,7 +69,6 @@ async def sync_user_data(client: BClient, message: Message):
 
     user = message.from_user
     await log(client, message)
-    await client.send_chat_action(message.chat.id, ChatAction.TYPING)
 
     data = pd.read_csv(config.USER_DB_FILE_PATH)
     if not data["UserID"].isin([user.id]).any():
@@ -119,7 +118,6 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
 
     user = callback_query.from_user
     await log_callback(client, callback_query)
-    await client.send_chat_action(callback_query.message.chat.id, ChatAction.TYPING)
 
     data = pd.read_csv(config.USER_DB_FILE_PATH)
     if not data["UserID"].isin([user.id]).any():
@@ -723,9 +721,6 @@ async def leave_feedback(client: BClient, message: Message):
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, message)
 
-    await log(client, message)
-    await client.send_chat_action(message.chat.id, ChatAction.TYPING)
-
     feedback: Message = await client.ask_message(message.chat.id,
                                                  client.locale.bot_feedback_text)
 
@@ -749,9 +744,6 @@ async def _help(client: BClient, message: Message):
 
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, message)
-
-    await log(client, message)
-    await client.send_chat_action(message.chat.id, ChatAction.TYPING)
 
     await message.reply(client.locale.bot_help_text)
     await message.reply(client.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(client.locale))
