@@ -98,8 +98,6 @@ async def any_command(client: BClient, message: Message):
     await client.send_chat_action(message.chat.id, ChatAction.TYPING)
 
     if message.chat.type != ChatType.PRIVATE:
-        await log(client, message)
-
         user = message.from_user
 
         client.clear_timeout_sessions()
