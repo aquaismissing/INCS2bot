@@ -275,8 +275,6 @@ class Locale(NamedTuple):
     notifs_new_map_multiple: str
     notifs_new_playerspeak: str
     notifs_new_monthlyunique: str
-    notifs_new_hiddenpost: str
-    notifs_new_hiddenpost_multiple: str
     notifs_tw_tweet: str
     notifs_tw_retweet: str
     notifs_tw_reply: str
