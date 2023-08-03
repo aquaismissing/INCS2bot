@@ -58,10 +58,11 @@ async def echo(client: Client, message: Message):
     await message.reply(text, quote=False)
 
 
-@Client.on_message(filters.channel & filters.text)
-async def cs_l10n_update(client: Client, message: Message):
-    if message.from_user.id == 777000 \
-        and message.forward_from_chat.id == config.INCS2CHANNEL \
-            and "Обновлены файлы локализации" in message.text:
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
+async def cs_l10n_update(_, message: Message):
+    if (message.sender_chat
+            and message.sender_chat.id == config.INCS2CHANNEL
+            and message.forward_from_chat.id == config.INCS2CHANNEL
+            and "Обновлены файлы локализации" in message.text):
         await message.reply_sticker("CAACAgIAAxkBAAID-l_9tlLJhZQSgqs"
                                     "MUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ")
