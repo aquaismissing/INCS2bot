@@ -388,7 +388,7 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
     except ParsingUserStatsError as e:
         if e.value == ParsingUserStatsError.INVALID_REQUEST:
             error_msg = client.locale.error_unknownrequest
-        elif e.value == ParsingUserStatsError.PRIVATE_INFO:
+        elif e.value == ParsingUserStatsError.PROFILE_IS_PRIVATE:
             error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
                         client.locale.user_gamestats_privateprofile_error
         else:
@@ -449,7 +449,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     except ParsingUserStatsError as e:
         if e.value == ParsingUserStatsError.INVALID_REQUEST:
             error_msg = client.locale.error_unknownrequest
-        elif e.value == ParsingUserStatsError.PRIVATE_INFO:
+        elif e.value == ParsingUserStatsError.PROFILE_IS_PRIVATE:
             error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
                         client.locale.user_gamestats_privateprofile_error
         else:

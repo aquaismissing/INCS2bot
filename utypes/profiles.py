@@ -24,9 +24,9 @@ logging.basicConfig(level=logging.INFO,
 
 
 class ParsingUserStatsError(Exception):
-    INVALID_REQUEST = 0x01
-    PRIVATE_INFO = 0x02
-    UNKNOWN_ERROR = 0xff
+    INVALID_REQUEST = 'INVALID_REQUEST'
+    PROFILE_IS_PRIVATE = 'PROFILE_IS_PRIVATE'
+    UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 
     def __init__(self, value):
         self.value = value
@@ -224,7 +224,7 @@ class UserGameStats(NamedTuple):
 
             response = api.ISteamUserStats.GetUserStatsForGame(appid=730, steamid=steam64)
             if not response:
-                raise ParsingUserStatsError(ParsingUserStatsError.PRIVATE_INFO)
+                raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
 
             stats_dict = {stat['name']: stat['value'] for stat in response["playerstats"]["stats"]}
             stats_dict['steamid'] = steam64
@@ -233,7 +233,7 @@ class UserGameStats(NamedTuple):
         except ParsingUserStatsError as e:
             raise e
         except requests.exceptions.HTTPError:
-            raise ParsingUserStatsError(ParsingUserStatsError.PRIVATE_INFO)
+            raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
         except Exception:
             logging.exception(f"Caught exception at parsing user CS stats!")
             raise ParsingUserStatsError(ParsingUserStatsError.UNKNOWN_ERROR)
@@ -268,7 +268,7 @@ class ProfileInfo:
             vanity = api.ISteamUser.GetPlayerSummaries(steamids=steam64)["response"]["players"][0]["profileurl"]
 
             if not (bans and vanity):
-                raise ParsingUserStatsError(ParsingUserStatsError.PRIVATE_INFO)
+                raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
 
             faceit_api = f'https://api.faceit.com/search/v2/players?query={steam64}'
 
