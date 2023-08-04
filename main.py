@@ -394,12 +394,16 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
             error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
                         client.locale.user_gamestats_privateprofile_error
         else:
+            await steam_url.delete()
             raise e
 
         await callback_query.message.reply(error_msg)
         await callback_query.message.reply(client.locale.bot_choose_cmd,
                                            reply_markup=keyboards.markup_profile(client.locale))
         return
+    except Exception as e:
+        await steam_url.delete()
+        raise e
 
     if info.vanity_url is None:
         info.vanity_url = client.locale.user_profileinfo_notset
@@ -457,12 +461,16 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
             error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
                         client.locale.user_gamestats_privateprofile_error
         else:
+            await steam_url.delete()
             raise e
 
         await callback_query.message.reply(error_msg)
         await callback_query.message.reply(client.locale.bot_choose_cmd,
                                            reply_markup=keyboards.markup_profile(client.locale))
         return
+    except Exception as e:
+        await steam_url.delete()
+        raise e
 
     steamid, *stats = user_stats
     stats_page_title = client.locale.user_gamestats_page_title.format(steamid)

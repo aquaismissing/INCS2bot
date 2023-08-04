@@ -233,7 +233,7 @@ class UserGameStats(NamedTuple):
         except ParsingUserStatsError as e:
             raise e
         except requests.exceptions.HTTPError:
-            raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
+            raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
         except Exception:
             logging.exception(f"Caught exception at parsing user CS stats!")
             raise ParsingUserStatsError(ParsingUserStatsError.UNKNOWN_ERROR)
@@ -332,6 +332,8 @@ class ProfileInfo:
                        days_since_last_ban,
                        community_ban,
                        trade_ban)
+        except requests.exceptions.HTTPError:
+            raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
         except Exception as e:
             logging.exception(f"Caught exception at parsing user profile info!")
             raise e
