@@ -232,8 +232,14 @@ class UserGameStats(NamedTuple):
             return cls.from_dict(stats_dict)
         except ParsingUserStatsError as e:
             raise e
-        except requests.exceptions.HTTPError:
-            raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code
+
+            if status_code == 400:
+                raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
+            if status_code == 403:
+                raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
+            raise e
         except Exception:
             logging.exception(f"Caught exception at parsing user CS stats!")
             raise ParsingUserStatsError(ParsingUserStatsError.UNKNOWN_ERROR)
@@ -332,8 +338,14 @@ class ProfileInfo:
                        days_since_last_ban,
                        community_ban,
                        trade_ban)
-        except requests.exceptions.HTTPError:
-            raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code
+
+            if status_code == 400:
+                raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
+            if status_code == 403:
+                raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
+            raise e
         except Exception as e:
             logging.exception(f"Caught exception at parsing user profile info!")
             raise e
