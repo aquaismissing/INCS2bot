@@ -332,11 +332,9 @@ class ProfileInfo:
                        days_since_last_ban,
                        community_ban,
                        trade_ban)
-        except ParsingUserStatsError as e:
-            raise e
-        except Exception:
+        except Exception as e:
             logging.exception(f"Caught exception at parsing user profile info!")
-            raise ParsingUserStatsError(ParsingUserStatsError.UNKNOWN_ERROR)
+            raise e
 
     def to_tuple(self):
         return astuple(self)

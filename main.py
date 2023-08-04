@@ -386,6 +386,8 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
     try:
         info = ProfileInfo.get(steam_url.text)
     except ParsingUserStatsError as e:
+        await callback_query.message.delete()
+
         if e.value == ParsingUserStatsError.INVALID_REQUEST:
             error_msg = client.locale.error_unknownrequest
         elif e.value == ParsingUserStatsError.PROFILE_IS_PRIVATE:
@@ -397,7 +399,7 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
         await callback_query.message.reply(error_msg)
         await callback_query.message.reply(client.locale.bot_choose_cmd,
                                            reply_markup=keyboards.markup_profile(client.locale))
-        return await callback_query.message.delete()
+        return
 
     if info.vanity_url is None:
         info.vanity_url = client.locale.user_profileinfo_notset
@@ -447,6 +449,8 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     try:
         user_stats = UserGameStats.get(steam_url.text)
     except ParsingUserStatsError as e:
+        await callback_query.message.delete()
+
         if e.value == ParsingUserStatsError.INVALID_REQUEST:
             error_msg = client.locale.error_unknownrequest
         elif e.value == ParsingUserStatsError.PROFILE_IS_PRIVATE:
@@ -458,7 +462,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
         await callback_query.message.reply(error_msg)
         await callback_query.message.reply(client.locale.bot_choose_cmd,
                                            reply_markup=keyboards.markup_profile(client.locale))
-        return await callback_query.message.delete()
+        return
 
     steamid, *stats = user_stats
     stats_page_title = client.locale.user_gamestats_page_title.format(steamid)
