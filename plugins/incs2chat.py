@@ -51,7 +51,7 @@ async def warn(client: Client, message: Message):
 
     if message.reply_to_message:
         og_msg = message.reply_to_message
-        await og_msg.reply_animation("CgACAgQAAxkBAAEOt1pkzeSRgU7zlcl-amLGEdCPJ2YINgACmwMAAu4uzFPUiDaV7ful2S8E")
+        await og_msg.reply_animation(config.MEDIA_PATH / 'warn.gif.mp4')
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("echo"))
