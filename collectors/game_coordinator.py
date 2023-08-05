@@ -93,32 +93,18 @@ def depots_prepare():
 async def depots():
     while True:
         try:
-            for values in client.get_product_info(apps=[740], timeout=15).values():
-                for v in values.values():
-                    ds_build_id = int(v["depots"]["branches"]["public"]["buildid"])
+            data = client.get_product_info(apps=[740, 741, 2275500, 2275530, 745, 730],
+                                           timeout=15)['apps']
+            main_data = data[730]
 
-            for values in client.get_product_info(apps=[741], timeout=15).values():
-                for v in values.values():
-                    valve_ds_change_number = v["_change_number"]
-
-            for values in client.get_product_info(apps=[2275500], timeout=15).values():
-                for v in values.values():
-                    cs2_app_change_number = v["_change_number"]
-
-            for values in client.get_product_info(apps=[2275530], timeout=15).values():
-                for v in values.values():
-                    cs2_server_change_number = v["_change_number"]
-
-            for values in client.get_product_info(apps=[745], timeout=15).values():
-                for v in values.values():
-                    sdk_build_id = int(v["depots"]["branches"]["public"]["buildid"])
-
-            for values in client.get_product_info(apps=[730], timeout=15).values():
-                for v in values.values():
-                    dpr_build_id = int(v["depots"]["branches"]["dpr"]["buildid"])
-                    dprp_build_id = int(v["depots"]["branches"]["dprp"]["buildid"])
-                    public_build_id = int(v["depots"]["branches"]["public"]["buildid"])
-
+            ds_build_id = int(data[740]['depots']['branches']['public']['buildid'])
+            valve_ds_change_number = data[741]['_change_number']
+            cs2_app_change_number = data[2275500]['_change_number']
+            cs2_server_change_number = data[2275530]['_change_number']
+            sdk_build_id = data[745]['depots']['branches']['public']['buildid']
+            dpr_build_id = int(main_data['depots']['branches']['dpr']['buildid'])
+            dprp_build_id = int(main_data['depots']['branches']['dprp']['buildid'])
+            public_build_id = int(main_data['depots']['branches']['public']['buildid'])
         except Exception:
             logging.exception(f"GC: Caught an exception while trying to fetch depots!")
             time.sleep(45)
