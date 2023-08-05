@@ -8,6 +8,7 @@ import warnings
 
 __all__ = ('Locale', 'L10n', 'locale', 'LocaleKeys')
 
+
 _l10n = None  # L10n singleton for fast lookups
 
 logger = logging.getLogger('l10n')
@@ -335,9 +336,8 @@ class Locale(NamedTuple):
     @classmethod
     def sample(cls) -> Locale:
         """Returns a sample Locale object with key names as values"""
-        return cls(
-            **{field: field for field in cls._fields}
-        )
+
+        return cls(**{field: field for field in cls._fields})
 
     def to_dict(self) -> dict[str, str]:
         """Returns a dict converted from a Locale object."""
@@ -345,8 +345,10 @@ class Locale(NamedTuple):
         return self._asdict()
 
     def get(self, key: str) -> str:
-        """Returns a string associated with the given key (if such
-           key exists, otherwise returns the key itself)."""
+        """
+        Returns a string associated with the given key
+        (if such key exists, otherwise returns the key itself).
+        """
 
         if key not in self._fields:
             warnings.warn(f'Got unexpected key "{key}", returned the key', UnexpectedLocaleKey, stacklevel=2)
@@ -359,6 +361,7 @@ LocaleKeys = Locale.sample()
 
 class L10n:
     """Simple text localization system."""
+
     _reserved_fields = ('l10n_redump',)
 
     def __init__(self, path: str | Path = None):
@@ -381,6 +384,7 @@ class L10n:
     @classmethod
     def _get_locale(cls, file: Path):
         """Creates a Locale object from lang file and stores it in memory."""
+
         lang = file.stem
         if lang == 'tags':
             return
@@ -432,9 +436,10 @@ class L10n:
         return Locale(**data)
 
     def locale(self, lang: str = 'en') -> Locale:
-        """Returns a Locale object, containing all defined string keys
-           translated to the requested language (if such translation exists,
-           otherwise returns English)."""
+        """
+        Returns a Locale object, containing all defined string keys translated to the requested language
+        (if such translation exists, otherwise returns English).
+        """
 
         if self.locales.get(lang) is None:
             warnings.warn(f'Got unexpected lang "{lang}", returned "en"', UnexpectedLocaleKey, stacklevel=2)
@@ -444,10 +449,13 @@ class L10n:
 
     @classmethod
     def create_lang_file(cls, path: str | Path, lang: str, override: bool = False):
-        """Creates a sample lang file in a requested path.
-           If you want to override existing file - set 'override' to True.
+        """
+        Creates a sample lang file in a requested path.
+        If you want to override existing file - set 'override' to True.
 
-           Useful for fast lang file creation."""
+        Useful for fast lang file creation.
+        """
+
         if (Path(path) / 'en.json').exists():
             sample = cls._get_locale(Path(path) / 'en.json')
         else:
@@ -463,11 +471,14 @@ class L10n:
 
 
 def locale(lang: str = None) -> Locale:
-    """Creates a L10n singleton and returns a Locale object, containing
-       all defined string keys translated to the requested language
-       (if such translation exists, otherwise returns English 'en').
+    """
+    Creates a L10n singleton and returns a Locale object, containing
+    all defined string keys translated to the requested language
+    (if such translation exists, otherwise returns English 'en').
 
-       Useful for fast Locale object creation."""
+    Useful for fast Locale object creation.
+    """
+
     global _l10n
 
     if _l10n is None:
