@@ -101,7 +101,7 @@ async def depots():
             valve_ds_change_number = data[741]['_change_number']
             cs2_app_change_number = data[2275500]['_change_number']
             cs2_server_change_number = data[2275530]['_change_number']
-            sdk_build_id = data[745]['depots']['branches']['public']['buildid']
+            sdk_build_id = int(data[745]['depots']['branches']['public']['buildid'])
             dpr_build_id = int(main_data['depots']['branches']['dpr']['buildid'])
             dprp_build_id = int(main_data['depots']['branches']['dprp']['buildid'])
             public_build_id = int(main_data['depots']['branches']['public']['buildid'])
