@@ -40,6 +40,20 @@ async def unban(client: Client, message: Message):
         await message.reply(f"VAC бан у {og_msg.from_user.first_name} был удалён.")
 
 
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("warn"))
+async def warn(client: Client, message: Message):
+    chat = await client.get_chat(config.INCS2CHAT)
+    admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
+    admins = {admin.user.id async for admin in admins}
+
+    if message.from_user.id not in admins:
+        return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
+
+    if message.reply_to_message:
+        og_msg = message.reply_to_message
+        await og_msg.reply_animation("CgACAgQAAxkBAAEOt1pkzeSRgU7zlcl-amLGEdCPJ2YINgACmwMAAu4uzFPUiDaV7ful2S8E")
+
+
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("echo"))
 async def echo(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
@@ -66,5 +80,4 @@ async def cs_l10n_update(_, message: Message):
             and message.sender_chat.id == config.INCS2CHANNEL
             and message.forward_from_chat.id == config.INCS2CHANNEL
             and "Обновлены файлы локализации" in message.text):
-        await message.reply_sticker("CAACAgIAAxkBAAID-l_9tlLJhZQSgqs"
-                                    "MUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ")
+        await message.reply_sticker("CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ")
