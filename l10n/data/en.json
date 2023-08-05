@@ -6,12 +6,12 @@
     "For more information type /help."
   ],
   "bot_help_text": [
-    "<a href=\"https://telegra.ph/Detailed-description-03-07\">‎</a>ℹ️ This bot is developed by @INCS2. You can see the source code on <a href=\"https://github.com/aquaismissing/incs2bot\">GitHub</a>.",
+    "[‎](https://telegra.ph/Detailed-description-03-07)ℹ️ This bot is developed by @INCS2. You can see the source code on [GitHub](https://github.com/aquaismissing/incs2bot).",
     "",
     "telegra.ph/Detailed-description-03-07"
   ],
   "bot_feedback_text": [
-    "💬 Please, tell us about your <b>suggestions</b> or <b>problems</b> that you have encountered using our bot.",
+    "💬 Please, tell us about your **suggestions** or **problems** that you have encountered using our bot.",
     "",
     "Use /cancel to cancel this command."
   ],
@@ -29,21 +29,19 @@
   "crosshair_generate": "Generate",
   "crosshair_decode": "Decode",
   "crosshair_decode_example": [
-    "📖 Please, enter the crosshair code that you would like to decode (ex: <code>CSGO-O4Jsi-V36wY-rTMGK-9w7qF-jQ8WB</code>).",
+    "📖 Please, enter the crosshair code that you would like to decode (ex: `CSGO-O4Jsi-V36wY-rTMGK-9w7qF-jQ8WB`).",
     "",
     "Use /cancel to cancel this command."
   ],
   "crosshair_decode_error": [
     "⚠️ Invalid code, please, try again.",
     "",
-    "",
     "Use /cancel to cancel this command."
   ],
   "crosshair_decode_result": [
     "🧬 Decoded parameters for the given crosshair code:",
     "",
-    "",
-    "<code>{}</code>"
+    "`{}`"
   ],
   "currencies_usd": "U.S. Dollar",
   "currencies_gbp": "British Pound",
@@ -251,7 +249,7 @@
   "game_status_inline_title": "Server status",
   "game_status_inline_description": "Check the availability of the servers",
   "game_status_text": [
-    "{} <b>Counter-Strike service status:</b>",
+    "{} **Counter-Strike service status:**",
     "",
     "• Game coordinator: {}",
     "• Server connection: {}",
@@ -265,10 +263,10 @@
   "game_version_text": [
     "⚙️ Current game version:",
     "",
-    "CS:GO: <code>{}</code> <code>({})</code>",
+    "CS:GO: `{}` `({})`",
     "Latest update: {}",
     "",
-    "CS2: <code>{}</code> <code>({})</code>",
+    "CS2: `{}` `({})`",
     "Latest update: {}"
   ],
   "game_dropcap_button_title": "Drop cap reset",
@@ -395,7 +393,7 @@
   "stats_matchmaking_inline_title": "Matchmaking stats",
   "stats_matchmaking_inline_description": "Check the count of online players",
   "stats_matchmaking_text": [
-    "<a href=\"{}\">‎</a>📊 <b>Matchmaking statistics:</b>",
+    "<a href=\"{}\">‎</a>📊 **Matchmaking statistics:**",
     "",
     "• Servers online: {:,}",
     "• Players online: {:,}",
@@ -404,7 +402,7 @@
     "• Estimated search time: {}s"
   ],
   "stats_additional": [
-    "📁 <b>Additional information:</b>",
+    "📁 **Additional information:**",
     "",
     "• 24-hour peak: {:,}",
     "• All-time peak: {:,}",
@@ -413,10 +411,10 @@
   "steam_url_example": [
     "🔗 Please, enter one of the following options:",
     "",
-    "• Profile link (ex: <code>https://steamcommunity.com/id/aquaismissing</code>)",
-    "• Profile permalink (ex: <code>https://steamcommunity.com/profiles/76561198346163255</code>)",
-    "• SteamID (ex: <code>76561198346163255</code>)",
-    "• Custom URL (ex: <code>aquaismissing</code>)",
+    "• Profile link (ex: `https://steamcommunity.com/id/aquaismissing`)",
+    "• Profile permalink (ex: `https://steamcommunity.com/profiles/76561198346163255`)",
+    "• SteamID (ex: `76561198346163255`)",
+    "• Custom URL (ex: `aquaismissing`)",
     "",
     "Use /cancel to cancel this command."
   ],
@@ -517,25 +515,25 @@
   "user_gamestats_share": "Share",
   "user_profileinfo_title": "Bans and restrictions",
   "user_profileinfo_text": [
-    "🔍 <b>General profile information:</b>",
+    "🔍 **General profile information:**",
     "",
-    "• Custom URL: <code>{}</code>",
-    "• Steam ID: <code>{}</code>",
-    "• Account ID: <code>{}</code>",
-    "• Steam2 ID: <code>{}</code>",
-    "• Steam3 ID: <code>{}</code>",
+    "• Custom URL: `{}`",
+    "• Steam ID: `{}`",
+    "• Account ID: `{}`",
+    "• Steam2 ID: `{}`",
+    "• Steam3 ID: `{}`",
     "",
-    "• Steam friend code: <code>{}</code>",
+    "• Steam friend code: `{}`",
     "• Steam invite URL: {}",
-    "• CS:GO friend code: <code>{}</code>",
+    "• CS:GO friend code: `{}`",
     "",
-    "🔫 <b>FACEIT:</b>",
+    "🔫 **FACEIT:**",
     "",
     "• FACEIT URL: {}",
     "• FACEIT elo / level: {} / {}",
     "• FACEIT ban: {}",
     "",
-    "📛 <b>Bans and restrictions:</b>",
+    "📛 **Bans and restrictions:**",
     "",
     "• Game bans: {}",
     "• VAC bans: {}",
@@ -551,5 +549,5 @@
   "valve_hqtime_inline_title": "Bellevue time",
   "valve_hqtime_inline_description": "Time in Valve HQ",
   "valve_hqtime_text": "{} Time in Bellevue (Valve HQ): {}",
-  "valve_steam_maintenance_text": "🛠️ <b>Steam is down for routine maintenance every Tuesday.</b>"
+  "valve_steam_maintenance_text": "🛠️ **Steam is down for routine maintenance every Tuesday.**"
 }

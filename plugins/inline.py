@@ -287,13 +287,12 @@ async def default_inline(client: BClient, inline_query: InlineQuery):
     inline_btn = keyboards.markup_inline_button(client.locale)
 
     server_status = InlineQueryResultArticle(client.locale.game_status_inline_title,
-                                             InputTextMessageContent(server_status_text, parse_mode=ParseMode.HTML),
+                                             InputTextMessageContent(server_status_text),
                                              description=client.locale.game_status_inline_description,
                                              reply_markup=inline_btn,
                                              thumb_url="https://telegra.ph/file/8b640b85f6d62f8ed2900.jpg")
     matchmaking_stats = InlineQueryResultArticle(client.locale.stats_matchmaking_inline_title,
-                                                 InputTextMessageContent(matchmaking_stats_text,
-                                                                         parse_mode=ParseMode.HTML),
+                                                 InputTextMessageContent(matchmaking_stats_text),
                                                  description=client.locale.stats_matchmaking_inline_description,
                                                  reply_markup=inline_btn,
                                                  thumb_url="https://telegra.ph/file/57ba2b279c53d69d72481.jpg")
@@ -309,9 +308,7 @@ async def default_inline(client: BClient, inline_query: InlineQuery):
                                               reply_markup=inline_btn,
                                               thumb_url="https://telegra.ph/file/6948255408689d2f6a472.jpg")
     game_version = InlineQueryResultArticle(client.locale.game_version_inline_title,
-                                            InputTextMessageContent(game_version_text,
-                                                                    parse_mode=ParseMode.HTML,
-                                                                    disable_web_page_preview=True),
+                                            InputTextMessageContent(game_version_text, disable_web_page_preview=True),
                                             description=client.locale.game_version_inline_description,
                                             reply_markup=inline_btn,
                                             thumb_url="https://telegra.ph/file/82d8df1e9f5140da70232.jpg")
