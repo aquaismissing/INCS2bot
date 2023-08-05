@@ -32,23 +32,23 @@ def handle_error(result):
     logging.info(f'Logon result: {result!r}')
 
 
-@client.on("channel_secured")
+@client.on('channel_secured')
 def send_login():
     if client.relogin_available:
         client.relogin()
 
 
-@client.on("connected")
+@client.on('connected')
 def handle_connected():
     logging.info(f'Connected to {client.current_server_addr}')
 
 
-@client.on("reconnect")
+@client.on('reconnect')
 def handle_reconnect(delay):
     logging.info(f'Reconnect in {delay}s...')
 
 
-@client.on("disconnected")
+@client.on('disconnected')
 def handle_disconnect():
     logging.info('Disconnected.')
 
@@ -57,7 +57,7 @@ def handle_disconnect():
         client.reconnect(maxdelay=30)
 
 
-@cs.on("connection_status")
+@cs.on('connection_status')
 def gc_ready(status):
     statuses = {0: States.NORMAL, 1: States.INTERNAL_SERVER_ERROR, 2: States.OFFLINE,
                 3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
@@ -66,7 +66,7 @@ def gc_ready(status):
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache = json.load(f)
 
-    if game_coordinator != cache.get("game_coordinator"):
+    if game_coordinator != cache.get('game_coordinator'):
         cache['game_coordinator'] = game_coordinator.literal
 
     with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
@@ -75,7 +75,7 @@ def gc_ready(status):
     logging.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
 
 
-@client.on("logged_on")
+@client.on('logged_on')
 def handle_after_logon():
     Thread(target=depots_prepare).start()
     Thread(target=gc).start()
