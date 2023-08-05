@@ -28,6 +28,10 @@ bot = Client(config.BOT_GC_MODULE_NAME,
              api_hash=config.API_HASH,
              bot_token=config.BOT_TOKEN)
 
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s | %(threadName)s | GC alerter: %(message)s",
+                    datefmt="%H:%M:%S — %d/%m/%Y")
+
 
 def scan_prepare():
     loop = asyncio.new_event_loop()
@@ -39,7 +43,7 @@ def scan_prepare():
 
 async def scan_for_gc_update():
     while True:
-        logging.info('GC Alerter: Syncing game build IDs with GC...')
+        logging.info('Syncing game build IDs with GC...')
         try:
             with open(config.GC_PREV_CACHE_FILE_PATH, encoding='utf-8') as f:
                 prev_cache = json.load(f)
@@ -85,11 +89,11 @@ async def scan_for_gc_update():
                 json.dump(prev_cache, f, indent=4)
 
         except Exception:
-            logging.exception(f"Caught an exception while scanning GC info!")
+            logging.exception('Caught an exception while scanning GC info!')
             time.sleep(45)
             continue
 
-        logging.info('GC Alerter: Successfully synced game build IDs.')
+        logging.info('Successfully synced game build IDs.')
 
         time.sleep(45)
 
@@ -105,12 +109,12 @@ async def send(chat_list, text):
 
 
 async def send_alert(key: str, new_value: int):
-    logging.info(f'GC Alerter: Found new change: {key}, sending alert...')
+    logging.info(f'Found new change: {key}, sending alert...')
 
     alert_sample = available_alerts.get(key)
 
     if alert_sample is None:
-        logging.warning(f"GC Alerter: Got wrong key to send alert: {key}")
+        logging.warning(f'Got wrong key to send alert: {key}')
         return
 
     text = alert_sample.format(new_value)

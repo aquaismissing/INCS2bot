@@ -19,8 +19,8 @@ import config
 from utypes import GameVersionData, States
 
 logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s | %(threadName)s | %(name)s: %(message)s",
-                    datefmt="%H:%M:%S — %d/%m/%Y")
+                    format='%(asctime)s | GC: %(message)s',
+                    datefmt='%H:%M:%S — %d/%m/%Y')
 
 client = SteamClient()
 client.set_credential_location(config.STEAM_CREDS_PATH)
@@ -29,7 +29,7 @@ cs = CSGOClient(client)
 
 @client.on("error")
 def handle_error(result):
-    logging.info(f"GC: Logon result: {result!r}")
+    logging.info(f'Logon result: {result!r}')
 
 
 @client.on("channel_secured")
@@ -40,20 +40,20 @@ def send_login():
 
 @client.on("connected")
 def handle_connected():
-    logging.info(f"GC: Connected to {client.current_server_addr}")
+    logging.info(f'Connected to {client.current_server_addr}')
 
 
 @client.on("reconnect")
 def handle_reconnect(delay):
-    logging.info(f"GC: Reconnect in {delay} s...")
+    logging.info(f'Reconnect in {delay}s...')
 
 
 @client.on("disconnected")
 def handle_disconnect():
-    logging.info("GC: Disconnected.")
+    logging.info('Disconnected.')
 
     if client.relogin_available:
-        logging.info("GC: Reconnecting...")
+        logging.info('Reconnecting...')
         client.reconnect(maxdelay=30)
 
 
@@ -72,7 +72,7 @@ def gc_ready(status):
     with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
         json.dump(cache, f, indent=4)
 
-    logging.info(f'GC: Successfully dumped game coordinator status: {game_coordinator.literal}')
+    logging.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
 
 
 @client.on("logged_on")
@@ -106,7 +106,7 @@ async def depots():
             dprp_build_id = int(main_data['depots']['branches']['dprp']['buildid'])
             public_build_id = int(main_data['depots']['branches']['public']['buildid'])
         except Exception:
-            logging.exception(f"GC: Caught an exception while trying to fetch depots!")
+            logging.exception('Caught an exception while trying to fetch depots!')
             time.sleep(45)
             continue
 
@@ -141,7 +141,7 @@ async def depots():
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4)
 
-        logging.info('GC: Successfully dumped game build IDs.')
+        logging.info('Successfully dumped game build IDs.')
 
         time.sleep(45)
 
@@ -168,7 +168,7 @@ def gv_updater():
             with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
                 json.dump(cache, f, indent=4)
         except Exception:
-            logging.exception("GC: Caught an exception while trying to get new version!")
+            logging.exception('Caught an exception while trying to get new version!')
             time.sleep(45)
             continue
         time.sleep(45)
@@ -188,24 +188,24 @@ def online_players():
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4)
 
-        logging.info(f'GC: Successfully dumped player count: {value}')
+        logging.info(f'Successfully dumped player count: {value}')
         time.sleep(45)
 
 
 def main():
     try:
-        logging.error(f"GC: Logging in...")
+        logging.error('Logging in...')
         result = client.login(username=config.STEAM_USERNAME, password=config.STEAM_PASS)
 
         if result != EResult.OK:
-            logging.error(f"GC: Failed to login: {result!r}")
+            logging.error(f"Failed to login: {result!r}")
             sys.exit(1)
 
-        logging.error(f"GC: Logged in successfully.")
+        logging.info('Logged in successfully.')
         client.run_forever()
     except KeyboardInterrupt:
         if client.connected:
-            logging.info("GC: Logout...")
+            logging.info('Logout...')
             client.logout()
 
 
