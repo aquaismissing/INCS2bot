@@ -113,26 +113,13 @@ async def depots():
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
-        if sdk_build_id != cache.get('sdk_build_id'):
-            cache['sdk_build_id'] = sdk_build_id
-
-        if ds_build_id != cache.get('ds_build_id'):
-            cache['ds_build_id'] = ds_build_id
-
-        if valve_ds_change_number != cache.get('valve_ds_changenumber'):
-            cache['valve_ds_changenumber'] = valve_ds_change_number
-
-        if cs2_app_change_number != cache.get('cs2_app_changenumber'):
-            cache['cs2_app_changenumber'] = cs2_app_change_number
-
-        if cs2_server_change_number != cache.get('cs2_server_changenumber'):
-            cache['cs2_server_changenumber'] = cs2_server_change_number
-
-        if dprp_build_id != cache.get('dprp_build_id'):
-            cache['dprp_build_id'] = dprp_build_id
-
-        if dpr_build_id != cache.get('dpr_build_id'):
-            cache['dpr_build_id'] = dpr_build_id
+        cache['sdk_build_id'] = sdk_build_id
+        cache['ds_build_id'] = ds_build_id
+        cache['valve_ds_changenumber'] = valve_ds_change_number
+        cache['cs2_app_changenumber'] = cs2_app_change_number
+        cache['cs2_server_changenumber'] = cs2_server_change_number
+        cache['dprp_build_id'] = dprp_build_id
+        cache['dpr_build_id'] = dpr_build_id
 
         if public_build_id != cache.get('public_build_id'):
             cache['public_build_id'] = public_build_id
