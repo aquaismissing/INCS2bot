@@ -519,10 +519,16 @@ async def generate_crosshair(client: BClient, callback_query: CallbackQuery):
                                            reply_markup=keyboards.markup_crosshair(client.locale))
 
 
-@bot.on_callback_query(ufilters.callback_data_equals(LK.crosshair_decode))
 @log_exception_callback
-async def decode_crosshair(client: BClient, callback_query: CallbackQuery):
-    decode_input: Message = await ask_message_silently(client, callback_query, client.locale.crosshair_decode_example)
+@bot.on_callback_query(ufilters.callback_data_equals(LK.crosshair_decode))
+@ignore_message_not_modified
+async def decode_crosshair(client: BClient, callback_query: CallbackQuery, error_loop: int = 0):
+    text = client.locale.crosshair_decode_example if not error_loop else client.locale.crosshair_decode_error
+
+    if error_loop >= 2:
+        decode_input = await client.listen_message(callback_query.message.chat.id)
+    else:
+        decode_input = await ask_message_silently(client, callback_query, text)
 
     if decode_input.text == "/cancel":
         await decode_input.delete()
@@ -530,7 +536,7 @@ async def decode_crosshair(client: BClient, callback_query: CallbackQuery):
 
     _crosshair = Crosshair.decode(decode_input.text)
     if _crosshair is None:
-        return await decode_input.reply(client.locale.crosshair_decode_error)
+        return await decode_crosshair(client, callback_query, error_loop + 1)
 
     text = client.locale.crosshair_decode_result.format('; '.join(_crosshair.commands))
 
