@@ -214,6 +214,9 @@ class UserGameStats(NamedTuple):
                 round(stats[f'total_hits_{weapon}'] / stats[f'total_shots_{weapon}'] * 100, 2)
 
         stats = {k: v for k, v in stats.items() if k in cls._fields}
+        for field in cls._fields:
+            if stats.get(field) is None:
+                stats[field] = 0
 
         return cls(**stats)
     
