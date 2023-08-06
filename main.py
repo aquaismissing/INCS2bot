@@ -56,7 +56,9 @@ def log_exception_callback(func):
             await func(client, callback_query, *args, **kwargs)
         except Exception as e:
             logging.exception('Caught exception!')
-            await client.send_message(config.LOGCHANNEL, f'❗️{e}', disable_notification=True)
+            await client.send_message(config.LOGCHANNEL, f'❗️{e.__class__}: {e}\n'
+                                                         f'(fast contact - {callback_query.from_user.mention})',
+                                      disable_notification=True)
             await something_went_wrong(client, callback_query)
 
     return inner
