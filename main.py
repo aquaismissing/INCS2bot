@@ -153,12 +153,12 @@ async def main(client: BClient, callback_query: CallbackQuery, session_timeout: 
     await callback_query.edit_message_text(text, reply_markup=keyboards.main_markup(client.locale))
 
 
-@bot.on_callback_query(ufilters.callback_data_is_gun_filter)
+'''@bot.on_callback_query(ufilters.callback_data_is_gun_filter)
 @ignore_message_not_modified
 async def handle_back_after_reload(client: BClient, callback_query: CallbackQuery):
     """After bot reload, the gun database menu gets stuck. This func recovers dialog by calling `main`."""
 
-    return await main(client, callback_query, session_timeout=True)
+    return await main(client, callback_query, session_timeout=True)'''
 
 
 # cat: Server stats
@@ -825,8 +825,16 @@ async def unknown_request(client: BClient, callback_query: CallbackQuery, reply_
 async def back(client: BClient, callback_query: CallbackQuery):
 
     if client.came_from is None:
-        return await main(client, callback_query)
+        return await main(client, callback_query, session_timeout=True)
     await client.came_from(client, callback_query)
+
+
+@bot.on_callback_query()
+@ignore_message_not_modified
+async def handle_back_after_reload(client: BClient, callback_query: CallbackQuery):
+    """After bot reload or session timeout, some menus get stuck. This func recovers dialog by calling `main`."""
+
+    return await main(client, callback_query, session_timeout=True)
 
 
 if __name__ == '__main__':
