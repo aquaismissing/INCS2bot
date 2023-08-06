@@ -51,11 +51,13 @@ class BClient(Client):
     def register_session(self, user: User):
         self._sessions[user.id] = UserSession(user)
 
-    def clear_timeout_sessions(self):
+    def clear_timeout_sessions(self, *, hours: int = 1, minutes: int = 0, seconds: int = 0):
         now = dt.datetime.now()
+        timeout_duration = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
         for _id in self._sessions:
             session_time = dt.datetime.fromtimestamp(self._sessions[_id].timestamp)
-            if (now - session_time).seconds > 10 * 60:
+            if now - session_time > timeout_duration:
                 del self._sessions[_id]
 
     def clear_sessions(self):
