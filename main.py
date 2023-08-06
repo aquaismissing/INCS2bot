@@ -133,7 +133,7 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
         )
         pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
 
-    client.clear_timeout_sessions()
+    client.clear_timeout_sessions(hours=12)
     if user.id not in client.sessions:
         client.register_session(user)
 
