@@ -454,8 +454,6 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     try:
         user_stats = UserGameStats.get(steam_url.text)
     except ParsingUserStatsError as e:
-        await callback_query.message.delete()
-
         if e.value == ParsingUserStatsError.INVALID_REQUEST:
             error_msg = client.locale.error_unknownrequest
         elif e.value == ParsingUserStatsError.PROFILE_IS_PRIVATE:
@@ -712,7 +710,7 @@ async def send_gun_info(client: BClient, callback_query: CallbackQuery, _from: c
     text = client.locale.gun_summary_text.format(*formatted_info)
 
     await callback_query.edit_message_text(text, reply_markup=reply_markup)
-    await _from(client, callback_query, loop=True)
+    return await _from(client, callback_query, loop=True)
 
 
 # cat: Commands
