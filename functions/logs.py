@@ -11,7 +11,7 @@ async def log(client: Client, message: Message):
     """The bot sends log to log channel"""
 
     text = (
-        f"✍️ User: <a href=\"tg://user?id={message.from_user.id}\">{message.from_user.first_name}</a>\n"
+        f"✍️ User: {message.from_user.mention}\n"
         f"ID: {message.from_user.id}\n"
         f"Language: {message.from_user.language_code}\n"
         f"Private message: {message.text}"
@@ -23,7 +23,7 @@ async def log_callback(client: Client, callback_query: CallbackQuery):
     """The bot sends log to log channel"""
 
     text = (
-        f"✍️ User: <a href=\"tg://user?id={callback_query.from_user.id}\">{callback_query.from_user.first_name}</a>\n"
+        f"✍️ User: {callback_query.from_user.mention}\n"
         f"ID: {callback_query.from_user.id}\n"
         f"Language: {callback_query.from_user.language_code}\n"
         f"Callback query: {callback_query.data}"
@@ -35,7 +35,7 @@ async def log_inline(client: Client, inline_query: InlineQuery):
     """The bot sends an inline query to the log channel"""
 
     text = (
-        f"🛰 User: <a href=\"tg://user?id={inline_query.from_user.id}\">{inline_query.from_user.first_name}</a>\n"
+        f"🛰 User: {inline_query.from_user.mention}\n"
         f"ID: {inline_query.from_user.id}\n"
         f"Language: {inline_query.from_user.language_code}\n"
         f"Inline query: {inline_query.query}"
