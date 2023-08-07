@@ -114,7 +114,7 @@ async def inline_exchange_rate(client: BClient, inline_query: InlineQuery):
     data = ExchangeRate.cached_data()
 
     try:
-        query = inline_query.query.split()[1]
+        query = inline_query.query.split()[1].lower()
     except IndexError:
         result = [
             InlineQueryResultArticle(
@@ -143,7 +143,7 @@ async def inline_exchange_rate(client: BClient, inline_query: InlineQuery):
 
     currencies = []
     for k, v in TAGS.currencies_to_dict().items():
-        if any(query in tag for tag in v):
+        if query in k or any(query in tag for tag in v):
             currencies.append(k)
 
     for currency in currencies:
