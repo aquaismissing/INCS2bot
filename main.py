@@ -631,13 +631,17 @@ async def guns(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def pistols(client: BClient, callback_query: CallbackQuery, loop: bool = False):
     if loop:
-        choosed_gun = (await client.listen_callback(callback_query.message.chat.id,
-                                                    callback_query.message.id)).data
+        choosed_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                   callback_query.message.id)
     else:
-        choosed_gun = (await ask_callback_silently(client,
-                                                   callback_query,
-                                                   client.locale.gun_select_pistol,
-                                                   reply_markup=keyboards.pistols_markup(client.locale))).data
+        choosed_gun = await ask_callback_silently(client,
+                                                  callback_query,
+                                                  client.locale.gun_select_pistol,
+                                                  reply_markup=keyboards.pistols_markup(client.locale))
+
+    await log_callback(client, choosed_gun)
+
+    choosed_gun = choosed_gun.data
 
     if choosed_gun in GUNS_INFO:
         keyboards.pistols_markup.select_button_by_key(choosed_gun)
@@ -653,13 +657,17 @@ async def pistols(client: BClient, callback_query: CallbackQuery, loop: bool = F
 @ignore_message_not_modified
 async def heavy(client: BClient, callback_query: CallbackQuery, loop: bool = False):
     if loop:
-        choosed_gun = (await client.listen_callback(callback_query.message.chat.id,
-                                                    callback_query.message.id)).data
+        choosed_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                   callback_query.message.id)
     else:
-        choosed_gun = (await ask_callback_silently(client,
-                                                   callback_query,
-                                                   client.locale.gun_select_heavy,
-                                                   reply_markup=keyboards.heavy_markup(client.locale))).data
+        choosed_gun = await ask_callback_silently(client,
+                                                  callback_query,
+                                                  client.locale.gun_select_heavy,
+                                                  reply_markup=keyboards.heavy_markup(client.locale))
+
+    await log_callback(client, choosed_gun)
+
+    choosed_gun = choosed_gun.data
 
     if choosed_gun in GUNS_INFO:
         keyboards.heavy_markup.select_button_by_key(choosed_gun)
@@ -675,13 +683,17 @@ async def heavy(client: BClient, callback_query: CallbackQuery, loop: bool = Fal
 @ignore_message_not_modified
 async def smgs(client: BClient, callback_query: CallbackQuery, loop: bool = False):
     if loop:
-        choosed_gun = (await client.listen_callback(callback_query.message.chat.id,
-                                                    callback_query.message.id)).data
+        choosed_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                   callback_query.message.id)
     else:
-        choosed_gun = (await ask_callback_silently(client,
-                                                   callback_query,
-                                                   client.locale.gun_select_smg,
-                                                   reply_markup=keyboards.smgs_markup(client.locale))).data
+        choosed_gun = await ask_callback_silently(client,
+                                                  callback_query,
+                                                  client.locale.gun_select_smg,
+                                                  reply_markup=keyboards.smgs_markup(client.locale))
+
+    await log_callback(client, choosed_gun)
+
+    choosed_gun = choosed_gun.data
 
     if choosed_gun in GUNS_INFO:
         keyboards.smgs_markup.select_button_by_key(choosed_gun)
@@ -697,13 +709,17 @@ async def smgs(client: BClient, callback_query: CallbackQuery, loop: bool = Fals
 @ignore_message_not_modified
 async def rifles(client: BClient, callback_query: CallbackQuery, loop: bool = False):
     if loop:
-        choosed_gun = (await client.listen_callback(callback_query.message.chat.id,
-                                                    callback_query.message.id)).data
+        choosed_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                   callback_query.message.id)
     else:
-        choosed_gun = (await ask_callback_silently(client,
-                                                   callback_query,
-                                                   client.locale.gun_select_rifle,
-                                                   reply_markup=keyboards.rifles_markup(client.locale))).data
+        choosed_gun = await ask_callback_silently(client,
+                                                  callback_query,
+                                                  client.locale.gun_select_rifle,
+                                                  reply_markup=keyboards.rifles_markup(client.locale))
+
+    await log_callback(client, choosed_gun)
+
+    choosed_gun = choosed_gun.data
 
     if choosed_gun in GUNS_INFO:
         keyboards.rifles_markup.select_button_by_key(choosed_gun)
