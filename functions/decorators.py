@@ -32,6 +32,3 @@ def ignore_message_not_modified(func):
             pass
 
     return inner
-
-
-

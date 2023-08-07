@@ -8,7 +8,7 @@ from babel.dates import format_datetime
 import pandas as pd
 from pyrogram import filters
 from pyrogram.enums import ChatType, ChatAction
-from pyrogram.errors import MessageDeleteForbidden
+from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, Message
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
@@ -715,7 +715,6 @@ async def rifles(client: BClient, callback_query: CallbackQuery, loop: bool = Fa
 
 
 @log_exception_callback
-@ignore_message_not_modified
 async def send_gun_info(client: BClient, callback_query: CallbackQuery, _from: callable,
                         gun_info: GunInfo, reply_markup: ExtendedIKM):
     """Send archived data about guns"""
@@ -727,8 +726,12 @@ async def send_gun_info(client: BClient, callback_query: CallbackQuery, _from: c
 
     text = client.locale.gun_summary_text.format(*formatted_info)
 
-    await callback_query.edit_message_text(text, reply_markup=reply_markup)
-    return await _from(client, callback_query, loop=True)
+    try:
+        await callback_query.edit_message_text(text, reply_markup=reply_markup)
+    except MessageNotModified:
+        pass
+    finally:
+        return await _from(client, callback_query, loop=True)
 
 
 # cat: Commands
