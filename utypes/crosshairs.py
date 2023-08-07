@@ -1,5 +1,6 @@
 import re
 from typing import NamedTuple
+
 import numpy as np
 
 

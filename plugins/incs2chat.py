@@ -1,8 +1,8 @@
 import asyncio
 
 from pyrogram import Client, filters
-from pyrogram.types import Message
 from pyrogram.enums import ChatMembersFilter
+from pyrogram.types import Message
 
 # noinspection PyUnresolvedReferences
 import env
@@ -56,7 +56,7 @@ async def warn(client: Client, message: Message):
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("echo"))
-async def echo(client: Client, message: Message):
+async def echo(client: Client, message: Message):  # todo: echo attachments and replies
     chat = await client.get_chat(config.INCS2CHAT)
     admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
     admins = {admin.user.id async for admin in admins}

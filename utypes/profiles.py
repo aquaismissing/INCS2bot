@@ -3,10 +3,10 @@ import logging
 import re
 from typing import NamedTuple
 
-import requests
 from steam import steamid
 from steam.steamid import SteamID
 from steam.webapi import WebAPI
+import requests
 import validators
 
 import config

@@ -15,12 +15,12 @@ from pyropatch import pyropatch  # do not delete!!
 from telegraph import Telegraph
 
 import config
-import keyboards
-from keyboards import ExtendedIKB, ExtendedIKM
 from functions import datacenter_handlers, server_stats_handlers, ufilters
 from functions.askers import *
 from functions.decorators import *
 from functions.logs import *
+import keyboards
+from keyboards import ExtendedIKB, ExtendedIKM
 from l10n import LocaleKeys as LK
 from utypes import (BClient, Crosshair, ExchangeRate, GameServersData,
                     GameVersionData, GunInfo, ParsingUserStatsError, ProfileInfo,
@@ -527,7 +527,7 @@ async def crosshair(client: BClient, callback_query: CallbackQuery):
 @bot.on_callback_query(ufilters.callback_data_equals(LK.crosshair_generate))
 @came_from(extra_features)
 @ignore_message_not_modified
-async def generate_crosshair(client: BClient, callback_query: CallbackQuery):
+async def generate_crosshair(client: BClient, callback_query: CallbackQuery):  # todo: finally make this shit
     await callback_query.edit_message_text(client.locale.error_wip,
                                            reply_markup=keyboards.crosshair_markup(client.locale))
 

@@ -2,15 +2,16 @@ import datetime as dt
 
 from pyrogram import Client
 from pyrogram.enums import ParseMode
-from pyrogram.types import CallbackQuery, Message, MessageEntity, InlineKeyboardMarkup, ReplyKeyboardMarkup, \
-    ReplyKeyboardRemove, ForceReply, User
-
+from pyrogram.types import (CallbackQuery, Message, MessageEntity,
+                            InlineKeyboardMarkup, ReplyKeyboardMarkup,
+                            ReplyKeyboardRemove, ForceReply, User)
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
+
 from l10n import Locale
 
 
-class UserSession:
+class UserSession:  # todo: sessions caching so we can restore them after reload
     def __init__(self, user: User):
         from functions import locale
 

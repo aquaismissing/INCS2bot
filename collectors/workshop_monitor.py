@@ -3,12 +3,12 @@ import logging
 import re
 import time
 
+from pyrogram import Client
+import requests
+
 # noinspection PyUnresolvedReferences
 import env
 import config
-import requests
-from pyrogram import Client
-from pyrogram.enums import ParseMode
 from l10n import locale
 
 workshop_url = f"https://api.steampowered.com/IPublishedFileService/GetUserFiles/v1/?key={config.STEAM_API_KEY}" \
@@ -63,7 +63,7 @@ def _format_updated_maps_data(updated_maps):
     return ru_loc.notifs_new_map_multiple.format(maps_names)
 
 
-async def main():
+async def main():  # todo: rewrite to use bot task scheduler
     logging.info("Starting initial run...")
     initial_ids = []
     while not initial_ids:  # пока не наберётся начальный набор данных

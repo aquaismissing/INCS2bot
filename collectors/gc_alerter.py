@@ -1,11 +1,10 @@
+import asyncio
 import json
 import logging
-import time
 from threading import Thread
+import time
 
-import asyncio
 from pyrogram import Client
-from pyrogram.enums import ParseMode
 
 # noinspection PyUnresolvedReferences
 import env
@@ -127,7 +126,7 @@ async def send_alert(key: str, new_value: int):
     await send(chat_list, text)
 
 
-def main():
+def main():  # todo: rewrite to use bot task scheduler
     t1 = Thread(target=scan_prepare)
 
     t1.start()

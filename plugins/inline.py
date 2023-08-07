@@ -1,23 +1,21 @@
+import datetime as dt
 import logging
 import re
 from zoneinfo import ZoneInfo
 
-import datetime as dt
-
-import pandas as pd
 from babel.dates import format_datetime
+import pandas as pd
 from pyrogram import Client, filters
 from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
-from pyrogram.enums import ParseMode
 
 # noinspection PyUnresolvedReferences
 import env
 import config
-import keyboards
 from functions import datacenter_handlers, log_inline, server_stats_handlers
+import keyboards
 from l10n import dump_tags
-from utypes import (BClient, ExchangeRate, GameServersData,
-                    GameVersionData, DatacenterInlineResult,
+from utypes import (BClient, DatacenterInlineResult, ExchangeRate,
+                    GameServersData, GameVersionData,
                     drop_cap_reset_timer)
 
 
@@ -25,11 +23,11 @@ VALVE_TIMEZONE = ZoneInfo("America/Los_Angeles")
 TAGS = dump_tags()
 
 CLOCKS = ('🕛', '🕐', '🕑', '🕒', '🕓', '🕔',
-          '🕕', '🕖', '🕗', '🕘', '🕙', '🕚')
+          '🕕', '🕖', '🕗', '🕘', '🕙', '🕚')  # todo: store them in one place instead of both 'main' and 'inline'
 
 
 def log_exception_inline(func):
-    """Decorator to catch and log exceptions in bot inline functions. Also call `something_went_wrong(message)`."""
+    """Decorator to catch and log exceptions in bot inline functions."""
 
     async def inner(client: Client, inline_query: InlineQuery, *args, **kwargs):
         try:
@@ -55,7 +53,7 @@ async def _is_user_stats_page_func(_, __, query: InlineQuery):
 is_user_stats_page_filter = filters.create(_is_user_stats_page_func)
 
 
-async def _triggers_any_dc_tag_func(_, __, query: InlineQuery):
+async def _triggers_any_dc_tag_func(_, __, query: InlineQuery):  # todo: probably useless now
     data = query.query.strip().lower()
     return data and any(t.startswith(data) for tag in TAGS.dcs_to_set() for t in tag.split())
 
@@ -129,13 +127,14 @@ async def inline_exchange_rate(client: BClient, inline_query: InlineQuery):
 
     if not any(query in tag for tag in TAGS.currencies_to_list()):
         currency_available = (client.locale.currencies_tags.format(k.upper(),
-                                                                   client.locale.get(f'currencies_{k}'), ', '.join(v))
+                                                                   client.locale.get(f'currencies_{k}'),
+                                                                   ', '.join(v[1:]))
                               for k, v in TAGS.currencies_to_dict().items())
 
         results.append(
             InlineQueryResultArticle(
                 client.locale.exchangerate_inline_title_notfound,
-                InputTextMessageContent('\n'.join(currency_available), parse_mode=ParseMode.HTML),
+                InputTextMessageContent('\n'.join(currency_available)),
                 description=client.locale.exchangerate_inline_description_notfound,
             )
         )
@@ -143,7 +142,7 @@ async def inline_exchange_rate(client: BClient, inline_query: InlineQuery):
 
     currencies = []
     for k, v in TAGS.currencies_to_dict().items():
-        if query in k or any(query in tag for tag in v):
+        if any(query in tag for tag in v):
             currencies.append(k)
 
     for currency in currencies:
@@ -152,8 +151,7 @@ async def inline_exchange_rate(client: BClient, inline_query: InlineQuery):
         results.append(
             InlineQueryResultArticle(
                 client.locale.exchangerate_inline_title_selected.format(symbol),
-                InputTextMessageContent(client.locale.exchangerate_inline_text_selected.format(value, symbol),
-                                        parse_mode=ParseMode.HTML),
+                InputTextMessageContent(client.locale.exchangerate_inline_text_selected.format(value, symbol)),
                 description=client.locale.exchangerate_inline_description_selected.format(value, symbol)
             )
         )
@@ -241,7 +239,7 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
             resulted_articles.append(
                 InlineQueryResultArticle(
                     _dc.title,
-                    InputTextMessageContent(_dc.summary_from(client.session_lang_code), parse_mode=ParseMode.HTML),
+                    InputTextMessageContent(_dc.summary_from(client.session_lang_code)),
                     description=client.locale.dc_status_inline_description,
                     reply_markup=inline_btn,
                     thumb_url=_dc.thumbnail
@@ -256,7 +254,7 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
                 resulted_articles.append(
                     InlineQueryResultArticle(
                         _dc.title,
-                        InputTextMessageContent(_dc.summary_from(client.session_lang_code), parse_mode=ParseMode.HTML),
+                        InputTextMessageContent(_dc.summary_from(client.session_lang_code)),
                         description=client.locale.dc_status_inline_description,
                         reply_markup=inline_btn,
                         thumb_url=_dc.thumbnail
@@ -300,13 +298,12 @@ async def default_inline(client: BClient, inline_query: InlineQuery):
                                                  reply_markup=inline_btn,
                                                  thumb_url="https://telegra.ph/file/57ba2b279c53d69d72481.jpg")
     valve_hq_time = InlineQueryResultArticle(client.locale.valve_hqtime_inline_title,
-                                             InputTextMessageContent(valve_hq_time_text, parse_mode=ParseMode.HTML),
+                                             InputTextMessageContent(valve_hq_time_text),
                                              description=client.locale.valve_hqtime_inline_description,
                                              reply_markup=inline_btn,
                                              thumb_url="https://telegra.ph/file/24b05cea99de936fd12bf.jpg")
     drop_cap_reset = InlineQueryResultArticle(client.locale.game_dropcaptimer_inline_title,
-                                              InputTextMessageContent(drop_cap_reset_timer_text,
-                                                                      parse_mode=ParseMode.HTML),
+                                              InputTextMessageContent(drop_cap_reset_timer_text),
                                               description=client.locale.game_dropcaptimer_inline_description,
                                               reply_markup=inline_btn,
                                               thumb_url="https://telegra.ph/file/6948255408689d2f6a472.jpg")

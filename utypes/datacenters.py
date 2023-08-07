@@ -1,15 +1,13 @@
-# import env
+import json
+from typing import NamedTuple
 
 import config
 from .states import State, States
-
-import json
-from typing import NamedTuple
 from l10n import LocaleKeys as LK
 
 
-__all__ = ('DatacenterAtlas', 'Datacenter', 'DatacenterRegion', 'DatacenterGroup',
-           'DatacenterState', 'DatacenterRegionState', 'DatacenterGroupState', 'DatacenterInlineResult')
+__all__ = ('Datacenter', 'DatacenterAtlas', 'DatacenterGroup', 'DatacenterInlineResult',
+           'DatacenterRegion', 'DatacenterRegionState', 'DatacenterState', 'DatacenterGroupState')
 
 
 class Datacenter(NamedTuple):

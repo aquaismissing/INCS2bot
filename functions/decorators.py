@@ -1,6 +1,6 @@
 from pyrogram import Client
-from pyrogram.types import CallbackQuery
 from pyrogram.errors import MessageNotModified
+from pyrogram.types import CallbackQuery
 
 from utypes import BClient
 
@@ -10,7 +10,7 @@ __all__ = ('came_from', 'ignore_message_not_modified')
 
 def came_from(f):
     """
-    Decorator that tracks from what function we came from and stores it in `BClient`.
+    Decorator that tracks from what function we came from and stores it in `UserSession`.
     """
     def decorator(func):
         async def inner(client: BClient, callback_query: CallbackQuery, *args, **kwargs):

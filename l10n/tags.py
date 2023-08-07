@@ -7,6 +7,8 @@ import warnings
 
 __all__ = ('Tags', 'TagsKeys', 'dump_tags')
 
+# todo: probably rewrite it cuz it's basically a L10n clone
+
 
 class UnexpectedTagKey(UserWarning):
     pass
@@ -133,7 +135,7 @@ class Tags(NamedTuple):
         result = {}
         for k, tags in self._asdict().items():
             if k.startswith('currencies'):
-                result[tags[0]] = tags[1:]
+                result[tags[0]] = tags
         return result
 
     def get(self, key: str) -> str:

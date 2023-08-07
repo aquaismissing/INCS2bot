@@ -1,21 +1,20 @@
+import asyncio
 import datetime as dt
 import json
 import logging
 from threading import Thread
 import time
 
-import asyncio
 import pandas as pd
 from pyrogram import Client
-from pyrogram.enums import ParseMode
 
 # noinspection PyUnresolvedReferences
 import env
 import config
+from l10n import locale
 from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServersData,
                     State, get_monthly_unique_players)
-from l10n import locale
 
 HOUR = 60 * 60
 
@@ -206,7 +205,7 @@ async def send(chat_list, text):
         await asyncio.sleep(4)
 
     for chat_id in chat_list:
-        msg = await bot.send_message(chat_id, text, parse_mode=ParseMode.HTML)
+        msg = await bot.send_message(chat_id, text)
         if chat_id == config.INCS2CHAT:
             await msg.pin(disable_notification=True)
 
@@ -230,7 +229,7 @@ async def send_alert(key, new_value):
     await send(chat_list, text)
 
 
-def main():
+def main():  # todo: rewrite to use bot task scheduler
     t1 = Thread(target=info_updater_prepare)
     t2 = Thread(target=unique_monthly_prepare)
     t3 = Thread(target=check_currency)

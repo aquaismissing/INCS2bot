@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json
+import json  # todo: json5 for multiline strings instead of lists?
 import logging
 from pathlib import Path
 from typing import NamedTuple

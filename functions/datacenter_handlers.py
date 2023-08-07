@@ -1,8 +1,7 @@
 from babel.dates import format_datetime
 
-from utypes import (States, DatacenterAtlas, DatacenterState,
-                    DatacenterRegionState, DatacenterGroupState,
-                    GameServersData)
+from utypes import (DatacenterAtlas, DatacenterGroupState, DatacenterRegionState,
+                    DatacenterState, GameServersData, States)
 
 
 def _format_dc_data(state: DatacenterState | DatacenterRegionState | DatacenterGroupState, lang_code: str):
