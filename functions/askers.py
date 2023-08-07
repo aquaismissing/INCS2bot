@@ -1,6 +1,6 @@
 from pyrogram.types import CallbackQuery, Message
 
-from keyboards import TranslatableIKM
+from keyboards import ExtendedIKM
 from utypes import BClient
 
 
@@ -8,7 +8,7 @@ __all__ = ('ask_message_silently', 'ask_callback_silently')
 
 
 async def ask_message_silently(client: BClient, callback_query: CallbackQuery,
-                               text: str, *args, reply_markup: TranslatableIKM = None, **kwargs) -> Message:
+                               text: str, *args, reply_markup: ExtendedIKM = None, **kwargs) -> Message:
     """Asks for a message in the same message."""
 
     await callback_query.edit_message_text(text, *args, reply_markup=reply_markup, **kwargs)
@@ -16,7 +16,7 @@ async def ask_message_silently(client: BClient, callback_query: CallbackQuery,
 
 
 async def ask_callback_silently(client: BClient, callback_query: CallbackQuery,
-                                text: str, *args, reply_markup: TranslatableIKM = None, **kwargs) -> CallbackQuery:
+                                text: str, *args, reply_markup: ExtendedIKM = None, **kwargs) -> CallbackQuery:
     """Asks for a callback in the same message."""
 
     await callback_query.edit_message_text(text, *args, reply_markup=reply_markup, **kwargs)

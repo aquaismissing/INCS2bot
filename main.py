@@ -16,7 +16,7 @@ from telegraph import Telegraph
 
 import config
 import keyboards
-from keyboards import TranslatableIKB, TranslatableIKM
+from keyboards import ExtendedIKB, ExtendedIKM
 from functions import datacenter_handlers, server_stats_handlers, ufilters
 from functions.askers import *
 from functions.decorators import *
@@ -168,7 +168,7 @@ async def handle_back_after_reload(client: BClient, callback_query: CallbackQuer
 @ignore_message_not_modified
 async def server_stats(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.bot_choose_cmd,
-                                           reply_markup=keyboards.markup_ss(client.locale))
+                                           reply_markup=keyboards.ss_markup(client.locale))
 
 
 @log_exception_callback
@@ -186,7 +186,7 @@ async def send_server_status(client: BClient, callback_query: CallbackQuery):
 
     text = server_stats_handlers.get_server_status_summary(data, lang_code)
 
-    await callback_query.edit_message_text(text, reply_markup=keyboards.markup_ss(client.locale))
+    await callback_query.edit_message_text(text, reply_markup=keyboards.ss_markup(client.locale))
 
 
 @log_exception_callback
@@ -204,7 +204,7 @@ async def send_matchmaking_stats(client: BClient, callback_query: CallbackQuery)
 
     text = server_stats_handlers.get_matchmaking_stats_summary(data, lang_code)
 
-    await callback_query.edit_message_text(text, reply_markup=keyboards.markup_ss(client.locale))
+    await callback_query.edit_message_text(text, reply_markup=keyboards.ss_markup(client.locale))
 
 
 # cat: Datacenters
@@ -215,7 +215,7 @@ async def send_matchmaking_stats(client: BClient, callback_query: CallbackQuery)
 @ignore_message_not_modified
 async def datacenters(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.dc_status_choose_region,
-                                           reply_markup=keyboards.markup_dc(client.locale))
+                                           reply_markup=keyboards.dc_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_asia))
@@ -223,7 +223,7 @@ async def datacenters(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def dc_asia(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.dc_status_specify_country,
-                                           reply_markup=keyboards.markup_dc_asia(client.locale))
+                                           reply_markup=keyboards.dc_asia_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_europe))
@@ -231,7 +231,7 @@ async def dc_asia(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def dc_europe(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.dc_status_specify_region,
-                                           reply_markup=keyboards.markup_dc_eu(client.locale))
+                                           reply_markup=keyboards.dc_eu_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_us))
@@ -239,117 +239,117 @@ async def dc_europe(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def dc_us(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.dc_status_specify_region,
-                                           reply_markup=keyboards.markup_dc_us(client.locale))
+                                           reply_markup=keyboards.dc_us_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_africa))
 async def send_dc_africa(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.africa(client.session_lang_code),
-                        keyboards.markup_dc(client.locale))
+                        keyboards.dc_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_australia))
 async def send_dc_australia(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.australia(client.session_lang_code),
-                        keyboards.markup_dc(client.locale))
+                        keyboards.dc_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_eu_north))
 async def send_dc_eu_north(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.eu_north(client.session_lang_code),
-                        keyboards.markup_dc_eu(client.locale))
+                        keyboards.dc_eu_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_eu_east))
 async def send_dc_eu_west(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.eu_west(client.session_lang_code),
-                        keyboards.markup_dc_eu(client.locale))
+                        keyboards.dc_eu_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_eu_west))
 async def send_dc_eu_east(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.eu_east(client.session_lang_code),
-                        keyboards.markup_dc_eu(client.locale))
+                        keyboards.dc_eu_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_us_north))
 async def send_dc_us_north(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.us_north(client.session_lang_code),
-                        keyboards.markup_dc_us(client.locale))
+                        keyboards.dc_us_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_us_south))
 async def send_dc_us_south(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.us_south(client.session_lang_code),
-                        keyboards.markup_dc_us(client.locale))
+                        keyboards.dc_us_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_southamerica))
 async def send_dc_south_america(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.south_america(client.session_lang_code),
-                        keyboards.markup_dc(client.locale))
+                        keyboards.dc_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_india))
 async def send_dc_india(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.india(client.session_lang_code),
-                        keyboards.markup_dc_asia(client.locale))
+                        keyboards.dc_asia_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_japan))
 async def send_dc_japan(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.japan(client.session_lang_code),
-                        keyboards.markup_dc_asia(client.locale))
+                        keyboards.dc_asia_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_china))
 async def send_dc_china(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.china(client.session_lang_code),
-                        keyboards.markup_dc_asia(client.locale))
+                        keyboards.dc_asia_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_emirates))
 async def send_dc_emirates(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.emirates(client.session_lang_code),
-                        keyboards.markup_dc_asia(client.locale))
+                        keyboards.dc_asia_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_singapore))
 async def send_dc_singapore(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.singapore(client.session_lang_code),
-                        keyboards.markup_dc_asia(client.locale))
+                        keyboards.dc_asia_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_hongkong))
 async def send_dc_hongkong(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.hongkong(client.session_lang_code),
-                        keyboards.markup_dc_asia(client.locale))
+                        keyboards.dc_asia_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_southkorea))
 async def send_dc_south_korea(client: BClient, callback_query: CallbackQuery):
     await send_dc_state(client, callback_query,
                         datacenter_handlers.south_korea(client.session_lang_code),
-                        keyboards.markup_dc_asia(client.locale))
+                        keyboards.dc_asia_markup(client.locale))
 
 
 @ignore_message_not_modified
 async def send_dc_state(client: BClient, callback_query: CallbackQuery,
-                        state: str | States, reply_markup: TranslatableIKM):
+                        state: str | States, reply_markup: ExtendedIKM):
     if state == States.UNKNOWN:
         return await something_went_wrong(client, callback_query)
 
@@ -370,7 +370,7 @@ async def profile_info(client: BClient, callback_query: CallbackQuery):
         return await send_about_maintenance(client, callback_query)
 
     await callback_query.edit_message_text(client.locale.bot_choose_cmd,
-                                           reply_markup=keyboards.markup_profile(client.locale))
+                                           reply_markup=keyboards.profile_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.user_profileinfo_title))
@@ -400,7 +400,7 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
 
         await callback_query.message.reply(error_msg)
         await callback_query.message.reply(client.locale.bot_choose_cmd,
-                                           reply_markup=keyboards.markup_profile(client.locale))
+                                           reply_markup=keyboards.profile_markup(client.locale))
         return
     except Exception as e:
         await steam_url.delete()
@@ -435,7 +435,7 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
 
     await callback_query.message.reply(text, disable_web_page_preview=True)
     await callback_query.message.reply(client.locale.bot_choose_cmd,
-                                       reply_markup=keyboards.markup_profile(client.locale))
+                                       reply_markup=keyboards.profile_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.user_gamestats_button_title))
@@ -465,7 +465,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
 
         await callback_query.message.reply(error_msg)
         await callback_query.message.reply(client.locale.bot_choose_cmd,
-                                           reply_markup=keyboards.markup_profile(client.locale))
+                                           reply_markup=keyboards.profile_markup(client.locale))
         return
     except Exception as e:
         await steam_url.delete()
@@ -481,13 +481,13 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
                                                author_name="@incs2bot",
                                                author_url="https://t.me/incs2bot")
 
-    share_btn = TranslatableIKB(client.locale.user_gamestats_share,
-                                switch_inline_query=telegraph_response['url'])
-    markup_share = TranslatableIKM([[share_btn]])
+    share_btn = ExtendedIKB(client.locale.user_gamestats_share,
+                            switch_inline_query=telegraph_response['url'])
+    markup_share = ExtendedIKM([[share_btn]])
 
     await callback_query.message.reply(telegraph_response['url'], reply_markup=markup_share)
     await callback_query.message.reply(client.locale.bot_choose_cmd,
-                                       reply_markup=keyboards.markup_profile(client.locale))
+                                       reply_markup=keyboards.profile_markup(client.locale))
     await callback_query.message.delete()
 
 
@@ -499,7 +499,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def extra_features(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.bot_choose_cmd,
-                                           reply_markup=keyboards.markup_extra(client.locale))
+                                           reply_markup=keyboards.extra_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.crosshair))
@@ -507,7 +507,7 @@ async def extra_features(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def crosshair(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.bot_choose_func,
-                                           reply_markup=keyboards.markup_crosshair(client.locale))
+                                           reply_markup=keyboards.crosshair_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.crosshair_generate))
@@ -515,7 +515,7 @@ async def crosshair(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def generate_crosshair(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.error_wip,
-                                           reply_markup=keyboards.markup_crosshair(client.locale))
+                                           reply_markup=keyboards.crosshair_markup(client.locale))
 
 
 @log_exception_callback
@@ -541,7 +541,7 @@ async def decode_crosshair(client: BClient, callback_query: CallbackQuery, error
 
     await decode_input.reply(text)
     await callback_query.message.reply(client.locale.bot_choose_func,
-                                       reply_markup=keyboards.markup_crosshair(client.locale))
+                                       reply_markup=keyboards.crosshair_markup(client.locale))
 
 
 @log_exception_callback
@@ -551,7 +551,7 @@ async def send_exchange_rate(client: BClient, callback_query: CallbackQuery):
     prices = ExchangeRate.cached_data()
 
     await callback_query.edit_message_text(client.locale.exchangerate_text.format(*prices.values()),
-                                           reply_markup=keyboards.markup_extra(client.locale))
+                                           reply_markup=keyboards.extra_markup(client.locale))
 
 
 @log_exception_callback
@@ -569,7 +569,7 @@ async def send_valve_hq_time(client: BClient, callback_query: CallbackQuery):
 
     text = client.locale.valve_hqtime_text.format(CLOCKS[valve_hq_datetime.hour % 12], valve_hq_dt_formatted)
 
-    await callback_query.edit_message_text(text, reply_markup=keyboards.markup_extra(client.locale))
+    await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(client.locale))
 
 
 @log_exception_callback
@@ -580,7 +580,7 @@ async def send_dropcap_timer(client: BClient, callback_query: CallbackQuery):
 
     text = client.locale.game_dropcaptimer_text.format(*drop_cap_reset_timer())
 
-    await callback_query.edit_message_text(text, reply_markup=keyboards.markup_extra(client.locale))
+    await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(client.locale))
 
 
 @log_exception_callback
@@ -597,7 +597,7 @@ async def send_game_version(client: BClient, callback_query: CallbackQuery):
 
     text = server_stats_handlers.get_game_version_summary(data, lang_code)
 
-    await callback_query.edit_message_text(text, reply_markup=keyboards.markup_extra(client.locale),
+    await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(client.locale),
                                            disable_web_page_preview=True)
 
 
@@ -609,7 +609,7 @@ async def send_game_version(client: BClient, callback_query: CallbackQuery):
 @ignore_message_not_modified
 async def guns(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.gun_select_category,
-                                           reply_markup=keyboards.markup_guns(client.locale))
+                                           reply_markup=keyboards.guns_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_pistols))
@@ -623,14 +623,14 @@ async def pistols(client: BClient, callback_query: CallbackQuery, loop: bool = F
         choosed_gun = (await ask_callback_silently(client,
                                                    callback_query,
                                                    client.locale.gun_select_pistol,
-                                                   reply_markup=keyboards.markup_pistols(client.locale))).data
+                                                   reply_markup=keyboards.pistols_markup(client.locale))).data
 
     if choosed_gun in GUNS_INFO:
         return await send_gun_info(client, callback_query, pistols, GUNS_INFO[choosed_gun],
-                                   reply_markup=keyboards.markup_pistols(client.locale))
+                                   reply_markup=keyboards.pistols_markup(client.locale))
     if choosed_gun == LK.bot_back:
         return await back(client, callback_query)
-    return await unknown_request(client, callback_query, keyboards.markup_pistols(client.locale))
+    return await unknown_request(client, callback_query, keyboards.pistols_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_heavy))
@@ -644,14 +644,14 @@ async def heavy(client: BClient, callback_query: CallbackQuery, loop: bool = Fal
         choosed_gun = (await ask_callback_silently(client,
                                                    callback_query,
                                                    client.locale.gun_select_heavy,
-                                                   reply_markup=keyboards.markup_heavy(client.locale))).data
+                                                   reply_markup=keyboards.heavy_markup(client.locale))).data
 
     if choosed_gun in GUNS_INFO:
         return await send_gun_info(client, callback_query, heavy, GUNS_INFO[choosed_gun],
-                                   reply_markup=keyboards.markup_heavy(client.locale))
+                                   reply_markup=keyboards.heavy_markup(client.locale))
     if choosed_gun == LK.bot_back:
         return await back(client, callback_query)
-    return await unknown_request(client, callback_query, keyboards.markup_heavy(client.locale))
+    return await unknown_request(client, callback_query, keyboards.heavy_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_smgs))
@@ -665,14 +665,14 @@ async def smgs(client: BClient, callback_query: CallbackQuery, loop: bool = Fals
         choosed_gun = (await ask_callback_silently(client,
                                                    callback_query,
                                                    client.locale.gun_select_smg,
-                                                   reply_markup=keyboards.markup_smgs(client.locale))).data
+                                                   reply_markup=keyboards.smgs_markup(client.locale))).data
 
     if choosed_gun in GUNS_INFO:
         return await send_gun_info(client, callback_query, smgs, GUNS_INFO[choosed_gun],
-                                   reply_markup=keyboards.markup_smgs(client.locale))
+                                   reply_markup=keyboards.smgs_markup(client.locale))
     if choosed_gun == LK.bot_back:
         return await back(client, callback_query)
-    return await unknown_request(client, callback_query, keyboards.markup_smgs(client.locale))
+    return await unknown_request(client, callback_query, keyboards.smgs_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_rifles))
@@ -686,20 +686,20 @@ async def rifles(client: BClient, callback_query: CallbackQuery, loop: bool = Fa
         choosed_gun = (await ask_callback_silently(client,
                                                    callback_query,
                                                    client.locale.gun_select_rifle,
-                                                   reply_markup=keyboards.markup_rifles(client.locale))).data
+                                                   reply_markup=keyboards.rifles_markup(client.locale))).data
 
     if choosed_gun in GUNS_INFO:
         return await send_gun_info(client, callback_query, rifles, GUNS_INFO[choosed_gun],
-                                   reply_markup=keyboards.markup_rifles(client.locale))
+                                   reply_markup=keyboards.rifles_markup(client.locale))
     if choosed_gun == LK.bot_back:
         return await back(client, callback_query)
-    return await unknown_request(client, callback_query, keyboards.markup_rifles(client.locale))
+    return await unknown_request(client, callback_query, keyboards.rifles_markup(client.locale))
 
 
 @log_exception_callback
 @ignore_message_not_modified
 async def send_gun_info(client: BClient, callback_query: CallbackQuery, _from: callable,
-                        gun_info: GunInfo, reply_markup: TranslatableIKM):
+                        gun_info: GunInfo, reply_markup: ExtendedIKM):
     """Send archived data about guns"""
 
     gun_info.origin = client.locale.get(gun_info.origin)
@@ -810,7 +810,7 @@ async def something_went_wrong(client: BClient, callback_query: CallbackQuery):
 
 
 @ignore_message_not_modified
-async def unknown_request(client: BClient, callback_query: CallbackQuery, reply_markup: TranslatableIKM = None):
+async def unknown_request(client: BClient, callback_query: CallbackQuery, reply_markup: ExtendedIKM = None):
     if reply_markup is None:
         reply_markup = keyboards.main_markup(client.locale)
 
