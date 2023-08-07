@@ -492,8 +492,8 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
 
     telegraph_response = telegraph.create_page(stats_page_title,
                                                html_content=stats_page_text,
-                                               author_name="@incs2bot",
-                                               author_url="https://t.me/incs2bot")
+                                               author_name="@INCS2bot",
+                                               author_url="https://t.me/INCS2bot")
 
     share_btn = ExtendedIKB(client.locale.user_gamestats_share,
                             switch_inline_query=telegraph_response['url'])

@@ -6,7 +6,7 @@
     "For more information type /help."
   ],
   "bot_help_text": [
-    "[‎](https://telegra.ph/Detailed-description-03-07)ℹ️ This bot is developed by @INCS2. You can see the source code on [GitHub](https://github.com/aquaismissing/incs2bot).",
+    "[‎](https://telegra.ph/Detailed-description-03-07)ℹ️ This bot is developed by @INCS2. You can see the source code on [GitHub](https://github.com/aquaismissing/INCS2bot).",
     "",
     "telegra.ph/Detailed-description-03-07"
   ],
@@ -233,12 +233,12 @@
   "exchangerate_inline_title": "Price of one CS case key",
   "exchangerate_inline_description": [
     "Type any currency in this format:",
-    "@incs2bot price {currency}",
-    "(ex: @incs2bot price eur)"
+    "@INCS2bot price {currency}",
+    "(ex: @INCS2bot price eur)"
   ],
   "exchangerate_inline_text_default": [
-    "Use `@incs2bot price {currency}` pattern to get price",
-    "(for example, `@incs2bot price eur` or `@incs2bot price dollar`)"
+    "Use `@INCS2bot price {currency}` pattern to get price",
+    "(for example, `@INCS2bot price eur` or `@INCS2bot price dollar`)"
   ],
   "exchangerate_inline_title_selected": "Check key price in {}",
   "exchangerate_inline_description_selected": "1 CS key is {} {}",
@@ -422,7 +422,7 @@
   "user_gamestats_inline_title": "Your in-game statistics",
   "user_gamestats_page_title": "Statistics for #{}",
   "user_gamestats_text": [
-    "<p><code>Generated using <a href=\"https://t.me/incs2bot\">@incs2bot</a> ❤️</code></p>",
+    "<p><code>Generated using <a href=\"https://t.me/INCS2bot\">@INCS2bot</a> ❤️</code></p>",
     "<h3>📊 General in-game statistics:</h3>",
     "<ul><li>Playtime (matchmaking): <b>{:,}</b>h</li><li>Kills: <b>{:,}</b></li><li>Deaths: <b>{:,}</b></li><li>K/D ratio: <b>{}</b></li></ul><br>",
     "<ul><li>Matches played: <b>{:,}</b></li><li>Matches won: <b>{:,}</b></li><li>Win percentage: <b>{}</b>%</li><li>Rounds played: <b>{:,}</b></li><li>Pistol rounds won: <b>{:,}</b></li></ul>",
