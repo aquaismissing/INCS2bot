@@ -141,6 +141,20 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
     callback_query.continue_propagation()
 
 
+@bot.on_callback_query()
+async def keyboard_selection_indicator(_, callback_query: CallbackQuery):
+    """Try to render selection indicator on selectable markup."""
+
+    key = callback_query.data
+    if key == LK.bot_back:  # this button gets reused in a lot of markups, and we don't want to select it
+        key = ''  # just use empty key lol
+
+    for markup in keyboards.all_selectable_markups:
+        markup.select_button_by_key(key)
+
+    callback_query.continue_propagation()
+
+
 @bot.on_callback_query(ufilters.callback_data_equals('main'))
 @log_exception_callback
 async def main(client: BClient, callback_query: CallbackQuery, session_timeout: bool = False):
@@ -626,6 +640,7 @@ async def pistols(client: BClient, callback_query: CallbackQuery, loop: bool = F
                                                    reply_markup=keyboards.pistols_markup(client.locale))).data
 
     if choosed_gun in GUNS_INFO:
+        keyboards.pistols_markup.select_button_by_key(choosed_gun)
         return await send_gun_info(client, callback_query, pistols, GUNS_INFO[choosed_gun],
                                    reply_markup=keyboards.pistols_markup(client.locale))
     if choosed_gun == LK.bot_back:
@@ -647,6 +662,7 @@ async def heavy(client: BClient, callback_query: CallbackQuery, loop: bool = Fal
                                                    reply_markup=keyboards.heavy_markup(client.locale))).data
 
     if choosed_gun in GUNS_INFO:
+        keyboards.heavy_markup.select_button_by_key(choosed_gun)
         return await send_gun_info(client, callback_query, heavy, GUNS_INFO[choosed_gun],
                                    reply_markup=keyboards.heavy_markup(client.locale))
     if choosed_gun == LK.bot_back:
@@ -668,6 +684,7 @@ async def smgs(client: BClient, callback_query: CallbackQuery, loop: bool = Fals
                                                    reply_markup=keyboards.smgs_markup(client.locale))).data
 
     if choosed_gun in GUNS_INFO:
+        keyboards.smgs_markup.select_button_by_key(choosed_gun)
         return await send_gun_info(client, callback_query, smgs, GUNS_INFO[choosed_gun],
                                    reply_markup=keyboards.smgs_markup(client.locale))
     if choosed_gun == LK.bot_back:
@@ -689,6 +706,7 @@ async def rifles(client: BClient, callback_query: CallbackQuery, loop: bool = Fa
                                                    reply_markup=keyboards.rifles_markup(client.locale))).data
 
     if choosed_gun in GUNS_INFO:
+        keyboards.rifles_markup.select_button_by_key(choosed_gun)
         return await send_gun_info(client, callback_query, rifles, GUNS_INFO[choosed_gun],
                                    reply_markup=keyboards.rifles_markup(client.locale))
     if choosed_gun == LK.bot_back:

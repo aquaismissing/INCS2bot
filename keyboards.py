@@ -289,3 +289,7 @@ crosshair_markup = ExtendedIKM([
     [_generate_crosshair, _decode_crosshair],
     [back_button]
 ])
+
+
+all_selectable_markups = (ss_markup, extra_markup, dc_markup, dc_asia_markup, dc_eu_markup, dc_us_markup,
+                          pistols_markup, heavy_markup, smgs_markup, rifles_markup)
