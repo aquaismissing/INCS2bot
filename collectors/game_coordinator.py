@@ -5,6 +5,7 @@ gevent.monkey.patch_all()
 import asyncio
 import json
 import logging
+import platform
 import sys
 from threading import Thread
 import time
@@ -12,6 +13,10 @@ import time
 from csgo.client import CSGOClient
 from steam.client import SteamClient
 from steam.enums import EResult
+if platform.system() == 'Linux':
+    import uvloop
+
+    uvloop.install()
 
 # noinspection PyUnresolvedReferences
 import env

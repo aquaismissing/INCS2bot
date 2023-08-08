@@ -1,10 +1,15 @@
 import asyncio
 import json
 import logging
+import platform
 from threading import Thread
 import time
 
 from pyrogram import Client
+if platform.system() == 'Linux':
+    import uvloop
+
+    uvloop.install()
 
 # noinspection PyUnresolvedReferences
 import env

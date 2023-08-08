@@ -1,10 +1,15 @@
 import asyncio
 import logging
 import re
+import platform
 import time
 
 from pyrogram import Client
 import requests
+if platform.system() == 'Linux':
+    import uvloop
+
+    uvloop.install()
 
 # noinspection PyUnresolvedReferences
 import env
@@ -18,6 +23,7 @@ pattern = r"\[.*?\]"
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(message)s",
                     datefmt="%H:%M:%S — %d/%m/%Y")
+
 bot = Client(config.BOT_WM_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,

@@ -2,11 +2,16 @@ import asyncio
 import datetime as dt
 import json
 import logging
+import platform
 from threading import Thread
 import time
 
 import pandas as pd
 from pyrogram import Client
+if platform.system() == 'Linux':
+    import uvloop
+
+    uvloop.install()
 
 # noinspection PyUnresolvedReferences
 import env
@@ -21,6 +26,7 @@ HOUR = 60 * 60
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(threadName)s: %(message)s",
                     datefmt="%H:%M:%S — %d/%m/%Y")
+
 bot = Client(config.BOT_CORE_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,

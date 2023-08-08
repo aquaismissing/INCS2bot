@@ -2,6 +2,7 @@ import asyncio
 import datetime as dt
 import json
 import logging
+import platform
 from zoneinfo import ZoneInfo
 
 from babel.dates import format_datetime
@@ -13,6 +14,10 @@ from pyrogram.types import CallbackQuery, Message
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 from telegraph import Telegraph
+if platform.system() == 'Linux':
+    import uvloop
+
+    uvloop.install()
 
 import config
 from functions import datacenter_handlers, server_stats_handlers, ufilters
@@ -30,7 +35,6 @@ VALVE_TIMEZONE = ZoneInfo("America/Los_Angeles")
 GUNS_INFO = GunInfo.load()
 CLOCKS = ('🕛', '🕐', '🕑', '🕒', '🕓', '🕔',
           '🕕', '🕖', '🕗', '🕘', '🕙', '🕚')
-
 
 bot = BClient(config.BOT_NAME,
               api_id=config.API_ID,
