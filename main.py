@@ -95,6 +95,7 @@ async def sync_user_data(client: BClient, message: Message):
 
 
 @bot.on_message(filters.command(ALL_COMMANDS))
+@ignore_blocking
 async def any_command(client: BClient, message: Message):
     await client.send_chat_action(message.chat.id, ChatAction.TYPING)
 
@@ -389,6 +390,7 @@ async def profile_info(client: BClient, callback_query: CallbackQuery):
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.user_profileinfo_title))
 @log_exception_callback
+@ignore_blocking
 async def user_profile_info(client: BClient, callback_query: CallbackQuery):
     steam_url: Message = await ask_message_silently(client, callback_query, client.locale.steam_url_example)
 
@@ -454,6 +456,7 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.user_gamestats_button_title))
 @log_exception_callback
+@ignore_blocking
 @ignore_message_not_modified
 async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     steam_url: Message = await ask_message_silently(client, callback_query,

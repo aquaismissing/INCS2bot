@@ -1,11 +1,11 @@
 from pyrogram import Client
-from pyrogram.errors import MessageNotModified
+from pyrogram.errors import MessageNotModified, UserIsBlocked
 from pyrogram.types import CallbackQuery
 
 from utypes import BClient
 
 
-__all__ = ('came_from', 'ignore_message_not_modified')
+__all__ = ('came_from', 'ignore_blocking', 'ignore_message_not_modified')
 
 
 def came_from(f):
@@ -29,6 +29,18 @@ def ignore_message_not_modified(func):
         try:
             await func(client, callback_query, *args, **kwargs)
         except MessageNotModified:
+            pass
+
+    return inner
+
+
+def ignore_blocking(func):
+    """Decorator to ignore annoying `pyrogram.errors.UserIsBlocked`."""
+
+    async def inner(client: Client, callback_query: CallbackQuery, *args, **kwargs):
+        try:
+            await func(client, callback_query, *args, **kwargs)
+        except UserIsBlocked:
             pass
 
     return inner
