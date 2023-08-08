@@ -37,17 +37,17 @@ class GunInfo:
     reload_clip_ready: float
     reload_fire_ready: float
 
-    unarmored_damage_head: int
     armored_damage_head: int
+    unarmored_damage_head: int
 
-    unarmored_damage_chest_arms: int
     armored_damage_chest_arms: int
+    unarmored_damage_chest_arms: int
 
-    unarmored_damage_stomach: int
     armored_damage_stomach: int
+    unarmored_damage_stomach: int
 
-    unarmored_damage_legs: int
     armored_damage_legs: int
+    unarmored_damage_legs: int
     
     def as_dict(self):
         return asdict(self)
