@@ -71,7 +71,7 @@ async def sync_user_data(client: BClient, message: Message):
     user = message.from_user
     await log(client, message)
 
-    client.clear_timeout_sessions()
+    # client.clear_timeout_sessions()
     if user.id not in client.sessions:
         if not user_data["UserID"].isin([user.id]).any():
             new_data = pd.DataFrame(
@@ -119,7 +119,7 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
     user = callback_query.from_user
     await log_callback(client, callback_query)
 
-    client.clear_timeout_sessions()
+    # client.clear_timeout_sessions()
     if user.id not in client.sessions:
         if not user_data["UserID"].isin([user.id]).any():
             new_data = pd.DataFrame(
@@ -644,6 +644,7 @@ async def pistols(client: BClient, callback_query: CallbackQuery, loop: bool = F
     await log_callback(client, choosed_gun)
 
     choosed_gun = choosed_gun.data
+    client.current_session = client.sessions[callback_query.from_user.id]
 
     if choosed_gun in GUNS_INFO:
         keyboards.pistols_markup.select_button_by_key(choosed_gun)
@@ -670,6 +671,7 @@ async def heavy(client: BClient, callback_query: CallbackQuery, loop: bool = Fal
     await log_callback(client, choosed_gun)
 
     choosed_gun = choosed_gun.data
+    client.current_session = client.sessions[callback_query.from_user.id]
 
     if choosed_gun in GUNS_INFO:
         keyboards.heavy_markup.select_button_by_key(choosed_gun)
@@ -696,6 +698,7 @@ async def smgs(client: BClient, callback_query: CallbackQuery, loop: bool = Fals
     await log_callback(client, choosed_gun)
 
     choosed_gun = choosed_gun.data
+    client.current_session = client.sessions[callback_query.from_user.id]
 
     if choosed_gun in GUNS_INFO:
         keyboards.smgs_markup.select_button_by_key(choosed_gun)
@@ -720,6 +723,7 @@ async def rifles(client: BClient, callback_query: CallbackQuery, loop: bool = Fa
                                                   reply_markup=keyboards.rifles_markup(client.locale))
 
     await log_callback(client, choosed_gun)
+    client.current_session = client.sessions[callback_query.from_user.id]
 
     choosed_gun = choosed_gun.data
 
