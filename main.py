@@ -71,7 +71,7 @@ async def sync_user_data(client: BClient, message: Message):
     user = message.from_user
     await log(client, message)
 
-    # client.clear_timeout_sessions()
+    client.clear_timeout_sessions()
     if user.id not in client.sessions:
         if not user_data["UserID"].isin([user.id]).any():
             new_data = pd.DataFrame(
@@ -119,7 +119,7 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
     user = callback_query.from_user
     await log_callback(client, callback_query)
 
-    # client.clear_timeout_sessions()
+    client.clear_timeout_sessions()
     if user.id not in client.sessions:
         if not user_data["UserID"].isin([user.id]).any():
             new_data = pd.DataFrame(
