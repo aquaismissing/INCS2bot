@@ -35,7 +35,7 @@ def log_exception_inline(func):
         except Exception as e:
             logging.exception('Caught exception!')
             await client.send_message(config.LOGCHANNEL, f'❗️{e.__class__.__name__}: {e}\n'
-                                                         f'\n\n'
+                                                         f'\n'
                                                          f'↩️ inline_query',
                                       disable_notification=True)
 
@@ -103,7 +103,7 @@ async def share_inline(client: BClient, inline_query: InlineQuery):
     r = InlineQueryResultArticle(client.locale.user_gamestats_inline_title,
                                  InputTextMessageContent(inline_query.query),
                                  description=inline_query.query)
-    await inline_query.answer([r], cache_time=5)
+    await inline_query.answer([r], cache_time=10)
 
 
 @BClient.on_inline_query(filters.regex("price"))
@@ -121,7 +121,7 @@ async def inline_exchange_rate(client: BClient, inline_query: InlineQuery):
                 description=client.locale.exchangerate_inline_description,
             )
         ]
-        return await inline_query.answer(result, cache_time=5)
+        return await inline_query.answer(result, cache_time=10)
 
     results = []
 
@@ -145,18 +145,19 @@ async def inline_exchange_rate(client: BClient, inline_query: InlineQuery):
         if any(query in tag for tag in v):
             currencies.append(k)
 
-    for currency in currencies:
+    for i, currency in enumerate(currencies):
         value = data[currency.upper()]
         symbol = ExchangeRate.currencies_symbols[currency.upper()]
         results.append(
             InlineQueryResultArticle(
                 client.locale.exchangerate_inline_title_selected.format(symbol),
                 InputTextMessageContent(client.locale.exchangerate_inline_text_selected.format(value, symbol)),
+                f'{i}',
                 description=client.locale.exchangerate_inline_description_selected.format(value, symbol)
             )
         )
 
-    await inline_query.answer(results, cache_time=5)
+    await inline_query.answer(results, cache_time=10)
 
 
 # noinspection PyTypeChecker
@@ -235,11 +236,12 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
     try:
         query = inline_query.query.split()[1]
     except IndexError:
-        for _dc in dcs:
+        for i, _dc in enumerate(dcs):
             resulted_articles.append(
                 InlineQueryResultArticle(
                     _dc.title,
                     InputTextMessageContent(_dc.summary_from(client.session_lang_code)),
+                    f'{i}',
                     description=client.locale.dc_status_inline_description,
                     reply_markup=inline_btn,
                     thumb_url=_dc.thumbnail
@@ -248,6 +250,7 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
         return await inline_query.answer(resulted_articles, cache_time=5)
 
     for tag in get_triggered_tags(query):
+        i = 0
         for _dc in dcs:
             if tag in _dc.tags and _dc not in resulted_dcs:
                 resulted_dcs.append(_dc)
@@ -255,13 +258,15 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
                     InlineQueryResultArticle(
                         _dc.title,
                         InputTextMessageContent(_dc.summary_from(client.session_lang_code)),
+                        f'{i}',
                         description=client.locale.dc_status_inline_description,
                         reply_markup=inline_btn,
                         thumb_url=_dc.thumbnail
                     )
                 )
+                i += 1
 
-    await inline_query.answer(resulted_articles, cache_time=5)
+    await inline_query.answer(resulted_articles, cache_time=10)
 
 
 @BClient.on_inline_query()
@@ -289,29 +294,34 @@ async def default_inline(client: BClient, inline_query: InlineQuery):
 
     server_status = InlineQueryResultArticle(client.locale.game_status_inline_title,
                                              InputTextMessageContent(server_status_text),
+                                             '0',
                                              description=client.locale.game_status_inline_description,
                                              reply_markup=inline_btn,
                                              thumb_url="https://telegra.ph/file/8b640b85f6d62f8ed2900.jpg")
     matchmaking_stats = InlineQueryResultArticle(client.locale.stats_matchmaking_inline_title,
                                                  InputTextMessageContent(matchmaking_stats_text),
+                                                 '1',
                                                  description=client.locale.stats_matchmaking_inline_description,
                                                  reply_markup=inline_btn,
                                                  thumb_url="https://telegra.ph/file/57ba2b279c53d69d72481.jpg")
     valve_hq_time = InlineQueryResultArticle(client.locale.valve_hqtime_inline_title,
                                              InputTextMessageContent(valve_hq_time_text),
+                                             '2',
                                              description=client.locale.valve_hqtime_inline_description,
                                              reply_markup=inline_btn,
                                              thumb_url="https://telegra.ph/file/24b05cea99de936fd12bf.jpg")
     drop_cap_reset = InlineQueryResultArticle(client.locale.game_dropcaptimer_inline_title,
                                               InputTextMessageContent(drop_cap_reset_timer_text),
+                                              '3',
                                               description=client.locale.game_dropcaptimer_inline_description,
                                               reply_markup=inline_btn,
                                               thumb_url="https://telegra.ph/file/6948255408689d2f6a472.jpg")
     game_version = InlineQueryResultArticle(client.locale.game_version_inline_title,
                                             InputTextMessageContent(game_version_text, disable_web_page_preview=True),
+                                            '4',
                                             description=client.locale.game_version_inline_description,
                                             reply_markup=inline_btn,
                                             thumb_url="https://telegra.ph/file/82d8df1e9f5140da70232.jpg")
 
     results = [server_status, matchmaking_stats, valve_hq_time, drop_cap_reset, game_version]
-    await inline_query.answer(results, cache_time=5)
+    await inline_query.answer(results, cache_time=10)
