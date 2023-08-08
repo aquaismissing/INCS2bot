@@ -242,8 +242,8 @@
         "(например, `@INCS2bot price rub` или `@INCS2bot price рубль`)"
     ],
     "exchangerate_inline_title_selected": "Посмотреть стоимость ключа в {}",
-    "exchangerate_inline_description_selected": "1 ключ CS стоит {} {}",
-    "exchangerate_inline_text_selected": "1 ключ CS стоит {} {}",
+    "exchangerate_inline_description_selected": "1x Ключ от кейса в Counter-Strike стоит {} {}",
+    "exchangerate_inline_text_selected": "1x Ключ от кейса в Counter-Strike стоит {} {}",
     "exchangerate_inline_title_notfound": "Ничего не найдено!",
     "exchangerate_inline_description_notfound": "Нажмите сюда, чтобы отправить все доступные валюты",
     "game_status_button_title": "Состояние серверов",
