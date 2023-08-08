@@ -71,7 +71,6 @@ class ExtendedIKM(InlineKeyboardMarkup):
             for button in line:
                 if isinstance(button, ExtendedIKB):
                     if button.text_key == key or button.callback_data == key:
-                        print(f'SELECTED {button}')
                         button.selected = True
                     else:
                         button.selected = False  # only one button at a time can be selected
