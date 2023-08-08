@@ -52,7 +52,10 @@ class BClient(Client):
     def register_session(self, user: User):
         self._sessions[user.id] = UserSession(user)
 
-    def clear_timeout_sessions(self, *, hours: int = 1, minutes: int = 0, seconds: int = 0):
+    def clear_timeout_sessions(self, *, hours: int = 0, minutes: int = 0, seconds: int = 0):
+        if hours == minutes == seconds == 0:
+            hours = 1
+
         now = dt.datetime.now()
         timeout_duration = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
 

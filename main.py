@@ -2,7 +2,6 @@ import asyncio
 import datetime as dt
 import json
 import logging
-import platform
 from zoneinfo import ZoneInfo
 
 from babel.dates import format_datetime
@@ -14,10 +13,6 @@ from pyrogram.types import CallbackQuery, Message
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 from telegraph import Telegraph
-if platform.system() == 'Linux':
-    import uvloop
-
-    uvloop.install()
 
 import config
 from functions import datacenter_handlers, server_stats_handlers, ufilters
@@ -48,6 +43,7 @@ logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(threadName)s: %(message)s",
                     datefmt="%H:%M:%S — %d/%m/%Y")
 
+user_data = pd.read_csv(config.USER_DB_FILE_PATH)
 
 # cat: Main
 
@@ -75,23 +71,23 @@ async def sync_user_data(client: BClient, message: Message):
     user = message.from_user
     await log(client, message)
 
-    data = pd.read_csv(config.USER_DB_FILE_PATH)
-    if not data["UserID"].isin([user.id]).any():
-        new_data = pd.DataFrame(
-            [
-                [
-                    user.first_name,
-                    user.id,
-                    user.language_code,
-                ]
-            ],
-            columns=["Name", "UserID", "Language"],
-        )
-        pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
-
-    client.clear_timeout_sessions()
+    # client.clear_timeout_sessions()
     if user.id not in client.sessions:
-        client.register_session(user)
+        if not user_data["UserID"].isin([user.id]).any():
+            new_data = pd.DataFrame(
+                [
+                    [
+                        user.first_name,
+                        user.id,
+                        user.language_code,
+                    ]
+                ],
+                columns=["Name", "UserID", "Language"],
+            )
+            pd.concat([user_data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
+
+        if user.id not in client.sessions:
+            client.register_session(user)
 
     client.current_session = client.sessions[user.id]
 
@@ -123,22 +119,21 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
     user = callback_query.from_user
     await log_callback(client, callback_query)
 
-    data = pd.read_csv(config.USER_DB_FILE_PATH)
-    if not data["UserID"].isin([user.id]).any():
-        new_data = pd.DataFrame(
-            [
-                [
-                    user.first_name,
-                    user.id,
-                    user.language_code,
-                ]
-            ],
-            columns=["Name", "UserID", "Language"],
-        )
-        pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
-
-    client.clear_timeout_sessions(hours=12)
+    # client.clear_timeout_sessions()
     if user.id not in client.sessions:
+        if not user_data["UserID"].isin([user.id]).any():
+            new_data = pd.DataFrame(
+                [
+                    [
+                        user.first_name,
+                        user.id,
+                        user.language_code,
+                    ]
+                ],
+                columns=["Name", "UserID", "Language"],
+            )
+            pd.concat([user_data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
+
         client.register_session(user)
 
     client.current_session = client.sessions[user.id]
