@@ -102,7 +102,7 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
         return await reply_to.reply_video(video, quote=should_reply, caption=caption)
 
 
-@Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
+@Client.on_message(filters.linked_channel & filters.chat(config.INCS2CHAT))
 async def cs_l10n_update(_, message: Message):
     if (message.sender_chat
             and message.sender_chat.id == config.INCS2CHANNEL
