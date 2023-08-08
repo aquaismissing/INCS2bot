@@ -56,7 +56,7 @@ async def warn(client: Client, message: Message):
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("echo"))
-async def echo(client: Client, message: Message):  # todo: echo attachments and replies
+async def echo(client: Client, message: Message):  # todo: more attachments?
     chat = await client.get_chat(config.INCS2CHAT)
     admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
     admins = {admin.user.id async for admin in admins}
@@ -65,14 +65,41 @@ async def echo(client: Client, message: Message):  # todo: echo attachments and 
     if message.from_user.id not in admins:
         return
 
-    text = message.text.removeprefix('/echo').strip()
-    if not text:
-        msg = await message.reply("Пустой текст.")
-        await asyncio.sleep(5)
-        await msg.delete()
-        return
+    reply_to = message
+    should_reply = False
+    if message.reply_to_message:
+        reply_to = message.reply_to_message
+        should_reply = True
 
-    await message.reply(text, quote=False)
+    if message.animation:
+        animation = message.animation.file_id
+        caption = message.caption.removeprefix('/echo').strip()
+        return await reply_to.reply_animation(animation, quote=should_reply, caption=caption)
+
+    if message.audio:
+        audio = message.audio.file_id
+        caption = message.caption.removeprefix('/echo').strip()
+        return await reply_to.reply_audio(audio, quote=should_reply, caption=caption)
+
+    if message.photo:
+        photo = message.photo.file_id
+        caption = message.caption.removeprefix('/echo').strip()
+        return await reply_to.reply_photo(photo, quote=should_reply, caption=caption)
+
+    if message.text:
+        text = message.text.removeprefix('/echo').strip()
+        if not text:
+            msg = await message.reply("Пустой текст.", quote=False)
+            await asyncio.sleep(5)
+            await msg.delete()
+            return
+
+        return await reply_to.reply(text, quote=should_reply)
+
+    if message.video:
+        video = message.video.file_id
+        caption = message.caption.removeprefix('/echo').strip()
+        return await reply_to.reply_video(video, quote=should_reply, caption=caption)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
