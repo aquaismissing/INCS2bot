@@ -54,14 +54,6 @@ async def _is_user_stats_page_func(_, __, query: InlineQuery):
 is_user_stats_page_filter = filters.create(_is_user_stats_page_func)
 
 
-async def _triggers_any_dc_tag_func(_, __, query: InlineQuery):  # todo: probably useless now
-    data = query.query.strip().lower()
-    return data and any(t.startswith(data) for tag in TAGS.dcs_to_set() for t in tag.split())
-
-
-triggers_any_dc_tag_filter = filters.create(_triggers_any_dc_tag_func)
-
-
 def get_triggered_tags(query: str):
     data = query.strip().lower()
     for tags in TAGS.to_dict().values():

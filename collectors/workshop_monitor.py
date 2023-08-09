@@ -31,13 +31,14 @@ bot = Client(config.BOT_WM_MODULE_NAME,
              no_updates=True)
 
 
-def _get_initial_ids():
+def get_initial_ids():
     try:
         initial_data = requests.get(workshop_url, timeout=15).json()["response"]["publishedfiledetails"]
         return [_map["publishedfileid"] for _map in initial_data]
     except Exception:
         logging.exception(f"Caught an exception at initial run!")
         time.sleep(45)
+        return get_initial_ids()
 
 
 def _get_rerun_data():
@@ -72,9 +73,8 @@ def _format_updated_maps_data(updated_maps):
 
 async def main():  # todo: rewrite to use bot task scheduler
     logging.info("Starting initial run...")
-    initial_ids = []
-    while not initial_ids:  # пока не наберётся начальный набор данных
-        initial_ids = _get_initial_ids()
+
+    initial_ids = get_initial_ids()
 
     while True:  # главная часть
         logging.info("Rerunning...")
@@ -98,16 +98,6 @@ async def main():  # todo: rewrite to use bot task scheduler
         time.sleep(45)
 
 
-async def send(chat_list, text):
-    if not bot.is_connected:
-        await asyncio.sleep(4)
-
-    for chat_id in chat_list:
-        msg = await bot.send_message(chat_id, text)
-        if chat_id == config.INCS2CHAT:
-            await msg.pin(disable_notification=True)
-
-
 async def send_alert(text):
     logging.info("Maps got updated! Sending alert...")
 
@@ -116,8 +106,15 @@ async def send_alert(text):
     else:
         chat_list = [config.AQ]
 
-    await send(chat_list, text)
+    for chat_id in chat_list:
+        msg = await bot.send_message(chat_id, text)
+        if chat_id == config.INCS2CHAT:
+            await msg.pin(disable_notification=True)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        bot.start()
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        bot.stop()

@@ -186,7 +186,7 @@ def online_players():
 
 def main():
     try:
-        logging.error('Logging in...')
+        logging.info('Logging in...')
         result = client.login(username=config.STEAM_USERNAME, password=config.STEAM_PASS)
 
         if result != EResult.OK:
