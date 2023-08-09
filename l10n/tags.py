@@ -27,7 +27,6 @@ class Tags(NamedTuple):
        can be accessed as object attributes or by string keys using
        get(key) method. Can be converted to dict using to_dict() method."""
 
-    dc: list  # dc, data center, data centers
     dc_africa: list  # South Africa
     dc_australia: list  # Australia
     dc_southamerica: list  # South America
