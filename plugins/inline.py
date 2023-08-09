@@ -75,7 +75,6 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
     user = inline_query.from_user
     await log_inline(client, inline_query)
 
-    client.clear_timeout_sessions()
     if user.id not in client.sessions:
         data = pd.read_csv(config.USER_DB_FILE_PATH)
         if not data["UserID"].isin([user.id]).any():

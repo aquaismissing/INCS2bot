@@ -4,6 +4,7 @@ import json
 import logging
 from zoneinfo import ZoneInfo
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_datetime
 import pandas as pd
 from pyrogram import filters
@@ -73,7 +74,6 @@ async def sync_user_data(client: BClient, message: Message):
     user = message.from_user
     await log(client, message)
 
-    # client.clear_timeout_sessions()
     if user.id not in client.sessions:
         if not user_data["UserID"].isin([user.id]).any():
             new_data = pd.DataFrame(
@@ -103,7 +103,6 @@ async def any_command(client: BClient, message: Message):
     if message.chat.type != ChatType.PRIVATE:
         user = message.from_user
 
-        client.clear_timeout_sessions()
         if user.id not in client.sessions:
             client.register_session(user, force_lang=FORCE_LANG)
 
@@ -120,7 +119,6 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
     user = callback_query.from_user
     await log_callback(client, callback_query)
 
-    # client.clear_timeout_sessions()
     if user.id not in client.sessions:
         if not user_data["UserID"].isin([user.id]).any():
             new_data = pd.DataFrame(
@@ -878,8 +876,15 @@ async def handle_back_after_reload(client: BClient, callback_query: CallbackQuer
     return await main(client, callback_query, session_timeout=True)
 
 
-if __name__ == '__main__':
+def main():
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=10)
     try:
+        scheduler.start()
         bot.run()
     except TypeError:  # catching TypeError because Pyrogram propogates it at stop for some reason
         logging.info('Shutting down the bot...')
+
+
+if __name__ == '__main__':
+    main()
