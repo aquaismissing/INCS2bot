@@ -15,7 +15,7 @@ Here you can see translations' progress and contributors' list:
 |  ru  | Russian  | ██████████ 100% |           built in           |              |
 |  fa  | Persian  | ████████▒▒ 80%  |       tags not filled        |   [@A460N]   |
 |  tr  | Turkish  | ████████▒▒ 80%  |       tags not filled        |  [@ITMiroN]  |
-|  uz  | Uzbek    | ██████████ 100% | finished, currently not used | [@d1az1337]  |
+|  uz  | Uzbek    | █████████▒ 90%  |   user_gamestats_text left   | [@d1az1337]  |
 
 ## Contributing 
 
