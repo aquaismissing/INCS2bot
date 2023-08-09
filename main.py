@@ -145,8 +145,6 @@ async def keyboard_selection_indicator(_, callback_query: CallbackQuery):
     """Try to render selection indicator on selectable markup."""
 
     key = callback_query.data
-    if key == LK.bot_back:  # this button gets reused in a lot of markups, and we don't want to select it
-        key = ''  # just use empty key lol
 
     for markup in keyboards.all_selectable_markups:
         markup.select_button_by_key(key)

@@ -22,11 +22,14 @@ class ExtendedIKB(InlineKeyboardButton):
                  switch_inline_query_current_chat: str = None,
                  callback_game: CallbackGame = None,
                  *,
-                 translatable: bool = True):
+                 translatable: bool = True,
+                 selectable: bool = True):
 
         super().__init__(text, callback_data, url, web_app, login_url, user_id,
                          switch_inline_query, switch_inline_query_current_chat, callback_game)
         self.translatable = translatable
+        self.selectable = selectable
+
         self.text_key = self.text
         self.url_key = None
         self.selected = False
@@ -41,7 +44,7 @@ class ExtendedIKB(InlineKeyboardButton):
         else:
             self.text = self.text_key
 
-        if self.selected:
+        if self.selectable and self.selected:
             self.text = f'{self.SELECTION_INDICATOR} {self.text}'
 
     def localed(self, locale: Locale):
@@ -69,7 +72,7 @@ class ExtendedIKM(InlineKeyboardMarkup):
     def select_button_by_key(self, key: str):
         for line in self.inline_keyboard:
             for button in line:
-                if isinstance(button, ExtendedIKB):
+                if isinstance(button, ExtendedIKB) and button.selectable:
                     if button.text_key == key or button.callback_data == key:
                         button.selected = True
                     else:
@@ -80,7 +83,7 @@ class ExtendedIKM(InlineKeyboardMarkup):
 markup_del = ReplyKeyboardRemove(False)
 
 # Back button
-back_button = ExtendedIKB(LK.bot_back, LK.bot_back)
+back_button = ExtendedIKB(LK.bot_back, LK.bot_back, selectable=False)
 
 # Channel link for inline messages
 inline_button_channel_link = ExtendedIKB(LK.bot_author_text, url=LK.bot_author_link)
