@@ -1,11 +1,10 @@
-import asyncio
 import datetime as dt
 import json
 import logging
 import platform
-from threading import Thread
 import time
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
 from pyrogram import Client
 if platform.system() == 'Linux':
@@ -21,12 +20,13 @@ from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServersData,
                     State, get_monthly_unique_players)
 
-HOUR = 60 * 60
+execution_start_dt = dt.datetime.now()
 
 logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s | %(threadName)s: %(message)s",
+                    format="%(asctime)s | %(message)s",
                     datefmt="%H:%M:%S — %d/%m/%Y")
 
+scheduler = AsyncIOScheduler()
 bot = Client(config.BOT_CORE_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,
@@ -100,121 +100,82 @@ def remap_dc_info(info: dict):
     return remapped_info
 
 
-def info_updater_prepare():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+@scheduler.scheduled_job('interval', seconds=40)
+async def update_cache_info():
+    try:
+        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache = json.load(f)
 
-    loop.run_until_complete(info_updater())
-    loop.close()
+        overall_data = GameServersData.request()
 
+        for key, value in overall_data.asdict().items():
+            if key == 'datacenters':
+                continue
+            if isinstance(value, State):
+                value = value.literal
+            cache[key] = value
 
-async def info_updater():
-    while True:
-        logging.info("New session started..")
+        cache['datacenters'] = remap_dc_info(overall_data.datacenters)
 
-        try:
-            with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-                cache = json.load(f)
+        if cache['online_players'] > cache.get('player_alltime_peak', 0):
+            cache['player_alltime_peak'] = cache['online_players']
+            await send_alert('online_players', cache['player_alltime_peak'])
 
-            overall_data = GameServersData.request()
+        df = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
+        end_date = dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        start_date = (dt.datetime.utcnow() - dt.timedelta(days=1)).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+        mask = (df["DateTime"] > start_date) & (df["DateTime"] <= end_date)
+        player_24h_peak = int(df.loc[mask]["Players"].max())
 
-            for key, value in overall_data.asdict().items():
-                if key == 'datacenters':
-                    continue
-                if isinstance(value, State):
-                    value = value.literal
-                cache[key] = value
+        if player_24h_peak != cache.get("player_24h_peak", 0):
+            cache['player_24h_peak'] = player_24h_peak
 
-            cache['datacenters'] = remap_dc_info(overall_data.datacenters)
-
-            if cache['online_players'] > cache.get('player_alltime_peak', 0):
-                cache['player_alltime_peak'] = cache['online_players']
-                await send_alert('online_players', cache['player_alltime_peak'])
-
-            df = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
-            end_date = dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-            start_date = (dt.datetime.utcnow() - dt.timedelta(days=1)).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-            mask = (df["DateTime"] > start_date) & (df["DateTime"] <= end_date)
-            player_24h_peak = int(df.loc[mask]["Players"].max())
-
-            if player_24h_peak != cache.get("player_24h_peak", 0):
-                cache['player_24h_peak'] = player_24h_peak
-
-            with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(cache, f, indent=4)
-
-            time.sleep(40)
-        except Exception:
-            logging.exception("Caught exception in the main thread!")
-            time.sleep(40)
+        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(cache, f, indent=4)
+    except Exception:
+        logging.exception("Caught exception in the main thread!")
 
 
-def unique_monthly_prepare():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    loop.run_until_complete(unique_monthly())
-    loop.close()
-
-
+@scheduler.scheduled_job('cron', hour=execution_start_dt.hour, minute=execution_start_dt.minute + 1)
 async def unique_monthly():
-    while True:
-        logging.info("Checking monthly unique players..")
+    try:
+        data = get_monthly_unique_players()
 
-        try:
-            data = get_monthly_unique_players()
+        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache = json.load(f)
 
-            with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-                cache = json.load(f)
+        if data != cache.get("monthly_unique_players"):
+            cache['monthly_unique_players'] = data
+            await send_alert("monthly_unique_players",
+                             (cache["monthly_unique_players"], data))
 
-            if data != cache.get("monthly_unique_players"):
-                cache['monthly_unique_players'] = data
-                await send_alert("monthly_unique_players",
-                                 (cache["monthly_unique_players"], data))
-
-            with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(cache, f, indent=4)
-        except Exception:
-            logging.exception("Caught exception while gathering monthly players!")
-            time.sleep(45)
-            continue
-
-        time.sleep(24 * HOUR)
+        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(cache, f, indent=4)
+    except Exception:
+        logging.exception("Caught exception while gathering monthly players!")
+        time.sleep(45)
+        return await unique_monthly()
 
 
-def check_currency():
-    while True:
-        logging.info("Checking key price..")
+@scheduler.scheduled_job('cron', hour=execution_start_dt.hour, minute=execution_start_dt.minute + 1)
+async def check_currency():
+    try:
+        new_prices = ExchangeRate.request()
 
-        try:
-            new_prices = ExchangeRate.request()
+        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache = json.load(f)
 
-            with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-                cache = json.load(f)
+        if new_prices != cache.get('key_price'):
+            cache['key_price'] = new_prices
 
-            if new_prices != cache.get('key_price'):
-                cache['key_price'] = new_prices
-
-            with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(cache, f, indent=4)
-        except Exception:
-            logging.exception("Caught exception while gathering key price!")
-            time.sleep(45)
-            continue
-
-        time.sleep(24 * HOUR)
-
-
-async def send(chat_list, text):
-    if not bot.is_connected:
-        await asyncio.sleep(4)
-
-    for chat_id in chat_list:
-        msg = await bot.send_message(chat_id, text)
-        if chat_id == config.INCS2CHAT:
-            await msg.pin(disable_notification=True)
+        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(cache, f, indent=4)
+    except Exception:
+        logging.exception("Caught exception while gathering key price!")
+        time.sleep(45)
+        return await check_currency()
 
 
 async def send_alert(key, new_value):
@@ -233,19 +194,18 @@ async def send_alert(key, new_value):
     else:
         chat_list = [config.AQ]
 
-    await send(chat_list, text)
+    for chat_id in chat_list:
+        msg = await bot.send_message(chat_id, text)
+        if chat_id == config.INCS2CHAT:
+            await msg.pin(disable_notification=True)
 
 
-def main():  # todo: rewrite to use bot task scheduler
-    t1 = Thread(target=info_updater_prepare)
-    t2 = Thread(target=unique_monthly_prepare)
-    t3 = Thread(target=check_currency)
-
-    t1.start()
-    t2.start()
-    t3.start()
-
-    bot.run()
+def main():
+    try:
+        scheduler.start()
+        bot.run()
+    except TypeError:  # catching TypeError because Pyrogram propogates it at stop for some reason
+        logging.info('Shutting down the bot...')
 
 
 if __name__ == "__main__":

@@ -1,10 +1,8 @@
-import asyncio
 import json
 import logging
 import platform
-from threading import Thread
-import time
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pyrogram import Client
 if platform.system() == 'Linux':
     import uvloop
@@ -17,6 +15,11 @@ import config
 from functions import locale
 
 loc = locale('ru')
+
+MONITORING_IDS = ('sdk_build_id', 'ds_build_id', 'valve_ds_changenumber',
+                  'cs2_app_changenumber', 'cs2_server_changenumber',
+                  'dprp_build_id', 'dpr_build_id', 'public_build_id')
+
 available_alerts = {'public_build_id': loc.notifs_build_public,
                     'dpr_build_id': loc.notifs_build_dpr,
                     'dprp_build_id': loc.notifs_build_dprp,
@@ -27,90 +30,42 @@ available_alerts = {'public_build_id': loc.notifs_build_public,
                     'cs2_app_changenumber': loc.notifs_build_cs2_client,
                     'cs2_server_changenumber': loc.notifs_build_cs2_server}
 
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s | %(message)s",
+                    datefmt="%H:%M:%S — %d/%m/%Y")
+
+scheduler = AsyncIOScheduler()
 bot = Client(config.BOT_GC_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,
              bot_token=config.BOT_TOKEN,
              no_updates=True)
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s | %(threadName)s | GC alerter: %(message)s",
-                    datefmt="%H:%M:%S — %d/%m/%Y")
 
-
-def scan_prepare():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    loop.run_until_complete(scan_for_gc_update())
-    loop.close()
-
-
+@scheduler.scheduled_job('interval', seconds=45)
 async def scan_for_gc_update():
-    while True:
-        logging.info('Syncing game build IDs with GC...')
-        try:
-            with open(config.GC_PREV_CACHE_FILE_PATH, encoding='utf-8') as f:
-                prev_cache = json.load(f)
-            with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-                cache = json.load(f)
+    try:
+        with open(config.GC_PREV_CACHE_FILE_PATH, encoding='utf-8') as f:
+            prev_cache = json.load(f)
+        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache = json.load(f)
 
-            if prev_cache.get('sdk_build_id') != cache['sdk_build_id']:
-                prev_cache['sdk_build_id'] = cache['sdk_build_id']
-                await send_alert('sdk_build_id', cache['sdk_build_id'])
+        for _id in MONITORING_IDS:
+            if prev_cache.get(_id) != cache[_id]:
+                prev_cache[_id] = cache[_id]
+                if _id == 'dpr_build_id':
+                    if cache['dpr_build_id'] == cache['public_build_id']:
+                        await send_alert('dpr_build_sync_id', cache['dpr_build_id'])
+                    else:
+                        await send_alert('dpr_build_id', cache['dpr_build_id'])
+                    continue
 
-            if prev_cache.get('ds_build_id') != cache['ds_build_id']:
-                prev_cache['ds_build_id'] = cache['ds_build_id']
-                await send_alert('ds_build_id', cache['ds_build_id'])
+                await send_alert(_id, cache[_id])
 
-            if prev_cache.get('valve_ds_changenumber') != cache['valve_ds_changenumber']:
-                prev_cache['valve_ds_changenumber'] = cache['valve_ds_changenumber']
-                await send_alert('valve_ds_changenumber', cache['valve_ds_changenumber'])
-
-            if prev_cache.get('cs2_app_changenumber') != cache['cs2_app_changenumber']:
-                prev_cache['cs2_app_changenumber'] = cache['cs2_app_changenumber']
-                await send_alert('cs2_app_changenumber', cache['cs2_app_changenumber'])
-
-            if prev_cache.get('cs2_server_changenumber') != cache['cs2_server_changenumber']:
-                prev_cache['cs2_server_changenumber'] = cache['cs2_server_changenumber']
-                await send_alert('cs2_server_changenumber', cache['cs2_server_changenumber'])
-
-            if prev_cache.get('dprp_build_id') != cache['dprp_build_id']:
-                prev_cache['dprp_build_id'] = cache['dprp_build_id']
-                await send_alert('dprp_build_id', cache['dprp_build_id'])
-
-            if prev_cache.get('dpr_build_id') != cache['dpr_build_id']:
-                prev_cache['dpr_build_id'] = cache['dpr_build_id']
-                if cache['dpr_build_id'] == cache['public_build_id']:
-                    await send_alert('dpr_build_sync_id', cache['dpr_build_id'])
-                else:
-                    await send_alert('dpr_build_id', cache['dpr_build_id'])
-
-            if prev_cache.get('public_build_id') != cache['public_build_id']:
-                prev_cache['public_build_id'] = cache['public_build_id']
-                await send_alert('public_build_id', cache['public_build_id'])
-
-            with open(config.GC_PREV_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(prev_cache, f, indent=4)
-
-        except Exception:
-            logging.exception('Caught an exception while scanning GC info!')
-            time.sleep(45)
-            continue
-
-        logging.info('Successfully synced game build IDs.')
-
-        time.sleep(45)
-
-
-async def send(chat_list, text):
-    if not bot.is_connected:
-        await asyncio.sleep(4)
-
-    for chat_id in chat_list:
-        msg = await bot.send_message(chat_id, text, disable_web_page_preview=True)
-        if chat_id == config.INCS2CHAT:
-            await msg.pin(disable_notification=True)
+        with open(config.GC_PREV_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(prev_cache, f, indent=4)
+    except Exception:
+        logging.exception('Caught an exception while scanning GC info!')
 
 
 async def send_alert(key: str, new_value: int):
@@ -129,15 +84,18 @@ async def send_alert(key: str, new_value: int):
     else:
         chat_list = [config.AQ]
 
-    await send(chat_list, text)
+    for chat_id in chat_list:
+        msg = await bot.send_message(chat_id, text, disable_web_page_preview=True)
+        if chat_id == config.INCS2CHAT:
+            await msg.pin(disable_notification=True)
 
 
-def main():  # todo: rewrite to use bot task scheduler
-    t1 = Thread(target=scan_prepare)
-
-    t1.start()
-
-    bot.run()
+def main():
+    try:
+        scheduler.start()
+        bot.run()
+    except TypeError:  # catching TypeError because Pyrogram propogates it at stop for some reason
+        logging.info('Shutting down the bot...')
 
 
 if __name__ == '__main__':
