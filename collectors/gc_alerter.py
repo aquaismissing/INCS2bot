@@ -30,7 +30,8 @@ available_alerts = {'public_build_id': loc.notifs_build_public,
 bot = Client(config.BOT_GC_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,
-             bot_token=config.BOT_TOKEN)
+             bot_token=config.BOT_TOKEN,
+             no_updates=True)
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(threadName)s | GC alerter: %(message)s",
