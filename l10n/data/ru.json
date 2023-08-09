@@ -385,43 +385,6 @@
         "",
         "{:,} ➡️ {:,}"
     ],
-    "notifs_tw_tweet": [
-        "📢 Аккаунт Counter-Strike в Twitter:",
-        "",
-        "«{}»",
-        "",
-        "🔗 <i><a href=\"https://twitter.com/CSGO/status/{}\">ссылка на твит</a></i>"
-    ],
-    "notifs_tw_retweet": [
-        "🔄 Аккаунт Counter-Strike в Twitter ретвитнул пользователя <a href=\"https://twitter.com/{}\">@{}</a>:",
-        "",
-        "«{}»",
-        "",
-        "🔗 <i><a href=\"https://twitter.com/CSGO/status/{}\">ссылка на твит</a></i>"
-    ],
-    "notifs_tw_reply": [
-        "↩️ Аккаунт Counter-Strike в Twitter ответил пользователю <a href=\"https://twitter.com/{}\">@{}</a>:",
-        "",
-        "«{}»",
-        "",
-        "🔗 <i><a href=\"https://twitter.com/CSGO/status/{}\">ссылка на твит</a></i>"
-    ],
-    "notifs_tw_quote": [
-        "💬 Аккаунт Counter-Strike в Twitter процитировал пользователя <a href=\"https://twitter.com/{}\">@{}</a>:",
-        "",
-        "«{}» —",
-        "",
-        "        “<i>{}</i>”",
-        "🔗 <i><a href=\"https://twitter.com/CSGO/status/{}\">ссылка на твит</a></i>"
-    ],
-    "notifs_tw_like": [
-        "💙 Аккаунт Counter-Strike в Twitter лайкнул:",
-        "",
-        "«{}»",
-        "",
-        "🔗 <i><a href=\"https://twitter.com/CSGO/status/{}\">ссылка на твит</a></i"
-    ],
-    "notifs_tw_deleted": "🗑 Этот твит был удалён.",
     "states_low": "низкая",
     "states_medium": "средняя",
     "states_high": "высокая",

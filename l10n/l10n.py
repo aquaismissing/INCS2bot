@@ -276,12 +276,6 @@ class Locale(NamedTuple):
     notifs_new_map_multiple: str
     notifs_new_playerspeak: str
     notifs_new_monthlyunique: str
-    notifs_tw_tweet: str
-    notifs_tw_retweet: str
-    notifs_tw_reply: str
-    notifs_tw_quote: str
-    notifs_tw_like: str
-    notifs_tw_deleted: str
 
     # states (used in dc and stats)
     states_low: str

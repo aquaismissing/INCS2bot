@@ -358,22 +358,6 @@
     "notifs_new_monthlyunique": [
         "notifs_new_monthlyunique"
     ],
-    "notifs_tw_tweet": [
-        "notifs_tw_tweet"
-    ],
-    "notifs_tw_retweet": [
-        "notifs_tw_retweet"
-    ],
-    "notifs_tw_reply": [
-        "notifs_tw_reply"
-    ],
-    "notifs_tw_quote": [
-        "notifs_tw_quote"
-    ],
-    "notifs_tw_like": [
-        "notifs_tw_like"
-    ],
-    "notifs_tw_deleted": "notifs_tw_deleted",
     "states_low": "کم",
     "states_medium": "متوسط",
     "states_high": "زیاد",

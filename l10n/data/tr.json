@@ -268,9 +268,7 @@
         "Son güncelleme: {}",
         "",
         "CS2: `{}` `({})`",
-        "Son güncelleme: {}",
-        "",
-        "ℹ️ Counter-Strike güncelleme izleyicisi:: [@cstracker](http://t.me/cstracker/7)"
+        "Son güncelleme: {}"
     ],
     "game_dropcap_button_title": "Kısıtlamaları Sıfırlamak",
     "game_dropcaptimer_inline_title": "Kısıtlamaları Sıfırlamak",
@@ -361,25 +359,9 @@
     "notifs_new_monthlyunique": [
         "notifs_new_monthlyunique"
     ],
-    "notifs_tw_tweet": [
-        "notifs_tw_tweet"
-    ],
-    "notifs_tw_retweet": [
-        "notifs_tw_retweet"
-    ],
-    "notifs_tw_reply": [
-        "notifs_tw_reply"
-    ],
-    "notifs_tw_quote": [
-        "notifs_tw_quote"
-    ],
-    "notifs_tw_like": [
-        "notifs_tw_like"
-    ],
-    "notifs_tw_deleted": "notifs_tw_deleted",
-    "states_low": "Düşük",
-    "states_medium": "Orta",
-    "states_high": "Yüksek",
+    "states_low": "düşük",
+    "states_medium": "orta",
+    "states_high": "yüksek",
     "states_full": "tam",
     "states_normal": "iyi",
     "states_surge": "çarpıtma",
@@ -387,11 +369,11 @@
     "states_idle": "hareketsizlik",
     "states_offline": "çevrimdışı",
     "states_critical": "kritik",
-    "states_internal_server_error": "İç Sunucu Hatası",
+    "states_internal_server_error": "iç sunucu hatası",
     "states_internal_bot_error": "bot iç hatası",
     "states_reloading": "yeniden başlatma",
-    "states_internal_steam_error": "Steam Dahili Hatası",
-    "states_unknown": "Bilinmeyen",
+    "states_internal_steam_error": "Steam dahili hatası",
+    "states_unknown": "bilinmeyen",
     "stats_matchmaking_button_title": "MM istatistikleri",
     "stats_matchmaking_inline_title": "MM istatistikleri",
     "stats_matchmaking_inline_description": "Çevrimiçi oyuncu sayısını görmek",

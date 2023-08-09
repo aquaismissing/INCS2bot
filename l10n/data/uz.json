@@ -268,9 +268,7 @@
         "Oxirgi yangilanish: {}",
         "",
         "CS2: `{}` `({})`",
-        "Oxirgi yangilanish: {}",
-        "",
-        "ℹ️ Counter-Strike yangilanish treker: [@cstracker](http://t.me/cstracker/7)"
+        "Oxirgi yangilanish: {}"
     ],
     "game_dropcap_button_title": "Cheklovlarni olib tashlang",
     "game_dropcaptimer_inline_title": "Cheklovlarni olib tashlang",
@@ -361,22 +359,6 @@
     "notifs_new_monthlyunique": [
         "notifs_new_monthlyunique"
     ],
-    "notifs_tw_tweet": [
-        "notifs_tw_tweet"
-    ],
-    "notifs_tw_retweet": [
-        "notifs_tw_retweet"
-    ],
-    "notifs_tw_reply": [
-        "notifs_tw_reply"
-    ],
-    "notifs_tw_quote": [
-        "notifs_tw_quote"
-    ],
-    "notifs_tw_like": [
-        "notifs_tw_like"
-    ],
-    "notifs_tw_deleted": "notifs_tw_deleted",
     "states_low": "past",
     "states_medium": "o'rtacha",
     "states_high": "yuqori",
