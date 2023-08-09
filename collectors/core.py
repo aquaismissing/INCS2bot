@@ -8,6 +8,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
 from pyrogram import Client
 if platform.system() == 'Linux':
+    # noinspection PyPackageRequirements
     import uvloop
 
     uvloop.install()

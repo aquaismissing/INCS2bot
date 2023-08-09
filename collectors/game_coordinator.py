@@ -14,6 +14,7 @@ from csgo.client import CSGOClient
 from steam.client import SteamClient
 from steam.enums import EResult
 if platform.system() == 'Linux':
+    # noinspection PyPackageRequirements
     import uvloop
 
     uvloop.install()

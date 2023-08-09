@@ -5,6 +5,7 @@ import platform
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pyrogram import Client
 if platform.system() == 'Linux':
+    # noinspection PyPackageRequirements
     import uvloop
 
     uvloop.install()

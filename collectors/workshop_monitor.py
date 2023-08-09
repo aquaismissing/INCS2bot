@@ -7,6 +7,7 @@ import time
 from pyrogram import Client
 import requests
 if platform.system() == 'Linux':
+    # noinspection PyPackageRequirements
     import uvloop
 
     uvloop.install()
