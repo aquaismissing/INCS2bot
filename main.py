@@ -147,7 +147,7 @@ async def keyboard_selection_indicator(_, callback_query: CallbackQuery):
 
 @bot.on_callback_query(ufilters.callback_data_equals('main'))
 @log_exception_callback
-async def main(client: BClient, callback_query: CallbackQuery, session_timeout: bool = False):
+async def main_menu(client: BClient, callback_query: CallbackQuery, session_timeout: bool = False):
     if session_timeout:
         text = client.locale.error_session_timeout + '\n\n' + client.locale.bot_choose_cmd
     else:
@@ -168,7 +168,7 @@ async def handle_back_after_reload(client: BClient, callback_query: CallbackQuer
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.bot_servers_stats))
-@came_from(main)
+@came_from(main_menu)
 @ignore_message_not_modified
 async def server_stats(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.bot_choose_cmd,
@@ -364,7 +364,7 @@ async def send_dc_state(client: BClient, callback_query: CallbackQuery,
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.bot_profile_info))
-@came_from(main)
+@came_from(main_menu)
 @ignore_message_not_modified
 async def profile_info(client: BClient, callback_query: CallbackQuery):
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
@@ -501,7 +501,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.bot_extras))
-@came_from(main)
+@came_from(main_menu)
 @ignore_message_not_modified
 async def extra_features(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.bot_choose_cmd,
@@ -850,7 +850,7 @@ async def unknown_request(client: BClient, callback_query: CallbackQuery, reply_
 async def back(client: BClient, callback_query: CallbackQuery):
 
     if client.came_from is None:
-        return await main(client, callback_query, session_timeout=True)
+        return await main_menu(client, callback_query, session_timeout=True)
     await client.came_from(client, callback_query)
 
 
@@ -859,7 +859,7 @@ async def back(client: BClient, callback_query: CallbackQuery):
 async def handle_back_after_reload(client: BClient, callback_query: CallbackQuery):
     """After bot reload or session timeout, some menus get stuck. This func recovers dialog by calling `main`."""
 
-    return await main(client, callback_query, session_timeout=True)
+    return await main_menu(client, callback_query, session_timeout=True)
 
 
 async def main():
