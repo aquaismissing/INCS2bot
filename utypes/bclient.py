@@ -1,4 +1,5 @@
 import datetime as dt
+import marshal
 
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -12,14 +13,19 @@ from l10n import Locale
 
 
 class UserSession:  # todo: sessions caching so we can restore them after reload
-    def __init__(self, user: User):
+    __slots__ = ('user', 'timestamp', 'came_from', 'lang_code', 'locale')
+
+    def __init__(self, user: User, *, force_lang: str = None):
         from functions import locale
 
         self.user = user
         self.timestamp = dt.datetime.now().timestamp()
         self.came_from: callable = None
-        self.lang_code: str = user.language_code
-        self.locale: Locale | None = locale(user.language_code)
+        if force_lang:
+            self.lang_code = force_lang
+        else:
+            self.lang_code = user.language_code
+        self.locale = locale(self.lang_code)
 
 
 class BClient(Client):
@@ -49,8 +55,8 @@ class BClient(Client):
     def sessions(self) -> dict[int, UserSession]:
         return self._sessions
 
-    def register_session(self, user: User):
-        self._sessions[user.id] = UserSession(user)
+    def register_session(self, user: User, *, force_lang: str = None):
+        self._sessions[user.id] = UserSession(user, force_lang=force_lang)
 
     def clear_timeout_sessions(self, *, hours: int = 0, minutes: int = 0, seconds: int = 0):
         if hours == minutes == seconds == 0:
