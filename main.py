@@ -4,7 +4,7 @@ import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
-from pyrogram import filters
+from pyrogram import filters, idle
 from pyrogram.enums import ChatType, ChatAction
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, Message
@@ -65,7 +65,7 @@ async def sync_user_data(client: BClient, message: Message):
         message.continue_propagation()
 
     user = message.from_user
-    await log(client, message)
+    await log_message(client, message)
 
     if user.id not in client.sessions:
         if not user_data["UserID"].isin([user.id]).any():
@@ -862,15 +862,28 @@ async def handle_back_after_reload(client: BClient, callback_query: CallbackQuer
     return await main(client, callback_query, session_timeout=True)
 
 
-def main():
+async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=10)
+
+    scheduler.start()
+
     try:
-        scheduler.start()
-        bot.run()
-    except TypeError:  # catching TypeError because Pyrogram propogates it at stop for some reason
+        await bot.start()
+        await log(bot, 'Bot started.')
+
+        await idle()
+
         logging.info('Shutting down the bot...')
+        await log(bot, 'Bot is shutting down...')
+    except Exception as e:
+        logging.exception('The bot got terminated because of exception!')
+        await log(bot, f'Bot got terminated because of exception!\n'
+                       f'\n'
+                       f'❗️ {e.__class__.__name__}: {e}', disable_notification=False)
+    finally:
+        await bot.stop()
 
 
 if __name__ == '__main__':
-    main()
+    bot.run(main())

@@ -4,11 +4,21 @@ from pyrogram.types import CallbackQuery, InlineQuery, Message
 import config
 
 
-__all__ = ('log', 'log_callback', 'log_inline')
+__all__ = ('log', 'log_message', 'log_callback', 'log_inline')
 
 
-async def log(client: Client, message: Message):
-    """The bot sends log to the log channel"""
+async def log(client: Client, text: str, no_log_in_test: bool = False, disable_notification: bool = True):
+    """Sends log to the log channel."""
+
+    if no_log_in_test and config.TEST_MODE:
+        return
+
+    await client.send_message(config.LOGCHANNEL, text, disable_notification=disable_notification)
+
+
+async def log_message(client: Client, message: Message):
+    """Sends message log to the log channel."""
+
     if config.TEST_MODE:
         return
 
@@ -25,7 +35,7 @@ async def log(client: Client, message: Message):
 
 
 async def log_callback(client: Client, callback_query: CallbackQuery):
-    """The bot sends callback log to the log channel"""
+    """Sends callback log to the log channel."""
 
     if config.TEST_MODE:
         return
@@ -43,7 +53,7 @@ async def log_callback(client: Client, callback_query: CallbackQuery):
 
 
 async def log_inline(client: Client, inline_query: InlineQuery):
-    """The bot sends an inline query to the log channel"""
+    """Sends an inline query to the log channel."""
 
     if config.TEST_MODE:
         return
