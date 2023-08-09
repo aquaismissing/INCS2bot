@@ -9,13 +9,13 @@ Then check [Contributing](#contributing) section to know how to start translatin
 
 Here you can see translations' progress and contributors' list:
 
-|      | Language     |    Progress     |            Summary             | Contributors |
-|:----:|--------------|:---------------:|:------------------------------:|:------------:|
-| :gb: | English (en) | ██████████ 100% |            built in            |              |
-| :ru: | Russian (ru) | ██████████ 100% |            built in            |              |
-| :fa: | Persian (fa) | ██████████ 100% |           fully done           |   [@A460N]   |
-| :tr: | Turkish (fa) | ██████████ 100% |           fully done           |  [@ITMiroN]  |
-| :uz: | Uzbek (uz)   | ██████████ 100% | fully done, currently not used | [@d1az1337]  |
+| Code | Language |    Progress     |     Summary      | Contributors |
+|:----:|----------|:---------------:|:----------------:|:------------:|
+|  gb  | English  | ██████████ 100% |     built in     |              |
+|  ru  | Russian  | ██████████ 100% |     built in     |              |
+|  fa  | Persian  | ████████▒▒ 80%  | tags not filled  |   [@A460N]   |
+|  tr  | Turkish  | ████████▒▒ 80%  | tags not filled  |  [@ITMiroN]  |
+|  uz  | Uzbek    | ████████▒▒ 80%  | tags not filled  | [@d1az1337]  |
 
 ## Contributing
 
