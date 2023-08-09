@@ -29,8 +29,8 @@ Anyway, we have some plans on adding more functionality and QoL features.
 - Localization system, allowing us to have more than two languages
   and easily handle it at the same time
 - Tags system, made for inline queries to be more responsive and user-friendly
-- Translatable Inline Keyboard Markups (TranslatableIKM), 
-  made to integrate L10n to inline keyboard markups
+- Extended Inline Keyboard Markups (**ExtendedIKM**s), 
+  made to integrate extra functionality into regular **IKM**s (e.g. localization, selection indicators)
 - Use of decorators to support transitions between menus and clean up the codebase
 
 ### How can I contribute?
