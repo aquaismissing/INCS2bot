@@ -28,7 +28,7 @@ def log_exception_inline(func):
             await func(client, inline_query, *args, **kwargs)
         except Exception as e:
             logging.exception('Caught exception!')
-            await client.send_message(config.LOGCHANNEL, f'❗️{e.__class__.__name__}: {e}\n'
+            await client.send_message(config.LOGCHANNEL, f'❗️ {e.__class__.__name__}: {e}\n'
                                                          f'\n'
                                                          f'↩️ inline_query',
                                       disable_notification=True)
