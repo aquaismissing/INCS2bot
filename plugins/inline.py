@@ -1,9 +1,6 @@
-import datetime as dt
 import logging
 import re
-from zoneinfo import ZoneInfo
 
-from babel.dates import format_datetime
 import pandas as pd
 from pyrogram import Client, filters
 from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
@@ -19,11 +16,7 @@ from utypes import (BClient, DatacenterInlineResult, ExchangeRate,
                     drop_cap_reset_timer)
 
 
-VALVE_TIMEZONE = ZoneInfo("America/Los_Angeles")
 TAGS = dump_tags()
-
-CLOCKS = ('🕛', '🕐', '🕑', '🕒', '🕓', '🕔',
-          '🕕', '🕖', '🕗', '🕘', '🕙', '🕚')  # todo: store them in one place instead of both 'main' and 'inline'
 FORCE_LANG = None  # test purpose only, should be None on deploy
 
 
@@ -266,7 +259,6 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
 async def default_inline(client: BClient, inline_query: InlineQuery):
     lang_code = client.session_lang_code
 
-    valve_hq_datetime = dt.datetime.now(tz=VALVE_TIMEZONE)
     game_version_data = GameVersionData.cached_data()
 
     server_status_text = server_stats_handlers.get_server_status_summary(GameServersData.cached_server_status(),
@@ -274,11 +266,8 @@ async def default_inline(client: BClient, inline_query: InlineQuery):
     matchmaking_stats_text = server_stats_handlers.get_matchmaking_stats_summary(
         GameServersData.cached_matchmaking_stats(), lang_code
     )
-    valve_hq_dt_formatted = f'{format_datetime(valve_hq_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()} ' \
-                            f'({valve_hq_datetime:%Z})'
 
-    valve_hq_time_text = client.locale.valve_hqtime_text.format(CLOCKS[valve_hq_datetime.hour % 12],
-                                                                valve_hq_dt_formatted)
+    valve_hq_time_text = server_stats_handlers.get_valve_hq_time(lang_code)
     drop_cap_reset_timer_text = client.locale.game_dropcaptimer_text.format(*drop_cap_reset_timer())
     game_version_text = server_stats_handlers.get_game_version_summary(game_version_data, lang_code)
 

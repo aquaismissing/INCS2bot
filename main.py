@@ -1,11 +1,8 @@
 import asyncio
-import datetime as dt
 import json
 import logging
-from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from babel.dates import format_datetime
 import pandas as pd
 from pyrogram import filters
 from pyrogram.enums import ChatType, ChatAction
@@ -27,17 +24,7 @@ from utypes import (BClient, Crosshair, ExchangeRate, GameServersData,
                     GameVersionData, GunInfo, ParsingUserStatsError, ProfileInfo,
                     States, UserGameStats, drop_cap_reset_timer)
 
-VALVE_TIMEZONE = ZoneInfo("America/Los_Angeles")
 GUNS_INFO = GunInfo.load()
-CLOCKS = ('🕛', '🕐', '🕑', '🕒', '🕓', '🕔',
-          '🕕', '🕖', '🕗', '🕘', '🕙', '🕚')
-
-bot = BClient(config.BOT_NAME,
-              api_id=config.API_ID,
-              api_hash=config.API_HASH,
-              bot_token=config.BOT_TOKEN,
-              plugins={'root': 'plugins'})
-
 FORCE_LANG = None  # test purpose only, should be None on deploy
 
 ALL_COMMANDS = ['start', 'help', 'feedback']
@@ -45,6 +32,12 @@ ALL_COMMANDS = ['start', 'help', 'feedback']
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(threadName)s: %(message)s",
                     datefmt="%H:%M:%S — %d/%m/%Y")
+
+bot = BClient(config.BOT_NAME,
+              api_id=config.API_ID,
+              api_hash=config.API_HASH,
+              bot_token=config.BOT_TOKEN,
+              plugins={'root': 'plugins'})
 
 user_data = pd.read_csv(config.USER_DB_FILE_PATH)
 
@@ -575,12 +568,7 @@ async def send_valve_hq_time(client: BClient, callback_query: CallbackQuery):
 
     lang_code = callback_query.from_user.language_code
 
-    valve_hq_datetime = dt.datetime.now(tz=VALVE_TIMEZONE)
-
-    valve_hq_dt_formatted = f'{format_datetime(valve_hq_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()} ' \
-                            f'({valve_hq_datetime:%Z})'
-
-    text = client.locale.valve_hqtime_text.format(CLOCKS[valve_hq_datetime.hour % 12], valve_hq_dt_formatted)
+    text = server_stats_handlers.get_valve_hq_time(lang_code)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(client.locale))
 

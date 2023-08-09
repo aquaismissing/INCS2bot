@@ -1,7 +1,15 @@
+import datetime as dt
+from zoneinfo import ZoneInfo
+
 from babel.dates import format_datetime
 
 from .locale import locale
 from utypes import States
+
+
+VALVE_TIMEZONE = ZoneInfo("America/Los_Angeles")
+CLOCKS = ('🕛', '🕐', '🕑', '🕒', '🕓', '🕔',
+          '🕕', '🕖', '🕗', '🕘', '🕙', '🕚')
 
 
 def get_server_status_summary(data, lang_code: str):
@@ -72,3 +80,14 @@ def get_game_version_summary(data, lang_code: str):
             cs2_patch_version, cs2_client_version, cs2_version_dt)
 
     return loc.game_version_text.format(*data)
+
+
+def get_valve_hq_time(lang_code: str):
+    loc = locale(lang_code)
+
+    valve_hq_datetime = dt.datetime.now(tz=VALVE_TIMEZONE)
+
+    valve_hq_dt_formatted = f'{format_datetime(valve_hq_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()} ' \
+                            f'({valve_hq_datetime:%Z})'
+
+    return loc.valve_hqtime_text.format(CLOCKS[valve_hq_datetime.hour % 12], valve_hq_dt_formatted)
