@@ -24,6 +24,7 @@ TAGS = dump_tags()
 
 CLOCKS = ('🕛', '🕐', '🕑', '🕒', '🕓', '🕔',
           '🕕', '🕖', '🕗', '🕘', '🕙', '🕚')  # todo: store them in one place instead of both 'main' and 'inline'
+FORCE_LANG = None  # test purpose only, should be None on deploy
 
 
 def log_exception_inline(func):
@@ -90,7 +91,7 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
             )
             pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
 
-        client.register_session(user)
+        client.register_session(user, force_lang=FORCE_LANG)
 
     client.current_session = client.sessions[user.id]
 
@@ -272,7 +273,7 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
 @BClient.on_inline_query()
 @log_exception_inline
 async def default_inline(client: BClient, inline_query: InlineQuery):
-    lang_code = inline_query.from_user.language_code
+    lang_code = client.session_lang_code
 
     valve_hq_datetime = dt.datetime.now(tz=VALVE_TIMEZONE)
     game_version_data = GameVersionData.cached_data()

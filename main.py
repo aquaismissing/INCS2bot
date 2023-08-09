@@ -37,6 +37,8 @@ bot = BClient(config.BOT_NAME,
               bot_token=config.BOT_TOKEN,
               plugins={'root': 'plugins'})
 
+FORCE_LANG = None  # test purpose only, should be None on deploy
+
 ALL_COMMANDS = ['start', 'help', 'feedback']
 
 logging.basicConfig(level=logging.INFO,
@@ -86,8 +88,7 @@ async def sync_user_data(client: BClient, message: Message):
             )
             pd.concat([user_data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
 
-        if user.id not in client.sessions:
-            client.register_session(user)
+        client.register_session(user, force_lang=FORCE_LANG)
 
     client.current_session = client.sessions[user.id]
 
@@ -104,7 +105,7 @@ async def any_command(client: BClient, message: Message):
 
         client.clear_timeout_sessions()
         if user.id not in client.sessions:
-            client.register_session(user)
+            client.register_session(user, force_lang=FORCE_LANG)
 
         client.current_session = client.sessions[user.id]
 
@@ -134,7 +135,7 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
             )
             pd.concat([user_data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
 
-        client.register_session(user)
+        client.register_session(user, force_lang=FORCE_LANG)
 
     client.current_session = client.sessions[user.id]
 
@@ -880,6 +881,5 @@ async def handle_back_after_reload(client: BClient, callback_query: CallbackQuer
 if __name__ == '__main__':
     try:
         bot.run()
-    except KeyboardInterrupt:
+    except TypeError:  # catching TypeError because Pyrogram propogates it at stop for some reason
         logging.info('Shutting down the bot...')
-        bot.stop()
