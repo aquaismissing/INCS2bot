@@ -29,7 +29,7 @@
     "crosshair_generate": "Yarating",
     "crosshair_decode": "Rashifrovka",
     "crosshair_decode_example": [
-        "📖 Iltimos, rashifrini ochmoqchi bo'lgan o'zaro faoliyat kodni kiriting (напр.: `CSGO-O4Jsi-V36wY-rTMGK-9w7qF-jQ8WB`).",
+        "📖 Iltimos, rashifrini ochmoqchi bo'lgan o'zaro faoliyat kodni kiriting (masalan: `CSGO-O4Jsi-V36wY-rTMGK-9w7qF-jQ8WB`).",
         "",
         "So'rovni bekor qilish uchun /cancel buyrug'idan foydalaning."
     ],
@@ -234,12 +234,12 @@
     "exchangerate_inline_description": [
         "Valyuta kodini yoki nomini kiriting:",
         "@INCS2bot price {valyuta}",
-        "(напр.: @INCS2bot price rus rubli)"
+        "(masalan: @INCS2bot price ruble)"
     ],
     "exchangerate_inline_text_default": [
         "Kod yoki valyuta nomidan foydalaning: ",
         "`@INCS2bot price {valyuta}`",
-        "(например, `@INCS2bot price rub` или `@INCS2bot price rus rubli`)"
+        "(masalan, `@INCS2bot price rub` или `@INCS2bot price ruble`)"
     ],
     "exchangerate_inline_title_selected": "Kalit narxini ko'ring {}",
     "exchangerate_inline_description_selected": "1x Counter-Strike ko'krak kaliti xarajatlari {} {}",
@@ -275,7 +275,7 @@
     "game_dropcap_button_title": "Cheklovlarni olib tashlang",
     "game_dropcaptimer_inline_title": "Cheklovlarni olib tashlang",
     "game_dropcaptimer_inline_description": "Tajriba va narsalarni olish bo'yicha cheklovlar olib tashlanishigacha bo'lgan vaqt",
-    "game_dropcaptimer_text": "⏳ Tajriba va narsalarni olish bo'yicha cheklovlar olib tashlanishigacha bo'lgan vaqt: {} д. {} ч. {} мин. {} сек.",
+    "game_dropcaptimer_text": "⏳ Tajriba va narsalarni olish bo'yicha cheklovlar olib tashlanishigacha bo'lgan vaqt: {} kun. {} soat. {} min. {} sek.",
     "gun_button_text": "Qurol ma'lumotlari",
     "gun_select_category": "#️⃣ Sizni qiziqtirgan toifani tanlang:",
     "gun_pistols": "Pistoletlar",
@@ -533,7 +533,7 @@
         "🔫 **FACEIT:**",
         "",
         "• FACEIT ga havola: {}",
-        "• Elo ga FACEIT / Ранг: {} / {}",
+        "• Elo ga FACEIT / Rang: {} / {}",
         "• Bloklar ga FACEIT: {}",
         "",
         "📛 **Taqiqlar va cheklovlar:**",
