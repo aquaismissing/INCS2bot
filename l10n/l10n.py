@@ -389,7 +389,7 @@ class L10n:
         if lang == 'tags':
             return
 
-        with open(file, encoding='utf8') as f:
+        with open(file, encoding='utf-8') as f:
             data = json.load(f)
 
         # Add undefined keys
@@ -418,7 +418,7 @@ class L10n:
         if found_undefined_keys or unexpected_keys or redump:
             if redump:
                 logger.info(f'Redumping {file.name}...')
-            with open(file, 'w', encoding='utf8') as f:
+            with open(file, 'w', encoding='utf-8') as f:
                 data = {key: data[key] for key in Locale._fields + tuple(used_reserved_fields)
                         + tuple(unexpected_keys)}  # fixing pairs order
                 json.dump(data, f, indent=4, ensure_ascii=False)
@@ -466,7 +466,7 @@ class L10n:
             warnings.warn(f'Lang file "{path}" already exists.', stacklevel=2)
             return
 
-        with open(path, 'w', encoding='utf8') as f:
+        with open(path, 'w', encoding='utf-8') as f:
             json.dump(sample.to_dict(), f, indent=4, ensure_ascii=False)
 
 

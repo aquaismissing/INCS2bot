@@ -163,10 +163,10 @@ def dump_tags() -> Tags:
     if not path.exists():
         warnings.warn(f"Can't find tags.json, generating a file...", PrimaryTagsFileNotFound)
         sample = Tags.sample()
-        with open(path, 'w', encoding='utf8') as f:
+        with open(path, 'w', encoding='utf-8') as f:
             json.dump({k: [v] for k, v in sample.to_dict().items()}, f, indent=4, ensure_ascii=False)
 
-    with open(path, encoding='utf8') as f:
+    with open(path, encoding='utf-8') as f:
         data = json.load(f)
 
     # Add undefined fields
@@ -186,7 +186,7 @@ def dump_tags() -> Tags:
 
     # Dump data with undefined and unexpected fields
     if found_undefined_fields or unexpected_fields:
-        with open(path, 'w', encoding='utf8') as f:
+        with open(path, 'w', encoding='utf-8') as f:
             data = {field: data[field] for field in Tags._fields + tuple(unexpected_fields)}  # fixing pairs order
             json.dump(data, f, indent=4, ensure_ascii=False)
 
