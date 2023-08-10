@@ -1,11 +1,12 @@
 import asyncio
 import json
 import logging
+import traceback
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
 from pyrogram import filters, idle
-from pyrogram.enums import ChatType, ChatAction
+from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, Message
 # noinspection PyUnresolvedReferences
@@ -50,10 +51,10 @@ def log_exception_callback(func):
     async def inner(client: BClient, callback_query: CallbackQuery, *args, **kwargs):
         try:
             await func(client, callback_query, *args, **kwargs)
-        except Exception as e:
+        except Exception:
             logging.exception('Caught exception!')
-            await client.send_message(config.LOGCHANNEL, f'❗️ {e.__class__.__name__}: {e}',
-                                      disable_notification=True)
+            await client.send_message(config.LOGCHANNEL, f'❗️ {traceback.format_exc()}',
+                                      disable_notification=True, parse_mode=ParseMode.DISABLED)
             await something_went_wrong(client, callback_query)
 
     return inner

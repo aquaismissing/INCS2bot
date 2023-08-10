@@ -1,8 +1,10 @@
 import logging
 import re
+import traceback
 
 import pandas as pd
 from pyrogram import Client, filters
+from pyrogram.enums import ParseMode
 from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 
 # noinspection PyUnresolvedReferences
@@ -28,10 +30,10 @@ def log_exception_inline(func):
             await func(client, inline_query, *args, **kwargs)
         except Exception as e:
             logging.exception('Caught exception!')
-            await client.send_message(config.LOGCHANNEL, f'❗️ {e.__class__.__name__}: {e}\n'
+            await client.send_message(config.LOGCHANNEL, f'❗️ {traceback.format_exc()}\n'
                                                          f'\n'
                                                          f'↩️ inline_query',
-                                      disable_notification=True)
+                                      disable_notification=True, parse_mode=ParseMode.DISABLED)
 
     return inner
 
