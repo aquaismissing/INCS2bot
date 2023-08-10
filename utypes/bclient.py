@@ -63,6 +63,8 @@ class BClient(Client):
 
         if hours is minutes is seconds is None:
             hours = 1
+            minutes = 0
+            seconds = 0
 
         now = dt.datetime.now()
         timeout_duration = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
