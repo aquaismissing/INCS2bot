@@ -244,7 +244,7 @@ class UserGameStats(NamedTuple):
                 raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
             raise e
         except Exception as e:
-            logging.exception(f"Caught exception at parsing user CS stats!")
+            logging.exception('Caught exception at parsing user CS stats!')
             raise e
 
 
@@ -274,12 +274,12 @@ class ProfileInfo:
 
             bans = api.ISteamUser.GetPlayerBans(steamids=steam64)
             user_data = api.ISteamUser.GetPlayerSummaries(steamids=steam64)["response"]["players"][0]
-            vanity = user_data["profileurl"]
+            vanity = user_data['profileurl']
 
             if not (bans and vanity):
                 raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
 
-            account_created = user_data.get("timecreated")
+            account_created = user_data.get('timecreated')
 
             faceit_api = f'https://api.faceit.com/search/v2/players?query={steam64}'
 
@@ -344,7 +344,7 @@ class ProfileInfo:
                 raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
             raise e
         except Exception as e:
-            logging.exception(f"Caught exception at parsing user profile info!")
+            logging.exception('Caught exception at parsing user profile info!')
             raise e
 
     def to_tuple(self):

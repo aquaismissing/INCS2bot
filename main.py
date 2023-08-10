@@ -423,8 +423,7 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
 
     if info.account_created:
         info.account_created = dt.datetime.fromtimestamp(info.account_created)
-        info.account_created = f'{format_datetime(info.account_created, "dd MMM yyyy", locale=lang_code).title()} ' \
-                               f'(UTC)'
+        info.account_created = f'{format_datetime(info.account_created, "dd MMM yyyy", locale=lang_code).title()}'
     else:
         info.account_created = client.locale.states_unknown
 
@@ -550,6 +549,8 @@ async def decode_crosshair(client: BClient, callback_query: CallbackQuery, error
         decode_input = await client.listen_message(callback_query.message.chat.id)
     else:
         decode_input = await ask_message_silently(client, callback_query, text)
+
+    await log_message(client, decode_input)
 
     if decode_input.text == "/cancel":
         await decode_input.delete()

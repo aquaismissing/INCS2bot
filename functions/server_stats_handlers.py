@@ -7,7 +7,7 @@ from .locale import locale
 from utypes import States
 
 
-VALVE_TIMEZONE = ZoneInfo("America/Los_Angeles")
+VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 CLOCKS = ('🕛', '🕐', '🕑', '🕒', '🕓', '🕔',
           '🕕', '🕖', '🕗', '🕘', '🕙', '🕚')
 
