@@ -874,15 +874,14 @@ async def main():
         await log(bot, 'Bot started.')
 
         await idle()
-
-        logging.info('Shutting down the bot...')
-        await log(bot, 'Bot is shutting down...')
     except Exception as e:
         logging.exception('The bot got terminated because of exception!')
         await log(bot, f'Bot got terminated because of exception!\n'
                        f'\n'
                        f'❗️ {e.__class__.__name__}: {e}', disable_notification=False)
     finally:
+        logging.info('Shutting down the bot...')
+        await log(bot, 'Bot is shutting down...')
         await bot.stop()
 
 
