@@ -7,7 +7,6 @@ from steam import steamid
 from steam.steamid import SteamID
 from steam.webapi import WebAPI
 import requests
-import validators
 
 import config
 
@@ -25,6 +24,7 @@ logging.basicConfig(level=logging.INFO,
 
 class ParsingUserStatsError(Exception):
     INVALID_REQUEST = 'INVALID_REQUEST'
+    INVALID_LINK = 'INVALID_LINK'
     PROFILE_IS_PRIVATE = 'PROFILE_IS_PRIVATE'
     UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 
@@ -33,6 +33,10 @@ class ParsingUserStatsError(Exception):
 
     def __repr__(self):
         return f'{self.__class__.__name__}(value={self.value!r})'
+
+    @property
+    def is_unknown(self):
+        return self.value == self.UNKNOWN_ERROR
 
 
 class UserGameStats(NamedTuple):
@@ -355,22 +359,20 @@ def parse_steamid64(data: str):
     data = data.strip()
     steam_profile_link_pattern = re.compile(r'(?:https?://)?steamcommunity\.com/(?:profiles|id)/[a-zA-Z0-9]+(/?)\w')
 
-    if validators.url(data):
-        if not steam_profile_link_pattern.match(data):
-            raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
-        try:
-            return steamid.from_url(data)
-        except requests.exceptions.JSONDecodeError:
-            raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
+    if steam_profile_link_pattern.match(data):
+        if not data.startswith('http'):
+            data = 'https://' + data
+
+        if steamid.from_url(data) is None:
+            raise ParsingUserStatsError(ParsingUserStatsError.INVALID_LINK)
+
+        return steamid.from_url(data)
 
     if SteamID(data).is_valid():
         return SteamID(data)
 
     resolve_vanity = api.ISteamUser.ResolveVanityURL(vanityurl=data, url_type=1)['response']
-    if resolve_vanity['success'] == 1:
-        return resolve_vanity['steamid']
-
-    if resolve_vanity['success'] == 42:
+    if resolve_vanity['success'] != 1:
         raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
 
-    raise ParsingUserStatsError(ParsingUserStatsError.UNKNOWN_ERROR)
+    return resolve_vanity['steamid']
