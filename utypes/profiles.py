@@ -243,9 +243,9 @@ class UserGameStats(NamedTuple):
             if status_code == 403:
                 raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
             raise e
-        except Exception:
+        except Exception as e:
             logging.exception(f"Caught exception at parsing user CS stats!")
-            raise ParsingUserStatsError(ParsingUserStatsError.UNKNOWN_ERROR)
+            raise e
 
 
 @dataclass(slots=True)
@@ -310,7 +310,7 @@ class ProfileInfo:
                     user = faceit_response[0]
                     faceit_url = f'https://faceit.com/en/players/{user["nickname"]}'
 
-                faceit_ban = ('banned' in user["status"])
+                faceit_ban = ('banned' in user.get('status', ''))
 
             bans_data = bans['players'][0]
 
