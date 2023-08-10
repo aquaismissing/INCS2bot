@@ -398,21 +398,7 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
     try:
         info = ProfileInfo.get(steam_url.text)
     except ParsingUserStatsError as e:
-        await callback_query.message.delete()
-
-        if e.value == ParsingUserStatsError.INVALID_REQUEST:
-            error_msg = client.locale.error_unknownrequest
-        elif e.value == ParsingUserStatsError.PROFILE_IS_PRIVATE:
-            error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
-                        client.locale.user_gamestats_privateprofile_error
-        else:
-            await steam_url.delete()
-            raise e
-
-        await callback_query.message.reply(error_msg)
-        await callback_query.message.reply(client.locale.bot_choose_cmd,
-                                           reply_markup=keyboards.profile_markup(client.locale))
-        return
+        return await user_info_handle_error(client, callback_query, steam_url, e)
     except Exception as e:
         await steam_url.delete()
         raise e
@@ -476,19 +462,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     try:
         user_stats = UserGameStats.get(steam_url.text)
     except ParsingUserStatsError as e:
-        if e.value == ParsingUserStatsError.INVALID_REQUEST:
-            error_msg = client.locale.error_unknownrequest
-        elif e.value == ParsingUserStatsError.PROFILE_IS_PRIVATE:
-            error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
-                        client.locale.user_gamestats_privateprofile_error
-        else:
-            await steam_url.delete()
-            raise e
-
-        await callback_query.message.reply(error_msg)
-        await callback_query.message.reply(client.locale.bot_choose_cmd,
-                                           reply_markup=keyboards.profile_markup(client.locale))
-        return
+        return await user_info_handle_error(client, callback_query, steam_url, e)
     except Exception as e:
         await steam_url.delete()
         raise e
@@ -511,6 +485,23 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
                                        reply_markup=keyboards.profile_markup(client.locale))
     await callback_query.message.delete()
 
+
+async def user_info_handle_error(client: BClient, initial_query: CallbackQuery,
+                                 user_input: Message, exc: ParsingUserStatsError):
+    if exc.is_unknown:
+        await user_input.delete()
+        raise exc
+
+    error_msg = client.locale.user_invalidrequest_error
+    if exc.value == ParsingUserStatsError.INVALID_LINK:
+        error_msg = client.locale.user_invalidlink_error
+    elif exc.value == ParsingUserStatsError.PROFILE_IS_PRIVATE:
+        error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
+                    client.locale.user_privateprofile_error
+
+    await initial_query.message.reply(error_msg)
+    await initial_query.message.reply(client.locale.bot_choose_cmd,
+                                      reply_markup=keyboards.profile_markup(client.locale))
 
 # cat: Extra features
 
