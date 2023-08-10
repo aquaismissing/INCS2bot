@@ -253,10 +253,9 @@ class ProfileInfo:
     vanity_url: str
     steam64: int
     account_id: int
-    steam2_id: str
-    steam3_id: str
-    invite_code: str
+    account_created: int
     invite_url: str
+    invite_code: str
     csgo_friend_code: str
     faceit_url: str
     faceit_elo: int
@@ -274,10 +273,13 @@ class ProfileInfo:
             steam64 = parse_steamid64(data)
 
             bans = api.ISteamUser.GetPlayerBans(steamids=steam64)
-            vanity = api.ISteamUser.GetPlayerSummaries(steamids=steam64)["response"]["players"][0]["profileurl"]
+            user_data = api.ISteamUser.GetPlayerSummaries(steamids=steam64)["response"]["players"][0]
+            vanity = user_data["profileurl"]
 
             if not (bans and vanity):
                 raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
+
+            account_created = user_data.get("timecreated")
 
             faceit_api = f'https://api.faceit.com/search/v2/players?query={steam64}'
 
@@ -327,10 +329,9 @@ class ProfileInfo:
             return cls(vanity_url,
                        steam64,
                        steam_id.id,
-                       steam_id.as_steam2,
-                       steam_id.as_steam3,
-                       steam_id.as_invite_code,
+                       account_created,
                        steam_id.invite_url,
+                       steam_id.as_invite_code,
                        steam_id.as_csgo_friend_code,
                        faceit_url,
                        faceit_elo,

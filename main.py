@@ -1,9 +1,11 @@
 import asyncio
+import datetime as dt
 import json
 import logging
 import traceback
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from babel.dates import format_datetime
 import pandas as pd
 from pyrogram import filters, idle
 from pyrogram.enums import ChatType, ChatAction, ParseMode
@@ -414,8 +416,17 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
         await steam_url.delete()
         raise e
 
+    lang_code = callback_query.from_user.language_code
+
     if info.vanity_url is None:
         info.vanity_url = client.locale.user_profileinfo_notset
+
+    if info.account_created:
+        info.account_created = dt.datetime.fromtimestamp(info.account_created)
+        info.account_created = f'{format_datetime(info.account_created, "dd MMM yyyy", locale=lang_code).title()} ' \
+                               f'(UTC)'
+    else:
+        info.account_created = client.locale.states_unknown
 
     info.faceit_ban = client.locale.user_profileinfo_banned \
         if info.faceit_ban else client.locale.user_profileinfo_none
