@@ -384,6 +384,8 @@ async def profile_info(client: BClient, callback_query: CallbackQuery):
 async def user_profile_info(client: BClient, callback_query: CallbackQuery):
     steam_url: Message = await ask_message_silently(client, callback_query, client.locale.steam_url_example)
 
+    await log_message(client, steam_url)
+
     if steam_url.text == "/cancel":
         await steam_url.delete()
         return await profile_info(client, callback_query)
@@ -452,6 +454,8 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     steam_url: Message = await ask_message_silently(client, callback_query,
                                                     client.locale.steam_url_example,
                                                     disable_web_page_preview=True)
+
+    await log_message(client, steam_url)
 
     if steam_url.text == "/cancel":
         await steam_url.delete()
