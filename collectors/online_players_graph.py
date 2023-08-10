@@ -3,7 +3,7 @@ import json
 import logging
 import time
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler
 from html_telegraph_poster.upload_images import upload_image
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -20,10 +20,10 @@ logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(name)s: %(message)s",
                     datefmt="%H:%M:%S — %d/%m/%Y")
 
-scheduler = AsyncIOScheduler()
+scheduler = BlockingScheduler()
 
 
-@scheduler.scheduled_job('cron', minute='0,10,20,30,40,50')
+@scheduler.scheduled_job('cron', hour='*', minute='0,10,20,30,40,50', second='0')
 def graph_maker():
     try:
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
@@ -106,7 +106,7 @@ def graph_maker():
     except Exception:
         logging.exception(f"Caught exception in graph maker!")
         time.sleep(MINUTE)
-        return graph_maker
+        return graph_maker()
 
 
 def main():
