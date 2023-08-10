@@ -309,9 +309,10 @@ class Locale(NamedTuple):
     user_gamestats_inline_title: str
     user_gamestats_page_title: str  # Statistics for #{}
     user_gamestats_text: str
-    user_gamestats_invalidrequest_error: str
-    user_gamestats_privateprofile_error: str
     user_gamestats_share: str
+    user_invalidlink_error: str
+    user_invalidrequest_error: str
+    user_privateprofile_error: str
     user_profileinfo_title: str
     user_profileinfo_text: str
     user_profileinfo_notset: str
