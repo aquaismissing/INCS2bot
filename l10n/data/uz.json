@@ -495,9 +495,10 @@
         "<h4>M249:</h4>",
         "<ul><li>Выстрелов: <b>{:,}</b></li><li>Попаданий: <b>{:,}</b></li><li>Убийств: <b>{:,}</b></li><li>Точность стрельбы: <b>{}</b>%</li></ul>"
     ],
-    "user_gamestats_invalidrequest_error": "⚠️ So‘rov noto‘g‘ri.",
-    "user_gamestats_privateprofile_error": "❕ Bu akkaunt shaxsiydir, statistikani olish mumkin emas. Iltimos, maxfiylik sozlamalaringizni o'zgartiring.",
     "user_gamestats_share": "Repost",
+    "user_invalidlink_error": "⚠️ Siz yuborgan havola yaroqsiz, uning toʻgʻriligini tekshiring va qaytadan urinib koʻring.",
+    "user_invalidrequest_error": "⚠️ So‘rov noto‘g‘ri.",
+    "user_privateprofile_error": "❕ Bu akkaunt shaxsiydir, statistikani olish mumkin emas. Iltimos, maxfiylik sozlamalaringizni o'zgartiring.",
     "user_profileinfo_title": "Bloklar va cheklovlar",
     "user_profileinfo_text": [
         "🔍 **Profil haqida umumiy ma'lumot:**",

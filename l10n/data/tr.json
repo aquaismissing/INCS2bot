@@ -495,9 +495,10 @@
         "<h4>M249:</h4>",
         "<ul><li>atışlar sayısı: <b>{:,}</b></li><li>isabet sayısı: <b>{:,}</b></li><li>öldürme sayısı: <b>{:,}</b></li><li>Atış isabet sayısı: <b>{}</b>%</li></ul>"
     ],
-    "user_gamestats_invalidrequest_error": "⚠️ Geçersiz istek.",
-    "user_gamestats_privateprofile_error": "❕ Bu hesap gizlidir, istatistik almak imkansızdır. Lütfen gizlilik ayarlarınızı değiştirin.",
     "user_gamestats_share": "Paylaşmak",
+    "user_invalidlink_error": "⚠️ Gönderdiğiniz bağlantı geçersiz, lütfen doğruluğunu kontrol edin ve tekrar deneyin.",
+    "user_invalidrequest_error": "⚠️ Geçersiz istek.",
+    "user_privateprofile_error": "❕ Bu hesap gizlidir, istatistik almak imkansızdır. Lütfen gizlilik ayarlarınızı değiştirin.",
     "user_profileinfo_title": "Bloklar ve kısıtlamalar",
     "user_profileinfo_text": [
         "🔍 **Genel profil bilgileri:**",

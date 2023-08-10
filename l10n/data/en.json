@@ -494,9 +494,10 @@
         "<h4>M249:</h4>",
         "<ul><li>Shots: <b>{:,}</b></li><li>Hits: <b>{:,}</b></li><li>Kills: <b>{:,}</b></li><li>Fire accuracy: <b>{}</b>%</li></ul>"
     ],
-    "user_gamestats_invalidrequest_error": "⚠️ Invalid request.",
-    "user_gamestats_privateprofile_error": "❕ This account is private, statistics are not available. Please, change your privacy settings.",
     "user_gamestats_share": "Share",
+    "user_invalidlink_error": "⚠️ The link you sent is invalid, please check if it's correct and try again.",
+    "user_invalidrequest_error": "⚠️ Invalid request.",
+    "user_privateprofile_error": "❕ This account is private, statistics are not available. Please, change your privacy settings.",
     "user_profileinfo_title": "Bans and restrictions",
     "user_profileinfo_text": [
         "🔍 **General profile information:**",
