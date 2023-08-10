@@ -364,8 +364,10 @@ def parse_steamid64(data: str):
     if validators.url(data):
         if not steam_profile_link_pattern.match(data):
             raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
-
-        return steamid.from_url(data)
+        try:
+            return steamid.from_url(data)
+        except requests.exceptions.JSONDecodeError:
+            raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
 
     if SteamID(data).is_valid():
         return SteamID(data)
