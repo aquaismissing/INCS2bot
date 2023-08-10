@@ -41,6 +41,7 @@ bot = BClient(config.BOT_NAME,
               api_hash=config.API_HASH,
               bot_token=config.BOT_TOKEN,
               plugins={'root': 'plugins'})
+telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
 user_data = pd.read_csv(config.USER_DB_FILE_PATH)
 
@@ -495,7 +496,6 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     steamid, *stats = user_stats
     stats_page_title = client.locale.user_gamestats_page_title.format(steamid)
     stats_page_text = client.locale.user_gamestats_text.format(*stats)
-    telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
     telegraph_response = telegraph.create_page(stats_page_title,
                                                html_content=stats_page_text,
