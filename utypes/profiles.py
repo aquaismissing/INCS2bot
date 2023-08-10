@@ -297,17 +297,10 @@ class ProfileInfo:
                     user = faceit_result[0]
                     faceit_url = f'https://faceit.com/en/players/{user["nickname"]}'
                     elo_api = requests.get(f'https://api.faceit.com/users/v1/users/{user["id"]}', 
-                                           timeout=15).json()['payload']['games']
+                                           timeout=15).json()['payload']['games']['csgo']
 
-                    faceit_elo = 0
-                    if 'faceit_elo' in elo_api['csgo']:
-                        faceit_elo = elo_api['csgo']['faceit_elo']
-
-                    faceit_lvl = 0
-                    for game in user['games']:
-                        if game['name'] == 'csgo':
-                            faceit_lvl = game['skill_level']
-                            break
+                    faceit_elo = elo_api.get('faceit_elo', 0)
+                    faceit_lvl = elo_api.get('skill_level', 0)
                 else:
                     user = faceit_response[0]
                     faceit_url = f'https://faceit.com/en/players/{user["nickname"]}'
