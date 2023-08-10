@@ -1,5 +1,4 @@
 import datetime as dt
-import marshal
 
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -8,8 +7,6 @@ from pyrogram.types import (CallbackQuery, Message, MessageEntity,
                             ReplyKeyboardRemove, ForceReply, User)
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
-
-from l10n import Locale
 
 
 class UserSession:  # todo: sessions caching so we can restore them after reload
@@ -58,8 +55,13 @@ class BClient(Client):
     def register_session(self, user: User, *, force_lang: str = None):
         self._sessions[user.id] = UserSession(user, force_lang=force_lang)
 
-    def clear_timeout_sessions(self, *, hours: int = 0, minutes: int = 0, seconds: int = 0):
-        if hours == minutes == seconds == 0:
+    def clear_timeout_sessions(self, *, hours: int = None, minutes: int = None, seconds: int = None):
+        """
+        Clear all sessions that exceed given timeout.
+        Defaults to 1 hour if no values passed in.
+        """
+
+        if hours is minutes is seconds is None:
             hours = 1
 
         now = dt.datetime.now()
