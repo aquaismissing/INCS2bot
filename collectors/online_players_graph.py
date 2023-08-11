@@ -99,12 +99,13 @@ def graph_maker():
 
         fig.savefig(config.GRAPH_IMG_FILE_PATH)
         try:
-            url = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))
+            image_path = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))[0]['src']
         except JSONDecodeError:  # SCREW YOU
-            url = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))
+            image_path = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))[0]['src']
+        image_url = f'https://telegra.ph{image_path}'
 
-        if url != cache.get("graph_url"):
-            cache['graph_url'] = url
+        if image_url != cache.get("graph_url"):
+            cache['graph_url'] = image_url
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4)
