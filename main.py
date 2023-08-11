@@ -1,6 +1,7 @@
 import asyncio
 import datetime as dt
 import json
+from json import JSONDecodeError
 import logging
 import traceback
 
@@ -13,7 +14,6 @@ from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, Message
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
-from requests.exceptions import JSONDecodeError
 from telegraph.aio import Telegraph
 
 import config
@@ -41,7 +41,7 @@ bot = BClient(config.BOT_NAME,
               api_hash=config.API_HASH,
               bot_token=config.BOT_TOKEN,
               plugins={'root': 'plugins'})
-telegraph = Telegraph()
+telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
 user_data = pd.read_csv(config.USER_DB_FILE_PATH)
 
