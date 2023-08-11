@@ -254,7 +254,6 @@ class UserGameStats(NamedTuple):
                 raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
             raise e
         except Exception as e:
-            logging.exception('Caught exception at parsing user CS stats!')
             raise e
 
 
@@ -354,7 +353,6 @@ class ProfileInfo:
                 raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
             raise e
         except Exception as e:
-            logging.exception('Caught exception at parsing user profile info!')
             raise e
 
     def to_tuple(self):

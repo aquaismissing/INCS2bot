@@ -40,7 +40,7 @@ def ignore_message_not_modified(func):
 
 
 def ignore_blocking(func):
-    """Decorator to ignore annoying `pyrogram.errors.UserIsBlocked`."""
+    """Decorator to ignore `pyrogram.errors.UserIsBlocked`."""
 
     @wraps(func)
     async def inner(client: Client, callback_query: CallbackQuery, *args, **kwargs):

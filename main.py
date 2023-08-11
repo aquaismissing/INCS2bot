@@ -621,7 +621,6 @@ async def send_game_version(client: BClient, callback_query: CallbackQuery):
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_button_text))
 @came_from(extra_features)
-@ignore_message_not_modified
 async def guns(client: BClient, callback_query: CallbackQuery):
     await callback_query.edit_message_text(client.locale.gun_select_category,
                                            reply_markup=keyboards.guns_markup(client.locale))
@@ -629,7 +628,6 @@ async def guns(client: BClient, callback_query: CallbackQuery):
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_pistols))
 @came_from(guns)
-@ignore_message_not_modified
 async def pistols(client: BClient, callback_query: CallbackQuery, loop: bool = False):
     if loop:
         choosed_gun = await client.listen_callback(callback_query.message.chat.id,
@@ -655,7 +653,6 @@ async def pistols(client: BClient, callback_query: CallbackQuery, loop: bool = F
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_heavy))
 @came_from(guns)
-@ignore_message_not_modified
 async def heavy(client: BClient, callback_query: CallbackQuery, loop: bool = False):
     if loop:
         choosed_gun = await client.listen_callback(callback_query.message.chat.id,
@@ -681,7 +678,6 @@ async def heavy(client: BClient, callback_query: CallbackQuery, loop: bool = Fal
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_smgs))
 @came_from(guns)
-@ignore_message_not_modified
 async def smgs(client: BClient, callback_query: CallbackQuery, loop: bool = False):
     if loop:
         choosed_gun = await client.listen_callback(callback_query.message.chat.id,
@@ -707,7 +703,6 @@ async def smgs(client: BClient, callback_query: CallbackQuery, loop: bool = Fals
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_rifles))
 @came_from(guns)
-@ignore_message_not_modified
 async def rifles(client: BClient, callback_query: CallbackQuery, loop: bool = False):
     if loop:
         choosed_gun = await client.listen_callback(callback_query.message.chat.id,
