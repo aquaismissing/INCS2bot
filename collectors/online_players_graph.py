@@ -4,11 +4,12 @@ import logging
 import time
 
 from apscheduler.schedulers.blocking import BlockingScheduler
-from html_telegraph_poster.upload_images import upload_image
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
+from requests import JSONDecodeError
 import seaborn as sns
+from telegraph import Telegraph
 
 # noinspection PyUnresolvedReferences
 import env
@@ -21,6 +22,7 @@ logging.basicConfig(level=logging.INFO,
                     datefmt="%H:%M:%S — %d/%m/%Y")
 
 scheduler = BlockingScheduler()
+telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
 
 @scheduler.scheduled_job('cron', hour='*', minute='0,10,20,30,40,50', second='0')
@@ -96,7 +98,10 @@ def graph_maker():
         plt.close()
 
         fig.savefig(config.GRAPH_IMG_FILE_PATH)
-        url = upload_image(str(config.GRAPH_IMG_FILE_PATH))
+        try:
+            url = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))
+        except JSONDecodeError:  # SCREW YOU
+            url = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))
 
         if url != cache.get("graph_url"):
             cache['graph_url'] = url
