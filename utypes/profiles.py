@@ -22,6 +22,12 @@ logging.basicConfig(level=logging.INFO,
                     datefmt="%H:%M:%S — %d/%m/%Y")
 
 
+def to_percentage(x: int | float, /, round_to: int = 2):
+    """Shortcut to `round(x * 100, round_to)`."""
+
+    return round(x * 100, round_to if round_to else None)
+
+
 class ParsingUserStatsError(Exception):
     INVALID_REQUEST = 'INVALID_REQUEST'
     INVALID_LINK = 'INVALID_LINK'
@@ -198,24 +204,24 @@ class UserGameStats(NamedTuple):
                    'galilar', 'aug', 'sg556', 'ssg08', 'scar20', 'g3sg1', 'nova', 'mag7', 'sawedoff',
                    'xm1014', 'negev', 'm249')
 
-        stats['total_time_played'] = round(stats["total_time_played"] / 3600, 2)
+        stats['total_time_played'] = round(stats['total_time_played'] / 3600, 2)
         stats['kd_ratio'] = round(stats['total_kills'] / stats['total_deaths'], 2)
-        stats['matches_win_percentage'] = round(stats['total_matches_won'] / stats['total_matches_played'] * 100, 2)
-        stats['hit_accuracy'] = round(stats['total_shots_hit'] / stats['total_shots_fired'] * 100, 2)
-        stats['headshots_percentage'] = round(stats['total_kills_headshot'] / stats['total_kills'] * 100, 2)
+        stats['matches_win_percentage'] = to_percentage(stats['total_matches_won'] / stats['total_matches_played'])
+        stats['hit_accuracy'] = to_percentage(stats['total_shots_hit'] / stats['total_shots_fired'])
+        stats['headshots_percentage'] = to_percentage(stats['total_kills_headshot'] / stats['total_kills'])
 
-        best_map = max((stat for stat in stats if stat.startswith('total_wins_map_')),
-                       key=lambda x: stats[x]).split('_')[-2:]
+        total_wins_map_stats = (stat for stat in stats if stat.startswith('total_wins_map_'))
+        best_map = max(total_wins_map_stats, key=lambda x: stats[x]).split('_')[-2:]
         stats['best_map_name'] = best_map[-1].capitalize()
         best_map_wins = stats[f'total_wins_map_{"_".join(best_map)}']
         best_map_rounds = stats[f'total_rounds_map_{"_".join(best_map)}']
-        stats['best_map_win_percentage'] = round(best_map_wins / best_map_rounds * 100, 2)
+        stats['best_map_win_percentage'] = to_percentage(best_map_wins / best_map_rounds)
 
-        stats['taser_accuracy'] = round(stats['total_kills_taser'] / stats[f'total_shots_taser'] * 100, 2)
+        stats['taser_accuracy'] = to_percentage(stats.get('total_kills_taser', 0) / stats.get(f'total_shots_taser', 1))
 
         for weapon in weapons:
-            stats[f'{weapon}_accuracy'] = \
-                round(stats[f'total_hits_{weapon}'] / stats[f'total_shots_{weapon}'] * 100, 2)
+            stats[f'{weapon}_accuracy'] = (
+                to_percentage(stats.get(f'total_hits_{weapon}', 0) / stats.get(f'total_shots_{weapon}', 1)))
 
         stats = {k: v for k, v in stats.items() if k in cls._fields}
         for field in cls._fields:
@@ -233,7 +239,7 @@ class UserGameStats(NamedTuple):
             if not response:
                 raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
 
-            stats_dict = {stat['name']: stat['value'] for stat in response["playerstats"]["stats"]}
+            stats_dict = {stat['name']: stat['value'] for stat in response['playerstats']['stats']}
             stats_dict['steamid'] = steam64
 
             return cls.from_dict(stats_dict)
