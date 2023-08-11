@@ -498,7 +498,6 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery, last_e
     await callback_query.message.reply(telegraph_response['url'], reply_markup=markup_share)
     await callback_query.message.reply(client.locale.bot_choose_cmd,
                                        reply_markup=keyboards.profile_markup(client.locale))
-    await callback_query.message.delete()
 
 
 async def user_info_handle_error(client: BClient, user_input: Message, exc: ParsingUserStatsError):
