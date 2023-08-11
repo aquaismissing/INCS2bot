@@ -477,6 +477,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
                                                          author_name="@INCS2bot",
                                                          author_url="https://t.me/INCS2bot")
     except JSONDecodeError:  # SCREW YOU
+        await asyncio.sleep(1)
         telegraph_response = await telegraph.create_page(stats_page_title,
                                                          html_content=stats_page_text,
                                                          author_name="@INCS2bot",

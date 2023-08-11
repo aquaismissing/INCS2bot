@@ -101,6 +101,7 @@ def graph_maker():
         try:
             image_path = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))[0]['src']
         except JSONDecodeError:  # SCREW YOU
+            time.sleep(1)
             image_path = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))[0]['src']
         image_url = f'https://telegra.ph{image_path}'
 
