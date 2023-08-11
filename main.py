@@ -487,12 +487,9 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery, last_e
                                                          html_content=stats_page_text,
                                                          author_name="@INCS2bot",
                                                          author_url="https://t.me/INCS2bot")
-    except JSONDecodeError:  # SCREW YOU
-        await asyncio.sleep(1)
-        telegraph_response = await telegraph.create_page(stats_page_title,
-                                                         html_content=stats_page_text,
-                                                         author_name="@INCS2bot",
-                                                         author_url="https://t.me/INCS2bot")
+    except JSONDecodeError:  # Telegraph is a piece of garbage
+        await steam_url.delete()
+        return await user_game_stats(client, callback_query, last_error=client.locale.user_telegraph_error)
 
     share_btn = ExtendedIKB(client.locale.user_gamestats_share,
                             switch_inline_query=telegraph_response['url'])
