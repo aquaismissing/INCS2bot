@@ -17,9 +17,11 @@
     ],
     "bot_choose_cmd": "📖 Aşağıdaki komutlardan birini kullanın:",
     "bot_choose_func": "🔖 İstediğiniz işlevi seçin:",
+    "bot_use_cancel": "Bir komutu iptal etmek için /cancel kullanın.",
     "bot_feedback_success": "Harika! Mesajınız gönderildi.",
     "bot_pmonly_text": "Bu komut sadece özel mesajlarda çalışır.",
     "bot_back": "⏪ Geri",
+    "bot_loading": "🔄 Loading...",
     "bot_author_text": "🔫 Counter-Strike Güncellemeleri",
     "bot_author_link": "https://t.me/INCS2",
     "bot_servers_stats": "Sunucu istatistikleri",
@@ -28,16 +30,8 @@
     "crosshair": "🆕 Nişangah",
     "crosshair_generate": "Yaratmak",
     "crosshair_decode": "Deşifre etmek",
-    "crosshair_decode_example": [
-        "📖 Lütfen kodunu çözmek istediğiniz nişangah kodunu girin (ör. `CSGO-O4Jsi-V36wY-rTMGK-9w7qF-jQ8WB`).",
-        "",
-        "Bir komutu iptal etmek için /cancel kullanın."
-    ],
-    "crosshair_decode_error": [
-        "⚠️ Geçersiz kod, lütfen tekrar deneyiniz.",
-        "",
-        "Bir komutu iptal etmek için /cancel kullanın."
-    ],
+    "crosshair_decode_example": "📖 Lütfen kodunu çözmek istediğiniz nişangah kodunu girin (ör. `CSGO-O4Jsi-V36wY-rTMGK-9w7qF-jQ8WB`).",
+    "crosshair_decode_error": "⚠️ Geçersiz kod, lütfen tekrar deneyiniz.",
     "crosshair_decode_result": [
         "🧬 Bu nişangah kodunun çözülmüş parametreleri:",
         "",
@@ -399,9 +393,7 @@
         "• Profil bağlantısı (ör.: `https://steamcommunity.com/id/aquaismissing`)",
         "• Profile kalıcı bağlantı (ör.: `https://steamcommunity.com/profiles/76561198346163255`)",
         "• SteamID (ör.: `76561198346163255`)",
-        "• kişisel bağlantı (ör.: `aquaismissing`)",
-        "",
-        "Bir komutu iptal etmek için /cancel kullanın."
+        "• kişisel bağlantı (ör.: `aquaismissing`)"
     ],
     "user_gamestats_button_title": "CS oyun istatistikleri",
     "user_gamestats_inline_title": "Oyun istatistikleriniz",
@@ -498,6 +490,7 @@
     "user_gamestats_share": "Paylaşmak",
     "user_invalidlink_error": "⚠️ Gönderdiğiniz bağlantı geçersiz, lütfen doğruluğunu kontrol edin ve tekrar deneyin.",
     "user_invalidrequest_error": "⚠️ Geçersiz istek.",
+    "user_telegraph_error": "⚠️ Internal Telegraph error, please re-enter your link.",
     "user_privateprofile_error": "❕ Bu hesap gizlidir, istatistik almak imkansızdır. Lütfen gizlilik ayarlarınızı değiştirin.",
     "user_profileinfo_title": "Bloklar ve kısıtlamalar",
     "user_profileinfo_text": [
