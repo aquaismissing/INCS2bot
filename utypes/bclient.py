@@ -8,6 +8,8 @@ from pyrogram.types import (CallbackQuery, Message, MessageEntity,
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 
+from keyboards import ExtendedIKM
+
 
 class UserSession:  # todo: sessions caching so we can restore them after reload
     __slots__ = ('user', 'timestamp', 'came_from', 'lang_code', 'locale')
@@ -121,3 +123,17 @@ class BClient(Client):
                                              inline_message_id,
                                              filters,
                                              timeout)
+
+    async def ask_message_silently(self, callback_query: CallbackQuery,
+                                   text: str, *args, reply_markup: ExtendedIKM = None, **kwargs) -> Message:
+        """Asks for a message in the same message."""
+
+        await callback_query.edit_message_text(text, *args, reply_markup=reply_markup, **kwargs)
+        return await self.listen_message(callback_query.message.chat.id)
+
+    async def ask_callback_silently(self, callback_query: CallbackQuery,
+                                    text: str, *args, reply_markup: ExtendedIKM = None, **kwargs) -> CallbackQuery:
+        """Asks for a callback query in the same message."""
+
+        await callback_query.edit_message_text(text, *args, reply_markup=reply_markup, **kwargs)
+        return await self.listen_callback(callback_query.message.chat.id, callback_query.message.id)

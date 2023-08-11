@@ -18,7 +18,6 @@ from telegraph import Telegraph
 
 import config
 from functions import datacenter_handlers, server_stats_handlers, ufilters
-from functions.askers import *
 from functions.decorators import *
 from functions.logs import *
 import keyboards
@@ -386,7 +385,7 @@ async def profile_info(client: BClient, callback_query: CallbackQuery):
 @log_exception_callback
 @ignore_blocking
 async def user_profile_info(client: BClient, callback_query: CallbackQuery):
-    steam_url: Message = await ask_message_silently(client, callback_query, client.locale.steam_url_example)
+    steam_url = await client.ask_message_silently(callback_query, client.locale.steam_url_example)
 
     await log_message(client, steam_url)
 
@@ -449,9 +448,9 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
 @ignore_blocking
 @ignore_message_not_modified
 async def user_game_stats(client: BClient, callback_query: CallbackQuery):
-    steam_url: Message = await ask_message_silently(client, callback_query,
-                                                    client.locale.steam_url_example,
-                                                    disable_web_page_preview=True)
+    steam_url = await client.ask_message_silently(callback_query,
+                                                  client.locale.steam_url_example,
+                                                  disable_web_page_preview=True)
 
     await log_message(client, steam_url)
 
@@ -546,7 +545,7 @@ async def decode_crosshair(client: BClient, callback_query: CallbackQuery, error
     if error_loop >= 2:
         decode_input = await client.listen_message(callback_query.message.chat.id)
     else:
-        decode_input = await ask_message_silently(client, callback_query, text)
+        decode_input = await client.ask_message_silently(callback_query, text)
 
     await log_message(client, decode_input)
 
@@ -636,10 +635,9 @@ async def pistols(client: BClient, callback_query: CallbackQuery, loop: bool = F
         choosed_gun = await client.listen_callback(callback_query.message.chat.id,
                                                    callback_query.message.id)
     else:
-        choosed_gun = await ask_callback_silently(client,
-                                                  callback_query,
-                                                  client.locale.gun_select_pistol,
-                                                  reply_markup=keyboards.pistols_markup(client.locale))
+        choosed_gun = await client.ask_callback_silently(callback_query,
+                                                         client.locale.gun_select_pistol,
+                                                         reply_markup=keyboards.pistols_markup(client.locale))
 
     await log_callback(client, choosed_gun)
 
@@ -663,10 +661,9 @@ async def heavy(client: BClient, callback_query: CallbackQuery, loop: bool = Fal
         choosed_gun = await client.listen_callback(callback_query.message.chat.id,
                                                    callback_query.message.id)
     else:
-        choosed_gun = await ask_callback_silently(client,
-                                                  callback_query,
-                                                  client.locale.gun_select_heavy,
-                                                  reply_markup=keyboards.heavy_markup(client.locale))
+        choosed_gun = await client.ask_callback_silently(callback_query,
+                                                         client.locale.gun_select_heavy,
+                                                         reply_markup=keyboards.heavy_markup(client.locale))
 
     await log_callback(client, choosed_gun)
 
@@ -690,10 +687,9 @@ async def smgs(client: BClient, callback_query: CallbackQuery, loop: bool = Fals
         choosed_gun = await client.listen_callback(callback_query.message.chat.id,
                                                    callback_query.message.id)
     else:
-        choosed_gun = await ask_callback_silently(client,
-                                                  callback_query,
-                                                  client.locale.gun_select_smg,
-                                                  reply_markup=keyboards.smgs_markup(client.locale))
+        choosed_gun = await client.ask_callback_silently(callback_query,
+                                                         client.locale.gun_select_smg,
+                                                         reply_markup=keyboards.smgs_markup(client.locale))
 
     await log_callback(client, choosed_gun)
 
@@ -717,10 +713,9 @@ async def rifles(client: BClient, callback_query: CallbackQuery, loop: bool = Fa
         choosed_gun = await client.listen_callback(callback_query.message.chat.id,
                                                    callback_query.message.id)
     else:
-        choosed_gun = await ask_callback_silently(client,
-                                                  callback_query,
-                                                  client.locale.gun_select_rifle,
-                                                  reply_markup=keyboards.rifles_markup(client.locale))
+        choosed_gun = await client.ask_callback_silently(callback_query,
+                                                         client.locale.gun_select_rifle,
+                                                         reply_markup=keyboards.rifles_markup(client.locale))
 
     await log_callback(client, choosed_gun)
     client.current_session = client.sessions[callback_query.from_user.id]
