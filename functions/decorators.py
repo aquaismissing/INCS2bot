@@ -1,3 +1,5 @@
+from functools import wraps
+
 from pyrogram import Client
 from pyrogram.errors import MessageNotModified, UserIsBlocked
 from pyrogram.types import CallbackQuery
@@ -12,7 +14,9 @@ def came_from(f):
     """
     Decorator that tracks from what function we came from and stores it in `UserSession`.
     """
+
     def decorator(func):
+        @wraps(func)
         async def inner(client: BClient, callback_query: CallbackQuery, *args, **kwargs):
             client.current_session.came_from = f
             await func(client, callback_query, *args, **kwargs)
@@ -25,6 +29,7 @@ def came_from(f):
 def ignore_message_not_modified(func):
     """Decorator to ignore annoying `pyrogram.errors.MessageNotModified`."""
 
+    @wraps(func)
     async def inner(client: Client, callback_query: CallbackQuery, *args, **kwargs):
         try:
             await func(client, callback_query, *args, **kwargs)
@@ -37,6 +42,7 @@ def ignore_message_not_modified(func):
 def ignore_blocking(func):
     """Decorator to ignore annoying `pyrogram.errors.UserIsBlocked`."""
 
+    @wraps(func)
     async def inner(client: Client, callback_query: CallbackQuery, *args, **kwargs):
         try:
             await func(client, callback_query, *args, **kwargs)
