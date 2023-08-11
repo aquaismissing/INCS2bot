@@ -384,8 +384,11 @@ async def profile_info(client: BClient, callback_query: CallbackQuery):
 @bot.on_callback_query(ufilters.callback_data_equals(LK.user_profileinfo_title))
 @log_exception_callback
 @ignore_blocking
-async def user_profile_info(client: BClient, callback_query: CallbackQuery):
-    steam_url = await client.ask_message_silently(callback_query, client.locale.steam_url_example)
+async def user_profile_info(client: BClient, callback_query: CallbackQuery, last_error: str = None):
+    text = client.locale.steam_url_example if last_error is None else last_error
+    text += '\n\n' + client.locale.bot_use_cancel
+
+    steam_url = await client.ask_message_silently(callback_query, text)
 
     await log_message(client, steam_url)
 
@@ -393,12 +396,15 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
         await steam_url.delete()
         return await profile_info(client, callback_query)
 
+    await callback_query.edit_message_text(client.locale.bot_loading)
     await client.send_chat_action(callback_query.message.chat.id, ChatAction.TYPING)
 
     try:
         info = ProfileInfo.get(steam_url.text)
     except ParsingUserStatsError as e:
-        return await user_info_handle_error(client, callback_query, steam_url, e)
+        await steam_url.delete()
+        error_msg = await user_info_handle_error(client, steam_url, e)
+        return await user_game_stats(client, callback_query, last_error=error_msg)
     except Exception as e:
         await steam_url.delete()
         raise e
@@ -447,10 +453,11 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery):
 @log_exception_callback
 @ignore_blocking
 @ignore_message_not_modified
-async def user_game_stats(client: BClient, callback_query: CallbackQuery):
-    steam_url = await client.ask_message_silently(callback_query,
-                                                  client.locale.steam_url_example,
-                                                  disable_web_page_preview=True)
+async def user_game_stats(client: BClient, callback_query: CallbackQuery, last_error: str = None):
+    text = client.locale.steam_url_example if last_error is None else last_error
+    text += '\n\n' + client.locale.bot_use_cancel
+
+    steam_url = await client.ask_message_silently(callback_query, text)
 
     await log_message(client, steam_url)
 
@@ -458,11 +465,15 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
         await steam_url.delete()
         return await profile_info(client, callback_query)
 
+    await callback_query.edit_message_text(client.locale.bot_loading)
     await client.send_chat_action(callback_query.message.chat.id, ChatAction.TYPING)
+
     try:
         user_stats = UserGameStats.get(steam_url.text)
     except ParsingUserStatsError as e:
-        return await user_info_handle_error(client, callback_query, steam_url, e)
+        await steam_url.delete()
+        error_msg = await user_info_handle_error(client, steam_url, e)
+        return await user_game_stats(client, callback_query, last_error=error_msg)
     except Exception as e:
         await steam_url.delete()
         raise e
@@ -493,8 +504,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     await callback_query.message.delete()
 
 
-async def user_info_handle_error(client: BClient, initial_query: CallbackQuery,
-                                 user_input: Message, exc: ParsingUserStatsError):
+async def user_info_handle_error(client: BClient, user_input: Message, exc: ParsingUserStatsError):
     if exc.is_unknown:
         await user_input.delete()
         raise exc
@@ -506,9 +516,7 @@ async def user_info_handle_error(client: BClient, initial_query: CallbackQuery,
         error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
                     client.locale.user_privateprofile_error
 
-    await initial_query.message.reply(error_msg)
-    await initial_query.message.reply(client.locale.bot_choose_cmd,
-                                      reply_markup=keyboards.profile_markup(client.locale))
+    return error_msg
 
 # cat: Extra features
 
@@ -540,13 +548,11 @@ async def generate_crosshair(client: BClient, callback_query: CallbackQuery):  #
 @log_exception_callback
 @bot.on_callback_query(ufilters.callback_data_equals(LK.crosshair_decode))
 @ignore_message_not_modified
-async def decode_crosshair(client: BClient, callback_query: CallbackQuery, error_loop: int = 0):
-    text = client.locale.crosshair_decode_example if not error_loop else client.locale.crosshair_decode_error
+async def decode_crosshair(client: BClient, callback_query: CallbackQuery, last_error: str = None):
+    text = client.locale.crosshair_decode_example if last_error is None else last_error
+    text += '\n\n' + client.locale.bot_use_cancel
 
-    if error_loop >= 2:
-        decode_input = await client.listen_message(callback_query.message.chat.id)
-    else:
-        decode_input = await client.ask_message_silently(callback_query, text)
+    decode_input = await client.ask_message_silently(callback_query, text)
 
     await log_message(client, decode_input)
 
@@ -554,9 +560,12 @@ async def decode_crosshair(client: BClient, callback_query: CallbackQuery, error
         await decode_input.delete()
         return await crosshair(client, callback_query)
 
+    await callback_query.edit_message_text(client.locale.bot_loading)
+
     _crosshair = Crosshair.decode(decode_input.text)
     if _crosshair is None:
-        return await decode_crosshair(client, callback_query, error_loop + 1)
+        await decode_input.delete()
+        return await decode_crosshair(client, callback_query, last_error=client.locale.crosshair_decode_error)
 
     text = client.locale.crosshair_decode_result.format('; '.join(_crosshair.commands))
 
