@@ -6,6 +6,7 @@ import traceback
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_datetime
+from html_telegraph_poster import TelegraphPoster
 import pandas as pd
 from pyrogram import filters, idle
 from pyrogram.enums import ChatType, ChatAction, ParseMode
@@ -41,7 +42,7 @@ bot = BClient(config.BOT_NAME,
               api_hash=config.API_HASH,
               bot_token=config.BOT_TOKEN,
               plugins={'root': 'plugins'})
-telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
+telegraph = TelegraphPoster(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
 user_data = pd.read_csv(config.USER_DB_FILE_PATH)
 
@@ -471,10 +472,10 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     stats_page_title = client.locale.user_gamestats_page_title.format(steamid)
     stats_page_text = client.locale.user_gamestats_text.format(*stats)
 
-    telegraph_response = await telegraph.create_page(stats_page_title,
-                                                     html_content=stats_page_text,
-                                                     author_name="@INCS2bot",
-                                                     author_url="https://t.me/INCS2bot")
+    telegraph_response = await telegraph.post(stats_page_title,
+                                              author="@INCS2bot",
+                                              text=stats_page_text,
+                                              author_url="https://t.me/INCS2bot")
 
     share_btn = ExtendedIKB(client.locale.user_gamestats_share,
                             switch_inline_query=telegraph_response['url'])
