@@ -779,8 +779,9 @@ async def leave_feedback(client: BClient, message: Message):
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, message)
 
-    feedback: Message = await client.ask_message(message.chat.id,
-                                                 client.locale.bot_feedback_text)
+    text = client.locale.bot_feedback_text + '\n\n' + client.locale.bot_use_cancel
+
+    feedback = await client.ask_message(message.chat.id, text)
 
     if feedback.text == "/cancel":
         await feedback.delete()
