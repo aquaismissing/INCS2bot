@@ -37,9 +37,11 @@ class Locale(NamedTuple):
     bot_feedback_text: str
     bot_choose_cmd: str
     bot_choose_func: str
+    bot_use_cancel: str
     bot_feedback_success: str
     bot_pmonly_text: str
     bot_back: str
+    bot_loading: str
     bot_author_text: str
     bot_author_link: str
     bot_servers_stats: str
@@ -312,6 +314,7 @@ class Locale(NamedTuple):
     user_gamestats_share: str
     user_invalidlink_error: str
     user_invalidrequest_error: str
+    user_telegraph_error: str
     user_privateprofile_error: str
     user_profileinfo_title: str
     user_profileinfo_text: str
