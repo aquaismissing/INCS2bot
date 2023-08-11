@@ -2,7 +2,6 @@ from pyrogram.types import (CallbackGame,
                             InlineKeyboardButton,
                             InlineKeyboardMarkup,
                             LoginUrl,
-                            ReplyKeyboardRemove,
                             WebAppInfo)
 
 from l10n import Locale, LocaleKeys as LK
@@ -78,9 +77,6 @@ class ExtendedIKM(InlineKeyboardMarkup):
                     else:
                         button.selected = False  # only one button at a time can be selected
 
-
-# Delete keyboard
-markup_del = ReplyKeyboardRemove(False)
 
 # Back button
 back_button = ExtendedIKB(LK.bot_back, LK.bot_back, selectable=False)

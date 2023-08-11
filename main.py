@@ -804,22 +804,6 @@ async def _help(client: BClient, message: Message):
     await message.reply(client.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(client.locale))
 
 
-@bot.on_message(filters.command("delkey"))
-async def delete_keyboard(client: BClient, message: Message):
-    await message.delete()
-    msg = await message.reply("👍", quote=False, reply_markup=keyboards.markup_del)
-    await asyncio.sleep(10)
-    await msg.delete()
-
-
-@bot.on_message(filters.command("sueta"))
-async def blinky_eyes(client: BClient, message: Message):
-    await message.delete()
-    msg = await message.reply("👀", quote=False, reply_markup=keyboards.markup_del)
-    await asyncio.sleep(10)
-    await msg.delete()
-
-
 # cat: Service
 
 
