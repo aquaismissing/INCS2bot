@@ -13,6 +13,7 @@ from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, Message
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
+from requests.exceptions import JSONDecodeError
 from telegraph import Telegraph
 
 import config
@@ -471,10 +472,16 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery):
     stats_page_title = client.locale.user_gamestats_page_title.format(steamid)
     stats_page_text = client.locale.user_gamestats_text.format(*stats)
 
-    telegraph_response = telegraph.create_page(stats_page_title,
-                                               html_content=stats_page_text,
-                                               author_name="@INCS2bot",
-                                               author_url="https://t.me/INCS2bot")
+    try:
+        telegraph_response = telegraph.create_page(stats_page_title,
+                                                   html_content=stats_page_text,
+                                                   author_name="@INCS2bot",
+                                                   author_url="https://t.me/INCS2bot")
+    except JSONDecodeError:  # screw you
+        telegraph_response = telegraph.create_page(stats_page_title,
+                                                   html_content=stats_page_text,
+                                                   author_name="@INCS2bot",
+                                                   author_url="https://t.me/INCS2bot")
 
     share_btn = ExtendedIKB(client.locale.user_gamestats_share,
                             switch_inline_query=telegraph_response['url'])
