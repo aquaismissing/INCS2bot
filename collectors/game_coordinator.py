@@ -13,6 +13,9 @@ import time
 from csgo.client import CSGOClient
 from steam.client import SteamClient
 from steam.enums import EResult
+
+from steam.ext.csgo import Client
+
 if platform.system() == 'Linux':
     # noinspection PyPackageRequirements
     import uvloop
@@ -28,20 +31,45 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s | GC: %(message)s',
                     datefmt='%H:%M:%S — %d/%m/%Y')
 
-client = SteamClient()
-client.set_credential_location(config.STEAM_CREDS_PATH)
-cs = CSGOClient(client)
+
+class GCCollector(Client):
+    async def on_connect(self):
+        logging.info('Connected to Steam.')
+
+    async def on_gc_connect(self):
+        logging.info('CS launched.')
+
+    async def on_gc_ready(self, status):
+        statuses = {0: States.NORMAL, 1: States.INTERNAL_SERVER_ERROR, 2: States.OFFLINE,
+                    3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
+        game_coordinator = statuses.get(status, States.UNKNOWN)
+
+        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache = json.load(f)
+
+        if game_coordinator != cache.get('game_coordinator'):
+            cache['game_coordinator'] = game_coordinator.literal
+
+        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(cache, f, indent=4)
+
+        logging.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
 
 
-@client.on("error")
-def handle_error(result):
-    logging.info(f'Logon result: {result!r}')
+# client = SteamClient()
+# client.set_credential_location(str(config.STEAM_CREDS_PATH))
+# cs = CSGOClient(client)
 
 
-@client.on('channel_secured')
-def send_login():
-    if client.relogin_available:
-        client.relogin()
+# @client.on("error")
+# def handle_error(result):
+#     logging.info(f'Logon result: {result!r}')
+
+
+# @client.on('channel_secured')
+# def send_login():
+#     if client.relogin_available:
+#         client.relogin()
 
 
 @client.on('connected')
@@ -56,11 +84,16 @@ def handle_reconnect(delay):
 
 @client.on('disconnected')
 def handle_disconnect():
+    cs.exit()
     logging.info('Disconnected.')
 
-    if client.relogin_available:
-        logging.info('Reconnecting...')
-        client.reconnect(maxdelay=30)
+    logging.info('Reconnecting...')
+    result = client.reconnect(maxdelay=30, retry=3)
+
+    logging.info('Reconnected successfully.' if result else 'Failed to reconnect.')
+    if result:
+        logging.info(f'{client.logged_on=}')
+        cs.emit('reload')
 
 
 @cs.on('connection_status')
@@ -81,10 +114,21 @@ def gc_ready(status):
     logging.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
 
 
+@cs.on('ready')
+def cs_launched():
+    logging.info(f'CS launched.')
+
+
+@cs.on('reload')
+def cs_exit():
+    logging.info(f'Reloading CS...')
+    cs.launch()
+
+
 @client.on('logged_on')
 def handle_after_logon():
+    cs.launch()
     Thread(target=depots_prepare).start()
-    Thread(target=gc).start()
     Thread(target=online_players).start()
 
 
@@ -135,12 +179,7 @@ async def depots():
             json.dump(cache, f, indent=4)
 
         logging.info('Successfully dumped game build IDs.')
-
         time.sleep(45)
-
-
-def gc():
-    cs.launch()
 
 
 def gv_updater():
@@ -185,10 +224,16 @@ def online_players():
         time.sleep(45)
 
 
+@client.on('new_login_key')
+def lol():
+    logging.info(f'{client.login_key=}')
+
+
 def main():
     try:
         logging.info('Logging in...')
         result = client.login(username=config.STEAM_USERNAME, password=config.STEAM_PASS)
+        logging.info(f'{client.login_key=}')
 
         if result != EResult.OK:
             logging.error(f"Failed to login: {result!r}")

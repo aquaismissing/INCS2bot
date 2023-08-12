@@ -6,17 +6,15 @@ import requests
 
 import config
 from .states import State, States
+from .steam_webapi import SteamWebAPI
 
 
 __all__ = ('GameVersionData',  'ExchangeRate', 'GameServersData',
            'get_monthly_unique_players', 'drop_cap_reset_timer')
 
 
-MONTHLY_UNIQUE_PLAYERS_API = "https://api.steampowered.com/ICSGOServers_730/GetMonthlyPlayerCount/v1"
 CSGO_VERSION_DATA_URL = "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf"
 CS2_VERSION_DATA_URL = "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/game/csgo/steam.inf"
-GET_KEY_PRICES_API = f"https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/?appid={config.CS_APP_ID}" \
-                     f"&key={config.STEAM_API_KEY}"
 GAME_SERVERS_STATUS_API = f"https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1" \
                           f"?key={config.STEAM_API_KEY}"
 
@@ -24,6 +22,8 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko
 
 MINUTE = 60
 HOUR = 60 * MINUTE
+
+api = SteamWebAPI(config.STEAM_API_KEY)
 
 
 class GameVersionData(NamedTuple):
@@ -118,7 +118,7 @@ class ExchangeRate:
 
     @staticmethod
     def request():
-        r = requests.get(GET_KEY_PRICES_API, timeout=15).json()['result']['assets']
+        r = api.get_asset_prices(appid=730)['result']['assets']
         key_price = [item for item in r if item['classid'] == '1544098059'][0]["prices"]
         del key_price["Unknown"], key_price["BYN"]
 
@@ -252,7 +252,7 @@ class GameServersData(NamedTuple):
 
 
 def get_monthly_unique_players():
-    response = requests.get(MONTHLY_UNIQUE_PLAYERS_API, headers=HEADERS, timeout=15).json()
+    response = api.csgo_get_monthly_player_count()
     return int(response['result']['players'])
 
 

@@ -400,7 +400,7 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery, last
     await client.send_chat_action(callback_query.message.chat.id, ChatAction.TYPING)
 
     try:
-        info = ProfileInfo.get(steam_url.text)
+        info = await ProfileInfo.get(steam_url.text)
     except ParsingUserStatsError as e:
         await steam_url.delete()
         error_msg = await user_info_handle_error(client, steam_url, e)
@@ -469,7 +469,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery, last_e
     await client.send_chat_action(callback_query.message.chat.id, ChatAction.TYPING)
 
     try:
-        user_stats = UserGameStats.get(steam_url.text)
+        user_stats = await UserGameStats.get(steam_url.text)
     except ParsingUserStatsError as e:
         await steam_url.delete()
         error_msg = await user_info_handle_error(client, steam_url, e)
