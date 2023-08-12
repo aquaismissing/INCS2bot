@@ -39,13 +39,13 @@ def handle_error(result):
 
 
 @client.on('channel_secured')
-def send_login():
+def send_relogin():
     if client.relogin_available:
         client.relogin()
 
 
 @client.on('connected')
-def handle_connected():
+def log_connect():
     logging.info(f'Connected to {client.current_server_addr}')
 
 
@@ -64,7 +64,7 @@ def handle_disconnect():
 
 
 @cs.on('connection_status')
-def gc_ready(status):
+def gc_status_change(status):
     statuses = {0: States.NORMAL, 1: States.INTERNAL_SERVER_ERROR, 2: States.OFFLINE,
                 3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
     game_coordinator = statuses.get(status, States.UNKNOWN)
@@ -82,9 +82,9 @@ def gc_ready(status):
 
 
 @client.on('logged_on')
-def handle_after_logon():
+async def handle_after_logon():
+    cs.launch()
     Thread(target=depots_prepare).start()
-    Thread(target=gc).start()
     Thread(target=online_players).start()
 
 
@@ -99,18 +99,20 @@ def depots_prepare():
 async def depots():
     while True:
         try:
-            data = client.get_product_info(apps=[740, 741, 2275500, 2275530, 745, 730],
+            data = client.get_product_info(apps=[730, 740, 741, 745, 2275500, 2275530],
                                            timeout=15)['apps']
             main_data = data[730]
 
-            ds_build_id = int(data[740]['depots']['branches']['public']['buildid'])
-            valve_ds_change_number = data[741]['_change_number']
-            cs2_app_change_number = data[2275500]['_change_number']
-            cs2_server_change_number = data[2275530]['_change_number']
-            sdk_build_id = int(data[745]['depots']['branches']['public']['buildid'])
+            public_build_id = int(main_data['depots']['branches']['public']['buildid'])
             dpr_build_id = int(main_data['depots']['branches']['dpr']['buildid'])
             dprp_build_id = int(main_data['depots']['branches']['dprp']['buildid'])
-            public_build_id = int(main_data['depots']['branches']['public']['buildid'])
+
+            ds_build_id = int(data[740]['depots']['branches']['public']['buildid'])
+            valve_ds_change_number = data[741]['_change_number']
+            sdk_build_id = int(data[745]['depots']['branches']['public']['buildid'])
+
+            cs2_app_change_number = data[2275500]['_change_number']
+            cs2_server_change_number = data[2275530]['_change_number']
         except Exception:
             logging.exception('Caught an exception while trying to fetch depots!')
             time.sleep(45)
@@ -137,10 +139,6 @@ async def depots():
         logging.info('Successfully dumped game build IDs.')
 
         time.sleep(45)
-
-
-def gc():
-    cs.launch()
 
 
 def gv_updater():
