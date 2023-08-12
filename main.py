@@ -185,7 +185,7 @@ async def server_stats(client: BClient, callback_query: CallbackQuery):
 async def send_server_status(client: BClient, callback_query: CallbackQuery):
     """Send the status of Counter-Strike servers"""
 
-    lang_code = callback_query.from_user.language_code
+    lang_code = FORCE_LANG or callback_query.from_user.language_code
 
     data = GameServersData.cached_server_status()
 
@@ -203,7 +203,7 @@ async def send_server_status(client: BClient, callback_query: CallbackQuery):
 async def send_matchmaking_stats(client: BClient, callback_query: CallbackQuery):
     """Send Counter-Strike matchamaking statistics"""
 
-    lang_code = callback_query.from_user.language_code
+    lang_code = FORCE_LANG or callback_query.from_user.language_code
 
     data = GameServersData.cached_matchmaking_stats()
 
