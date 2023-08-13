@@ -625,10 +625,10 @@ async def pistols(client: BClient, callback_query: CallbackQuery, loop: bool = F
     if choosed_gun in GUNS_INFO:
         keyboards.pistols_markup.select_button_by_key(choosed_gun)
         return await send_gun_info(client, callback_query, pistols, GUNS_INFO[choosed_gun],
-                                   reply_markup=keyboards.pistols_markup(client.locale))
+                                   reply_markup=keyboards.pistols_markup)
     if choosed_gun == LK.bot_back:
         return await back(client, callback_query)
-    return await unknown_request(client, callback_query, keyboards.pistols_markup(client.locale))
+    return await unknown_request(client, callback_query, keyboards.pistols_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_heavy))
@@ -650,10 +650,10 @@ async def heavy(client: BClient, callback_query: CallbackQuery, loop: bool = Fal
     if choosed_gun in GUNS_INFO:
         keyboards.heavy_markup.select_button_by_key(choosed_gun)
         return await send_gun_info(client, callback_query, heavy, GUNS_INFO[choosed_gun],
-                                   reply_markup=keyboards.heavy_markup(client.locale))
+                                   reply_markup=keyboards.heavy_markup)
     if choosed_gun == LK.bot_back:
         return await back(client, callback_query)
-    return await unknown_request(client, callback_query, keyboards.heavy_markup(client.locale))
+    return await unknown_request(client, callback_query, keyboards.heavy_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_smgs))
@@ -675,10 +675,10 @@ async def smgs(client: BClient, callback_query: CallbackQuery, loop: bool = Fals
     if choosed_gun in GUNS_INFO:
         keyboards.smgs_markup.select_button_by_key(choosed_gun)
         return await send_gun_info(client, callback_query, smgs, GUNS_INFO[choosed_gun],
-                                   reply_markup=keyboards.smgs_markup(client.locale))
+                                   reply_markup=keyboards.smgs_markup)
     if choosed_gun == LK.bot_back:
         return await back(client, callback_query)
-    return await unknown_request(client, callback_query, keyboards.smgs_markup(client.locale))
+    return await unknown_request(client, callback_query, keyboards.smgs_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.gun_rifles))
@@ -700,10 +700,10 @@ async def rifles(client: BClient, callback_query: CallbackQuery, loop: bool = Fa
     if choosed_gun in GUNS_INFO:
         keyboards.rifles_markup.select_button_by_key(choosed_gun)
         return await send_gun_info(client, callback_query, rifles, GUNS_INFO[choosed_gun],
-                                   reply_markup=keyboards.rifles_markup(client.locale))
+                                   reply_markup=keyboards.rifles_markup)
     if choosed_gun == LK.bot_back:
         return await back(client, callback_query)
-    return await unknown_request(client, callback_query, keyboards.rifles_markup(client.locale))
+    return await unknown_request(client, callback_query, keyboards.rifles_markup)
 
 
 @log_exception_callback
@@ -718,7 +718,7 @@ async def send_gun_info(client: BClient, callback_query: CallbackQuery, _from: c
     text = client.locale.gun_summary_text.format(*gun_info_dict.values())
 
     try:
-        await callback_query.edit_message_text(text, reply_markup=reply_markup)
+        await callback_query.edit_message_text(text, reply_markup=reply_markup(client.locale))
     except MessageNotModified:
         pass
     finally:
@@ -811,7 +811,8 @@ async def unknown_request(client: BClient, callback_query: CallbackQuery, reply_
     if reply_markup is None:
         reply_markup = keyboards.main_markup(client.locale)
 
-    await callback_query.edit_message_text(client.locale.error_unknownrequest, reply_markup=reply_markup)
+    await callback_query.edit_message_text(client.locale.error_unknownrequest,
+                                           reply_markup=reply_markup(client.locale))
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.bot_back))
