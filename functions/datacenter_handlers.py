@@ -1,13 +1,13 @@
 from babel.dates import format_datetime
 
-from utypes import (DatacenterAtlas, DatacenterGroupState, DatacenterRegionState,
-                    DatacenterState, GameServersData, States)
+from utypes import (DatacenterAtlas,
+                    DatacenterVariation,
+                    DatacenterState, DatacenterRegionState, DatacenterGroupState,
+                    GameServersData, States)
 
 
-def _format_dc_data(state: DatacenterState | DatacenterRegionState | DatacenterGroupState, lang_code: str):
+def _format_dc_data(dc: DatacenterVariation, lang_code: str):
     from functions import locale
-
-    loc = locale(lang_code)
 
     game_servers_datetime = GameServersData.latest_info_update()
     if game_servers_datetime == States.UNKNOWN:
@@ -15,6 +15,9 @@ def _format_dc_data(state: DatacenterState | DatacenterRegionState | DatacenterG
 
     game_servers_datetime = (f'{format_datetime(game_servers_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()}'
                              f' (UTC)')
+
+    state = DatacenterAtlas.get_state(dc)
+    loc = locale(lang_code)
 
     if isinstance(state, DatacenterState):
         header = loc.dc_status_text_title.format(state.dc.symbol,
@@ -50,60 +53,60 @@ def _format_dc_data(state: DatacenterState | DatacenterRegionState | DatacenterG
 
 
 def africa(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.AFRICA), lang_code)
+    return _format_dc_data(DatacenterAtlas.AFRICA, lang_code)
 
 
 def australia(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.AUSTRALIA), lang_code)
+    return _format_dc_data(DatacenterAtlas.AUSTRALIA, lang_code)
 
 
 def eu_north(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.EU_NORTH), lang_code)
+    return _format_dc_data(DatacenterAtlas.EU_NORTH, lang_code)
 
 
 def eu_west(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.EU_WEST), lang_code)
+    return _format_dc_data(DatacenterAtlas.EU_WEST, lang_code)
 
 
 def eu_east(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.EU_EAST), lang_code)
+    return _format_dc_data(DatacenterAtlas.EU_EAST, lang_code)
 
 
 def us_north(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.US_NORTH), lang_code)
+    return _format_dc_data(DatacenterAtlas.US_NORTH, lang_code)
 
 
 def us_south(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.US_SOUTH), lang_code)
+    return _format_dc_data(DatacenterAtlas.US_SOUTH, lang_code)
 
 
 def south_america(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.SOUTH_AMERICA), lang_code)
+    return _format_dc_data(DatacenterAtlas.SOUTH_AMERICA, lang_code)
 
 
 def india(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.INDIA), lang_code)
+    return _format_dc_data(DatacenterAtlas.INDIA, lang_code)
 
 
 def japan(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.JAPAN), lang_code)
+    return _format_dc_data(DatacenterAtlas.JAPAN, lang_code)
 
 
 def china(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.CHINA), lang_code)
+    return _format_dc_data(DatacenterAtlas.CHINA, lang_code)
 
 
 def emirates(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.EMIRATES), lang_code)
+    return _format_dc_data(DatacenterAtlas.EMIRATES, lang_code)
 
 
 def singapore(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.SINGAPORE), lang_code)
+    return _format_dc_data(DatacenterAtlas.SINGAPORE, lang_code)
 
 
 def hongkong(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.HONGKONG), lang_code)
+    return _format_dc_data(DatacenterAtlas.HONGKONG, lang_code)
 
 
 def south_korea(lang_code: str):
-    return _format_dc_data(DatacenterAtlas.get_data(DatacenterAtlas.SOUTH_KOREA), lang_code)
+    return _format_dc_data(DatacenterAtlas.SOUTH_KOREA, lang_code)

@@ -6,8 +6,11 @@ from .states import State, States
 from l10n import LocaleKeys as LK
 
 
-__all__ = ('Datacenter', 'DatacenterAtlas', 'DatacenterGroup', 'DatacenterInlineResult',
-           'DatacenterRegion', 'DatacenterRegionState', 'DatacenterState', 'DatacenterGroupState')
+__all__ = ('DatacenterAtlas',
+           'Datacenter', 'DatacenterRegion', 'DatacenterGroup',
+           'DatacenterState', 'DatacenterRegionState', 'DatacenterGroupState',
+           'DatacenterInlineResult',
+           'DatacenterVariation', 'DatacenterStateVariation')
 
 
 class Datacenter(NamedTuple):
@@ -45,6 +48,10 @@ class DatacenterGroup(NamedTuple):
 class DatacenterGroupState(NamedTuple):
     group: DatacenterGroup
     region_states: list[DatacenterRegionState]
+
+
+DatacenterVariation = Datacenter | DatacenterRegion | DatacenterGroup
+DatacenterStateVariation = DatacenterState | DatacenterRegionState | DatacenterGroupState
 
 
 class DatacenterAtlas:
@@ -362,7 +369,7 @@ class DatacenterAtlas:
     )
 
     @staticmethod
-    def get_data(_obj: Datacenter | DatacenterRegion | DatacenterGroup):
+    def get_state(_obj: DatacenterVariation) -> DatacenterStateVariation:
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
             
