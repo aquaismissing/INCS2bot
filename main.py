@@ -2,6 +2,7 @@ import asyncio
 import datetime as dt
 import json
 from json import JSONDecodeError
+from typing import Callable
 import logging
 import traceback
 
@@ -25,7 +26,7 @@ from keyboards import ExtendedIKB, ExtendedIKM
 from l10n import LocaleKeys as LK
 from utypes import (BClient, Crosshair, ExchangeRate, GameServersData,
                     GameVersionData, GunInfo, ParsingUserStatsError, ProfileInfo,
-                    States, UserGameStats, drop_cap_reset_timer)
+                    State, States, UserGameStats, drop_cap_reset_timer)
 
 GUNS_INFO = GunInfo.load()
 FORCE_LANG = None  # test purpose only, should be None on deploy
@@ -252,116 +253,89 @@ async def dc_us(client: BClient, callback_query: CallbackQuery):
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_africa))
 async def send_dc_africa(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.africa(client.session_lang_code),
-                        keyboards.dc_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.africa, keyboards.dc_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_australia))
 async def send_dc_australia(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.australia(client.session_lang_code),
-                        keyboards.dc_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.australia, keyboards.dc_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_eu_north))
 async def send_dc_eu_north(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.eu_north(client.session_lang_code),
-                        keyboards.dc_eu_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.eu_north, keyboards.dc_eu_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_eu_east))
 async def send_dc_eu_west(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.eu_west(client.session_lang_code),
-                        keyboards.dc_eu_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.eu_west, keyboards.dc_eu_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_eu_west))
 async def send_dc_eu_east(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.eu_east(client.session_lang_code),
-                        keyboards.dc_eu_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.eu_east, keyboards.dc_eu_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_us_north))
 async def send_dc_us_north(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.us_north(client.session_lang_code),
-                        keyboards.dc_us_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.us_north, keyboards.dc_us_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_us_south))
 async def send_dc_us_south(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.us_south(client.session_lang_code),
-                        keyboards.dc_us_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.us_south, keyboards.dc_us_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_southamerica))
 async def send_dc_south_america(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.south_america(client.session_lang_code),
-                        keyboards.dc_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.south_america, keyboards.dc_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_india))
 async def send_dc_india(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.india(client.session_lang_code),
-                        keyboards.dc_asia_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.india, keyboards.dc_asia_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_japan))
 async def send_dc_japan(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.japan(client.session_lang_code),
-                        keyboards.dc_asia_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.japan, keyboards.dc_asia_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_china))
 async def send_dc_china(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.china(client.session_lang_code),
-                        keyboards.dc_asia_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.china, keyboards.dc_asia_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_emirates))
 async def send_dc_emirates(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.emirates(client.session_lang_code),
-                        keyboards.dc_asia_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.emirates, keyboards.dc_asia_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_singapore))
 async def send_dc_singapore(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.singapore(client.session_lang_code),
-                        keyboards.dc_asia_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.singapore, keyboards.dc_asia_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_hongkong))
 async def send_dc_hongkong(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.hongkong(client.session_lang_code),
-                        keyboards.dc_asia_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.hongkong, keyboards.dc_asia_markup)
 
 
 @bot.on_callback_query(ufilters.callback_data_equals(LK.dc_southkorea))
 async def send_dc_south_korea(client: BClient, callback_query: CallbackQuery):
-    await send_dc_state(client, callback_query,
-                        datacenter_handlers.south_korea(client.session_lang_code),
-                        keyboards.dc_asia_markup(client.locale))
+    await send_dc_state(client, callback_query, datacenter_handlers.south_korea, keyboards.dc_asia_markup)
 
 
 @ignore_message_not_modified
 async def send_dc_state(client: BClient, callback_query: CallbackQuery,
-                        state: str | States, reply_markup: ExtendedIKM):
+                        dc_state_func: Callable[[str], str | State], reply_markup: ExtendedIKM):
+
+    state = dc_state_func(client.session_lang_code)
+
     if state == States.UNKNOWN:
         return await something_went_wrong(client, callback_query)
 
-    await callback_query.edit_message_text(state, reply_markup=reply_markup)
+    await callback_query.edit_message_text(state, reply_markup=reply_markup(client.locale))
 
 
 # cat: Profile info
