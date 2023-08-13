@@ -25,11 +25,17 @@ class SteamWebAPI:
             timeout=self.timeout
         ).json()
 
-    def get_player_bans(self, steamids: str):
+    def get_player_bans(self, steamids: list | tuple | str):
+        if isinstance(steamids, (list, tuple)):
+            steamids = ','.join(steamids)
+
         return self._method('ISteamUser', 'GetPlayerBans', 1,
                             {'steamids': steamids})
 
-    def get_player_summaries(self, steamids: str):
+    def get_player_summaries(self, steamids: list | tuple | str):
+        if isinstance(steamids, (list, tuple)):
+            steamids = ','.join(steamids)
+
         return self._method('ISteamUser', 'GetPlayerSummaries', 2,
                             {'steamids': steamids})
 
