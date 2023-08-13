@@ -737,12 +737,11 @@ async def send_gun_info(client: BClient, callback_query: CallbackQuery, _from: c
                         gun_info: GunInfo, reply_markup: ExtendedIKM):
     """Send archived data about guns"""
 
-    gun_info.origin = client.locale.get(gun_info.origin)
-    gun_info = gun_info.as_dict()
-    del gun_info['id'], gun_info['team']
-    formatted_info = gun_info.values()
+    gun_info_dict = gun_info.as_dict()
+    gun_info_dict['origin'] = client.locale.get(gun_info.origin)
+    del gun_info_dict['id'], gun_info_dict['team']
 
-    text = client.locale.gun_summary_text.format(*formatted_info)
+    text = client.locale.gun_summary_text.format(*gun_info_dict.values())
 
     try:
         await callback_query.edit_message_text(text, reply_markup=reply_markup)
