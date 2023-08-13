@@ -103,7 +103,6 @@ class GameVersionData(NamedTuple):
 
 
 class ExchangeRate:
-
     __slots__ = ()
     currencies_symbols = {"USD": "$", "GBP": "£", "EUR": "€", "RUB": "₽",
                           "BRL": "R$", "JPY": "¥", "NOK": "kr", "IDR": "Rp",
@@ -179,7 +178,7 @@ class GameServersData(NamedTuple):
         return GameServersData(States.UNKNOWN, 0, States.UNKNOWN,
                                States.UNKNOWN, States.UNKNOWN, 0,
                                0, 0, 0, {})
-        
+
     @staticmethod
     def cached_server_status():
         """Get the status of Counter-Strike servers"""
