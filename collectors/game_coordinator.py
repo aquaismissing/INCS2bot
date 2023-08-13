@@ -2,14 +2,15 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
-import asyncio
 import json
 import logging
+import os
 import platform
 import sys
 from threading import Thread
 import time
 
+from apscheduler.schedulers.gevent import GeventScheduler
 from csgo.client import CSGOClient
 from steam.client import SteamClient
 from steam.enums import EResult
@@ -31,9 +32,10 @@ logging.basicConfig(level=logging.INFO,
 client = SteamClient()
 client.set_credential_location(config.STEAM_CREDS_PATH)
 cs = CSGOClient(client)
+scheduler = GeventScheduler()
 
 
-@client.on("error")
+@client.on('error')
 def handle_error(result):
     logging.info(f'Logon result: {result!r}')
 
@@ -58,9 +60,14 @@ def handle_reconnect(delay):
 def handle_disconnect():
     logging.info('Disconnected.')
 
-    if client.relogin_available:
-        logging.info('Reconnecting...')
-        client.reconnect(maxdelay=30)
+    # if client.relogin_available:          # currently broken in steam 1.4.4
+    #     logging.info('Reconnecting...')   # https://github.com/ValvePython/steam/issues/439
+    #     client.reconnect(maxdelay=30)
+
+    def restart():
+        os.execv(sys.executable, ['python'] + sys.argv)  # a temporary solution - just reboot the script
+
+    Thread(target=restart).start()
 
 
 @cs.on('connection_status')
@@ -82,63 +89,51 @@ def gc_status_change(status):
 
 
 @client.on('logged_on')
-async def handle_after_logon():
+def handle_after_logon():
     cs.launch()
-    Thread(target=depots_prepare).start()
-    Thread(target=online_players).start()
+    scheduler.start()
 
 
-def depots_prepare():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+@scheduler.scheduled_job('interval', seconds=45)
+def depots():
+    try:
+        data = client.get_product_info(apps=[730, 740, 741, 745, 2275500, 2275530],
+                                       timeout=15)['apps']
+        main_data = data[730]
 
-    loop.run_until_complete(depots())
-    loop.close()
+        public_build_id = int(main_data['depots']['branches']['public']['buildid'])
+        dpr_build_id = int(main_data['depots']['branches']['dpr']['buildid'])
+        dprp_build_id = int(main_data['depots']['branches']['dprp']['buildid'])
 
+        ds_build_id = int(data[740]['depots']['branches']['public']['buildid'])
+        valve_ds_change_number = data[741]['_change_number']
+        sdk_build_id = int(data[745]['depots']['branches']['public']['buildid'])
 
-async def depots():
-    while True:
-        try:
-            data = client.get_product_info(apps=[730, 740, 741, 745, 2275500, 2275530],
-                                           timeout=15)['apps']
-            main_data = data[730]
+        cs2_app_change_number = data[2275500]['_change_number']
+        cs2_server_change_number = data[2275530]['_change_number']
+    except Exception:
+        logging.exception('Caught an exception while trying to fetch depots!')
+        return
 
-            public_build_id = int(main_data['depots']['branches']['public']['buildid'])
-            dpr_build_id = int(main_data['depots']['branches']['dpr']['buildid'])
-            dprp_build_id = int(main_data['depots']['branches']['dprp']['buildid'])
+    with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        cache = json.load(f)
 
-            ds_build_id = int(data[740]['depots']['branches']['public']['buildid'])
-            valve_ds_change_number = data[741]['_change_number']
-            sdk_build_id = int(data[745]['depots']['branches']['public']['buildid'])
+    cache['sdk_build_id'] = sdk_build_id
+    cache['ds_build_id'] = ds_build_id
+    cache['valve_ds_changenumber'] = valve_ds_change_number
+    cache['cs2_app_changenumber'] = cs2_app_change_number
+    cache['cs2_server_changenumber'] = cs2_server_change_number
+    cache['dprp_build_id'] = dprp_build_id
+    cache['dpr_build_id'] = dpr_build_id
 
-            cs2_app_change_number = data[2275500]['_change_number']
-            cs2_server_change_number = data[2275530]['_change_number']
-        except Exception:
-            logging.exception('Caught an exception while trying to fetch depots!')
-            time.sleep(45)
-            continue
+    if public_build_id != cache.get('public_build_id'):
+        cache['public_build_id'] = public_build_id
+        Thread(target=gv_updater).start()
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache = json.load(f)
+    with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        json.dump(cache, f, indent=4)
 
-        cache['sdk_build_id'] = sdk_build_id
-        cache['ds_build_id'] = ds_build_id
-        cache['valve_ds_changenumber'] = valve_ds_change_number
-        cache['cs2_app_changenumber'] = cs2_app_change_number
-        cache['cs2_server_changenumber'] = cs2_server_change_number
-        cache['dprp_build_id'] = dprp_build_id
-        cache['dpr_build_id'] = dpr_build_id
-
-        if public_build_id != cache.get('public_build_id'):
-            cache['public_build_id'] = public_build_id
-            Thread(target=gv_updater).start()
-
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4)
-
-        logging.info('Successfully dumped game build IDs.')
-
-        time.sleep(45)
+    logging.info('Successfully dumped game build IDs.')
 
 
 def gv_updater():
@@ -166,21 +161,20 @@ def gv_updater():
     sys.exit()
 
 
+@scheduler.scheduled_job('interval', seconds=45)
 def online_players():
-    while True:
-        value = client.get_player_count(730)
+    value = client.get_player_count(730)
 
-        with open(config.CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
-            cache = json.load(f)
+    with open(config.CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
+        cache = json.load(f)
 
-        if value != cache.get('online_players'):
-            cache['online_players'] = value
+    if value != cache.get('online_players'):
+        cache['online_players'] = value
 
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4)
+    with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        json.dump(cache, f, indent=4)
 
-        logging.info(f'Successfully dumped player count: {value}')
-        time.sleep(45)
+    logging.info(f'Successfully dumped player count: {value}')
 
 
 def main():
