@@ -151,7 +151,7 @@ async def keyboard_selection_indicator(_, callback_query: CallbackQuery):
 
 
 @bot.on_callback_query(ufilters.callback_data_equals('main'))
-@log_exception_callback
+@ignore_message_not_modified
 async def main_menu(client: BClient, callback_query: CallbackQuery, session_timeout: bool = False):
     if session_timeout:
         text = client.locale.error_session_timeout + '\n\n' + client.locale.bot_choose_cmd
