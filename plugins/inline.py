@@ -236,21 +236,20 @@ async def inline_datacenters(client: BClient, inline_query: InlineQuery):
             )
         return await inline_query.answer(resulted_articles, cache_time=5)
 
+    i = 0
     for tag in get_triggered_tags(query):
-        i = 0
         for _dc in dcs:
             if tag in _dc.tags and _dc not in resulted_dcs:
                 resulted_dcs.append(_dc)
-                resulted_articles.append(
-                    InlineQueryResultArticle(
+                res = InlineQueryResultArticle(
                         _dc.title,
                         InputTextMessageContent(_dc.summary_from(client.session_lang_code)),
                         f'{i}',
                         description=client.locale.dc_status_inline_description,
                         reply_markup=inline_btn,
                         thumb_url=_dc.thumbnail
-                    )
                 )
+                resulted_articles.append(res)
                 i += 1
 
     await inline_query.answer(resulted_articles, cache_time=10)
