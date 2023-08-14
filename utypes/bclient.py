@@ -31,24 +31,11 @@ class UserSession:  # todo: sessions caching so we can restore them after reload
         self.locale = locale(self.lang_code)
 
 
-class UserSessions:
-    """A wrapper around `dict[int, UserSession]`."""
-    def __init__(self):
-        self._storage: dict[int, UserSession] = {}
-
-    def __getitem__(self, item):
-        if item in self._storage:
-            self._storage[item].timestamp = dt.datetime.now().timestamp()
-        return self._storage[item]
-
-    def __setitem__(self, key, value):
-        self._storage[key] = value
-
-    def __delitem__(self, key):
-        del self._storage[key]
-
-    def clear(self):
-        self._storage.clear()
+class UserSessions(dict[int, UserSession]):
+    def __getitem__(self, key):
+        item = super().__getitem__(key)
+        item.timestamp = dt.datetime.now().timestamp()
+        return item
 
 
 class BClient(Client):
@@ -61,6 +48,7 @@ class BClient(Client):
 
         self._sessions: UserSessions = UserSessions()
         self.current_session: UserSession | None = None
+        self._available_functions: dict[str, callable] = {}
 
     @property
     def came_from(self):
@@ -106,6 +94,19 @@ class BClient(Client):
 
     def clear_sessions(self):
         self._sessions.clear()
+
+    def on_callback_request(self, query: str):
+        def decorator(func):
+            self._available_functions[query] = func
+            return func
+
+        return decorator
+
+    async def get_func_by_callback(self, session: UserSession, callback_query: CallbackQuery):
+        try:
+            return await self._available_functions[callback_query.data](self, session, callback_query)
+        except KeyError:
+            return await self._available_functions['_'](self, session, callback_query)
 
     # noinspection PyUnresolvedReferences
     async def listen_message(self,

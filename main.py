@@ -136,99 +136,10 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
 
     session = client.sessions[user.id]
 
-    match key:
-        case 'main':
-            return await main_menu(client, session, callback_query)
-        case LK.bot_back:
-            return await back(client, session, callback_query)
-
-        case LK.bot_servers_stats:
-            return await server_stats(client, session, callback_query)
-        case LK.game_status_button_title:
-            return await send_server_status(client, session, callback_query)
-        case LK.stats_matchmaking_button_title:
-            return await send_matchmaking_stats(client, session, callback_query)
-        case LK.dc_status_title:
-            return await datacenters(client, session, callback_query)
-
-        case LK.dc_asia:
-            return await dc_asia(client, session, callback_query)
-        case LK.dc_europe:
-            return await dc_europe(client, session, callback_query)
-        case LK.dc_us:
-            return await dc_us(client, session, callback_query)
-        case LK.dc_africa:
-            return await send_dc_africa(client, session, callback_query)
-        case LK.dc_australia:
-            return await send_dc_australia(client, session, callback_query)
-        case LK.dc_eu_north:
-            return await send_dc_eu_north(client, session, callback_query)
-        case LK.dc_eu_east:
-            return await send_dc_eu_east(client, session, callback_query)
-        case LK.dc_eu_west:
-            return await send_dc_eu_west(client, session, callback_query)
-        case LK.dc_us_north:
-            return await send_dc_us_north(client, session, callback_query)
-        case LK.dc_us_south:
-            return await send_dc_us_south(client, session, callback_query)
-        case LK.dc_southamerica:
-            return await send_dc_south_america(client, session, callback_query)
-        case LK.dc_india:
-            return await send_dc_india(client, session, callback_query)
-        case LK.dc_japan:
-            return await send_dc_japan(client, session, callback_query)
-        case LK.dc_china:
-            return await send_dc_china(client, session, callback_query)
-        case LK.dc_emirates:
-            return await send_dc_emirates(client, session, callback_query)
-        case LK.dc_singapore:
-            return await send_dc_singapore(client, session, callback_query)
-        case LK.dc_hongkong:
-            return await send_dc_hongkong(client, session, callback_query)
-        case LK.dc_southkorea:
-            return await send_dc_south_korea(client, session, callback_query)
-
-        case LK.bot_profile_info:
-            return await profile_info(client, session, callback_query)
-        case LK.user_profileinfo_title:
-            return await user_profile_info(client, session, callback_query)
-        case LK.user_gamestats_button_title:
-            return await user_game_stats(client, session, callback_query)
-
-        case LK.bot_extras:
-            return await extra_features(client, session, callback_query)
-
-        case LK.crosshair:
-            return await crosshair(client, session, callback_query)
-        case LK.crosshair_generate:
-            return await generate_crosshair(client, session, callback_query)
-        case LK.crosshair_decode:
-            return await decode_crosshair(client, session, callback_query)
-
-        case LK.valve_hqtime_button_title:
-            return await send_valve_hq_time(client, session, callback_query)
-        case LK.exchangerate_button_title:
-            return await send_exchange_rate(client, session, callback_query)
-        case LK.game_dropcap_button_title:
-            return await send_dropcap_timer(client, session, callback_query)
-        case LK.game_version_button_title:
-            return await send_game_version(client, session, callback_query)
-
-        case LK.gun_button_text:
-            return await guns(client, session, callback_query)
-        case LK.gun_pistols:
-            return await pistols(client, session, callback_query)
-        case LK.gun_heavy:
-            return await heavy(client, session, callback_query)
-        case LK.gun_smgs:
-            return await smgs(client, session, callback_query)
-        case LK.gun_rifles:
-            return await rifles(client, session, callback_query)
-
-        case _:  # Nothing found, just return session timeout message
-            return await main_menu(client, session, callback_query, session_timeout=True)
+    return await client.get_func_by_callback(session, callback_query)
 
 
+@bot.on_callback_request('main')
 @ignore_message_not_modified
 async def main_menu(_, session: UserSession,
                     callback_query: CallbackQuery, session_timeout: bool = False):
@@ -243,6 +154,7 @@ async def main_menu(_, session: UserSession,
 # cat: Server stats
 
 
+@bot.on_callback_request(LK.bot_servers_stats)
 @came_from(main_menu)
 @ignore_message_not_modified
 async def server_stats(_, session: UserSession, callback_query: CallbackQuery):
@@ -250,6 +162,7 @@ async def server_stats(_, session: UserSession, callback_query: CallbackQuery):
                                            reply_markup=keyboards.ss_markup(session.locale))
 
 
+@bot.on_callback_request(LK.game_status_button_title)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_server_status(client: BClient, session: UserSession, callback_query: CallbackQuery):
@@ -265,6 +178,7 @@ async def send_server_status(client: BClient, session: UserSession, callback_que
     await callback_query.edit_message_text(text, reply_markup=keyboards.ss_markup(session.locale))
 
 
+@bot.on_callback_request(LK.stats_matchmaking_button_title)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_matchmaking_stats(client: BClient, session: UserSession, callback_query: CallbackQuery):
@@ -283,6 +197,7 @@ async def send_matchmaking_stats(client: BClient, session: UserSession, callback
 # cat: Datacenters
 
 
+@bot.on_callback_request(LK.dc_status_title)
 @came_from(server_stats)
 @ignore_message_not_modified
 async def datacenters(_, session: UserSession, callback_query: CallbackQuery):
@@ -290,6 +205,7 @@ async def datacenters(_, session: UserSession, callback_query: CallbackQuery):
                                            reply_markup=keyboards.dc_markup(session.locale))
 
 
+@bot.on_callback_request(LK.dc_asia)
 @came_from(datacenters)
 @ignore_message_not_modified
 async def dc_asia(_, session: UserSession, callback_query: CallbackQuery):
@@ -297,6 +213,7 @@ async def dc_asia(_, session: UserSession, callback_query: CallbackQuery):
                                            reply_markup=keyboards.dc_asia_markup(session.locale))
 
 
+@bot.on_callback_request(LK.dc_europe)
 @came_from(datacenters)
 @ignore_message_not_modified
 async def dc_europe(_, session: UserSession, callback_query: CallbackQuery):
@@ -304,6 +221,7 @@ async def dc_europe(_, session: UserSession, callback_query: CallbackQuery):
                                            reply_markup=keyboards.dc_eu_markup(session.locale))
 
 
+@bot.on_callback_request(LK.dc_us)
 @came_from(datacenters)
 @ignore_message_not_modified
 async def dc_us(_, session: UserSession, callback_query: CallbackQuery):
@@ -311,76 +229,91 @@ async def dc_us(_, session: UserSession, callback_query: CallbackQuery):
                                            reply_markup=keyboards.dc_us_markup(session.locale))
 
 
+@bot.on_callback_request(LK.dc_africa)
 @came_from(server_stats)
 async def send_dc_africa(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.africa, keyboards.dc_markup)
 
 
+@bot.on_callback_request(LK.dc_australia)
 @came_from(server_stats)
 async def send_dc_australia(client: BClient, session: UserSession, callback_query: CallbackQuery):
-    await send_dc_state(client, session, session, callback_query, datacenter_handlers.australia, keyboards.dc_markup)
+    await send_dc_state(client, session, callback_query, datacenter_handlers.australia, keyboards.dc_markup)
 
 
+@bot.on_callback_request(LK.dc_eu_north)
 @came_from(datacenters)
 async def send_dc_eu_north(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.eu_north, keyboards.dc_eu_markup)
 
 
+@bot.on_callback_request(LK.dc_eu_west)
 @came_from(datacenters)
 async def send_dc_eu_west(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.eu_west, keyboards.dc_eu_markup)
 
 
+@bot.on_callback_request(LK.dc_eu_east)
 @came_from(datacenters)
 async def send_dc_eu_east(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.eu_east, keyboards.dc_eu_markup)
 
 
+@bot.on_callback_request(LK.dc_us_north)
 @came_from(datacenters)
 async def send_dc_us_north(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.us_north, keyboards.dc_us_markup)
 
 
+@bot.on_callback_request(LK.dc_hongkong)
 @came_from(datacenters)
 async def send_dc_us_south(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.us_south, keyboards.dc_us_markup)
 
 
+@bot.on_callback_request(LK.dc_southamerica)
 @came_from(server_stats)
 async def send_dc_south_america(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.south_america, keyboards.dc_markup)
 
 
+@bot.on_callback_request(LK.dc_india)
 @came_from(datacenters)
 async def send_dc_india(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.india, keyboards.dc_asia_markup)
 
 
+@bot.on_callback_request(LK.dc_japan)
 @came_from(datacenters)
 async def send_dc_japan(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.japan, keyboards.dc_asia_markup)
 
 
+@bot.on_callback_request(LK.dc_china)
 @came_from(datacenters)
 async def send_dc_china(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.china, keyboards.dc_asia_markup)
 
 
+@bot.on_callback_request(LK.dc_emirates)
 @came_from(datacenters)
 async def send_dc_emirates(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.emirates, keyboards.dc_asia_markup)
 
 
+@bot.on_callback_request(LK.dc_singapore)
 @came_from(datacenters)
 async def send_dc_singapore(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.singapore, keyboards.dc_asia_markup)
 
 
+@bot.on_callback_request(LK.dc_hongkong)
 @came_from(datacenters)
 async def send_dc_hongkong(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.hongkong, keyboards.dc_asia_markup)
 
 
+@bot.on_callback_request(LK.dc_southkorea)
 @came_from(datacenters)
 async def send_dc_south_korea(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.south_korea, keyboards.dc_asia_markup)
@@ -401,6 +334,7 @@ async def send_dc_state(client: BClient, session: UserSession, callback_query: C
 # cat: Profile info
 
 
+@bot.on_callback_request(LK.bot_profile_info)
 @came_from(main_menu)
 @ignore_message_not_modified
 async def profile_info(client: BClient, session: UserSession, callback_query: CallbackQuery):
@@ -414,6 +348,7 @@ async def profile_info(client: BClient, session: UserSession, callback_query: Ca
                                            reply_markup=keyboards.profile_markup(session.locale))
 
 
+@bot.on_callback_request(LK.user_profileinfo_title)
 @log_exception_callback
 @came_from(main_menu)
 @ignore_blocking
@@ -483,6 +418,7 @@ async def user_profile_info(client: BClient, session: UserSession,
                                        reply_markup=keyboards.profile_markup(session.locale))
 
 
+@bot.on_callback_request(LK.user_gamestats_button_title)
 @log_exception_callback
 @came_from(main_menu)
 @ignore_blocking
@@ -552,6 +488,7 @@ async def user_info_handle_error(_, session: UserSession, user_input: Message, e
 # cat: Extra features
 
 
+@bot.on_callback_request(LK.bot_extras)
 @came_from(main_menu)
 @ignore_message_not_modified
 async def extra_features(_, session: UserSession, callback_query: CallbackQuery):
@@ -559,6 +496,7 @@ async def extra_features(_, session: UserSession, callback_query: CallbackQuery)
                                            reply_markup=keyboards.extra_markup(session.locale))
 
 
+@bot.on_callback_request(LK.crosshair)
 @came_from(extra_features)
 @ignore_message_not_modified
 async def crosshair(_, session: UserSession, callback_query: CallbackQuery):
@@ -566,6 +504,7 @@ async def crosshair(_, session: UserSession, callback_query: CallbackQuery):
                                            reply_markup=keyboards.crosshair_markup(session.locale))
 
 
+@bot.on_callback_request(LK.crosshair_generate)
 @came_from(extra_features)
 @ignore_message_not_modified
 async def generate_crosshair(_, session: UserSession, callback_query: CallbackQuery):  # todo: finally make this shit
@@ -573,6 +512,7 @@ async def generate_crosshair(_, session: UserSession, callback_query: CallbackQu
                                            reply_markup=keyboards.crosshair_markup(session.locale))
 
 
+@bot.on_callback_request(LK.crosshair_decode)
 @log_exception_callback
 @came_from(extra_features)
 @ignore_message_not_modified
@@ -603,6 +543,7 @@ async def decode_crosshair(client: BClient, session: UserSession,
                                        reply_markup=keyboards.crosshair_markup(session.locale))
 
 
+@bot.on_callback_request(LK.exchangerate_button_title)
 @log_exception_callback
 @came_from(main_menu)
 @ignore_message_not_modified
@@ -613,6 +554,7 @@ async def send_exchange_rate(_, session: UserSession, callback_query: CallbackQu
                                            reply_markup=keyboards.extra_markup(session.locale))
 
 
+@bot.on_callback_request(LK.valve_hqtime_button_title)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_valve_hq_time(_, session: UserSession, callback_query: CallbackQuery):
@@ -623,6 +565,7 @@ async def send_valve_hq_time(_, session: UserSession, callback_query: CallbackQu
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(session.locale))
 
 
+@bot.on_callback_request(LK.game_dropcap_button_title)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_dropcap_timer(_, session: UserSession, callback_query: CallbackQuery):
@@ -633,6 +576,7 @@ async def send_dropcap_timer(_, session: UserSession, callback_query: CallbackQu
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(session.locale))
 
 
+@bot.on_callback_request(LK.game_version_button_title)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_game_version(client: BClient, session: UserSession, callback_query: CallbackQuery):
@@ -652,12 +596,14 @@ async def send_game_version(client: BClient, session: UserSession, callback_quer
 # cat: Guns info
 
 
+@bot.on_callback_request(LK.gun_button_text)
 @came_from(extra_features)
 async def guns(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.gun_select_category,
                                            reply_markup=keyboards.guns_markup(session.locale))
 
 
+@bot.on_callback_request(LK.gun_pistols)
 @came_from(guns)
 async def pistols(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
@@ -681,6 +627,7 @@ async def pistols(client: BClient, session: UserSession, callback_query: Callbac
     return await unknown_request(client, session, callback_query, keyboards.pistols_markup)
 
 
+@bot.on_callback_request(LK.gun_heavy)
 @came_from(guns)
 async def heavy(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
@@ -704,6 +651,7 @@ async def heavy(client: BClient, session: UserSession, callback_query: CallbackQ
     return await unknown_request(client, session, callback_query, keyboards.heavy_markup)
 
 
+@bot.on_callback_request(LK.gun_smgs)
 @came_from(guns)
 async def smgs(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
@@ -726,6 +674,7 @@ async def smgs(client: BClient, session: UserSession, callback_query: CallbackQu
     return await unknown_request(client, session, callback_query, keyboards.smgs_markup)
 
 
+@bot.on_callback_request(LK.gun_rifles)
 @came_from(guns)
 async def rifles(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
@@ -861,10 +810,19 @@ async def unknown_request(_, session: UserSession, callback_query: CallbackQuery
                                            reply_markup=reply_markup(session.locale))
 
 
+@bot.on_callback_request(LK.bot_back)
 async def back(client: BClient, session: UserSession, callback_query: CallbackQuery):
     if session.came_from is None:
-        return await main_menu(client, callback_query, session_timeout=True)
+        return await main_menu(client, session, callback_query, session_timeout=True)
     await session.came_from(client, session, callback_query)
+
+
+@bot.on_callback_request('_')
+@ignore_message_not_modified
+async def handle_back_after_reload(client: BClient, callback_query: CallbackQuery):
+    """After bot reload or session timeout, some menus get stuck. This func recovers dialog by calling `main`."""
+
+    return await main_menu(client, callback_query, session_timeout=True)
 
 
 async def main():
