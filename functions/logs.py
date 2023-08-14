@@ -47,7 +47,7 @@ async def log_callback(client: Client, callback_query: CallbackQuery):
         f"✍️ User: {display_name}\n"
         f"ID: {callback_query.from_user.id}\n"
         f"Language: {callback_query.from_user.language_code}\n"
-        f"Callback query: {callback_query.data!r}"
+        f"Callback query: {callback_query.data}"
     )
     await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
 
