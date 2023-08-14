@@ -41,6 +41,8 @@ bot = BClient(config.BOT_NAME,
               api_hash=config.API_HASH,
               bot_token=config.BOT_TOKEN,
               plugins={'root': 'plugins'})
+rate_limit_sleep = 0.2
+
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
 user_data = pd.read_csv(config.USER_DB_FILE_PATH)
@@ -87,6 +89,7 @@ async def sync_user_data(client: BClient, message: Message):
 
         client.register_session(user, force_lang=config.FORCE_LANG)
 
+    await asyncio.sleep(rate_limit_sleep)  # rate limit
     message.continue_propagation()
 
 
@@ -95,13 +98,15 @@ async def sync_user_data(client: BClient, message: Message):
 async def any_command(client: BClient, message: Message):
     await client.send_chat_action(message.chat.id, ChatAction.TYPING)
 
-    if message.chat.type != ChatType.PRIVATE:
-        user = message.from_user
+    user = message.from_user
 
-        if user.id not in client.sessions:
-            client.register_session(user, force_lang=config.FORCE_LANG)
+    if (message.chat.type != ChatType.PRIVATE
+            and user.id not in client.sessions):
+        client.register_session(user, force_lang=config.FORCE_LANG)
 
-    message.continue_propagation()
+    session = client.sessions[user.id]
+
+    return await client.get_func_by_command(session, message)
 
 
 @bot.on_callback_query()
@@ -129,17 +134,17 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
         client.register_session(user, force_lang=config.FORCE_LANG)
 
     # Render selection indicator on selectable markups
-    key = callback_query.data
-
     for markup in keyboards.all_selectable_markups:
-        markup.select_button_by_key(key)
+        markup.select_button_by_key(callback_query.data)
 
     session = client.sessions[user.id]
 
+    await asyncio.sleep(rate_limit_sleep)  # rate limit
     return await client.get_func_by_callback(session, callback_query)
 
 
 @bot.on_callback_request('main')
+@bot.on_callback_request('_', session_timeout=True)
 @ignore_message_not_modified
 async def main_menu(_, session: UserSession,
                     callback_query: CallbackQuery, session_timeout: bool = False):
@@ -719,11 +724,11 @@ async def send_gun_info(client: BClient, session: UserSession, callback_query: C
 # cat: Commands
 
 
-@bot.on_message(filters.command('start'))
-async def welcome(client: BClient, message: Message):
+@bot.on_command('start')
+async def welcome(client: BClient, session: UserSession, message: Message):
     """First bot's message"""
 
-    session = client.sessions[message.from_user.id]
+    # session = client.sessions[message.from_user.id]
 
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, session, message)
@@ -734,11 +739,11 @@ async def welcome(client: BClient, message: Message):
     await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
 
 
-@bot.on_message(filters.command('feedback'))
-async def leave_feedback(client: BClient, message: Message):
+@bot.on_command('feedback')
+async def leave_feedback(client: BClient, session: UserSession, message: Message):
     """Send feedback"""
 
-    session = client.sessions[message.from_user.id]
+    # session = client.sessions[message.from_user.id]
 
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, session, message)
@@ -761,11 +766,11 @@ async def leave_feedback(client: BClient, message: Message):
     await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
 
 
-@bot.on_message(filters.command('help'))
-async def _help(client: BClient, message: Message):
+@bot.on_command('help')
+async def _help(client: BClient, session: UserSession, message: Message):
     """/help message"""
     
-    session = client.sessions[message.from_user.id]
+    # session = client.sessions[message.from_user.id]
 
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, session, message)
@@ -815,14 +820,6 @@ async def back(client: BClient, session: UserSession, callback_query: CallbackQu
     if session.came_from is None:
         return await main_menu(client, session, callback_query, session_timeout=True)
     await session.came_from(client, session, callback_query)
-
-
-@bot.on_callback_request('_')
-@ignore_message_not_modified
-async def handle_back_after_reload(client: BClient, callback_query: CallbackQuery):
-    """After bot reload or session timeout, some menus get stuck. This func recovers dialog by calling `main`."""
-
-    return await main_menu(client, callback_query, session_timeout=True)
 
 
 async def main():
