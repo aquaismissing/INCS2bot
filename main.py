@@ -378,7 +378,7 @@ async def user_profile_info(client: BClient, callback_query: CallbackQuery, last
     except ParsingUserStatsError as e:
         await steam_url.delete()
         error_msg = await user_info_handle_error(client, steam_url, e)
-        return await user_game_stats(client, callback_query, last_error=error_msg)
+        return await user_profile_info(client, callback_query, last_error=error_msg)
     except Exception as e:
         await steam_url.delete()
         raise e
