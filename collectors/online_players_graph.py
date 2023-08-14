@@ -27,6 +27,7 @@ telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
 @scheduler.scheduled_job('cron', hour='*', minute='0,10,20,30,40,50', second='0')
 def graph_maker():
+    # noinspection PyBroadException
     try:
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)

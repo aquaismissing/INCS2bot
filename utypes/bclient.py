@@ -54,7 +54,7 @@ class BClient(Client):
     def sessions(self) -> UserSessions:
         return self._sessions
 
-    def register_session(self, user: User, *, force_lang: str = None):
+    def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
         self._sessions[user.id] = UserSession(user, force_lang=force_lang)
         return self._sessions[user.id]
 

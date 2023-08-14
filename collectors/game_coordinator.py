@@ -96,6 +96,7 @@ def handle_after_logon():
 
 @scheduler.scheduled_job('interval', seconds=45)
 def depots():
+    # noinspection PyBroadException
     try:
         data = client.get_product_info(apps=[730, 740, 741, 745, 2275500, 2275530],
                                        timeout=15)['apps']
@@ -140,6 +141,7 @@ def gv_updater():
     timeout = 1800
     timeout_start = time.time()
     while time.time() < timeout_start + timeout:
+        # noinspection PyBroadException
         try:
             data = GameVersionData.request()
 

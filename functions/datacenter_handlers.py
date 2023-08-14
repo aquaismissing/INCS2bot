@@ -10,7 +10,7 @@ def _format_dc_data(dc: DatacenterVariation, lang_code: str):
     from functions import locale
 
     game_servers_datetime = GameServersData.latest_info_update()
-    if game_servers_datetime == States.UNKNOWN:
+    if game_servers_datetime is States.UNKNOWN:
         return States.UNKNOWN
 
     game_servers_datetime = (f'{format_datetime(game_servers_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()}'

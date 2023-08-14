@@ -24,9 +24,10 @@ def log_exception_inline(func):
     """Decorator to catch and log exceptions in bot inline functions."""
 
     async def inner(client: BClient, session: UserSession, inline_query: InlineQuery, *args, **kwargs):
+        # noinspection PyBroadException
         try:
             await func(client, session, inline_query, *args, **kwargs)
-        except Exception as e:
+        except Exception:
             logging.exception('Caught exception!')
             await client.send_message(config.LOGCHANNEL, f'❗️ {traceback.format_exc()}\n'
                                                          f'\n'

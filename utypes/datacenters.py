@@ -3,6 +3,7 @@ from typing import NamedTuple
 
 import config
 from .states import State, States
+# noinspection PyPep8Naming
 from l10n import LocaleKeys as LK
 
 

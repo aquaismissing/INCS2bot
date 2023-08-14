@@ -1,5 +1,6 @@
 from typing import NamedTuple
 
+# noinspection PyPep8Naming
 from l10n import LocaleKeys as LK
 
 

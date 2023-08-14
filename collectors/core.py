@@ -103,6 +103,7 @@ def remap_dc_info(info: dict):
 
 @scheduler.scheduled_job('interval', seconds=40)
 async def update_cache_info():
+    # noinspection PyBroadException
     try:
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
@@ -141,6 +142,7 @@ async def update_cache_info():
 
 @scheduler.scheduled_job('cron', hour=execution_start_dt.hour, minute=execution_start_dt.minute + 1)
 async def unique_monthly():
+    # noinspection PyBroadException
     try:
         data = get_monthly_unique_players()
 
@@ -162,6 +164,7 @@ async def unique_monthly():
 
 @scheduler.scheduled_job('cron', hour=execution_start_dt.hour, minute=execution_start_dt.minute + 1)
 async def check_currency():
+    # noinspection PyBroadException
     try:
         new_prices = ExchangeRate.request()
 
