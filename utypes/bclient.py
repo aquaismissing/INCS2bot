@@ -1,4 +1,5 @@
 import datetime as dt
+import warnings
 
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -9,6 +10,9 @@ from pyrogram.types import (CallbackQuery, Message, MessageEntity,
 from pyropatch import pyropatch  # do not delete!!
 
 from keyboards import ExtendedIKM
+
+
+__all__ = ('BClient', 'UserSession')
 
 
 class UserSession:  # todo: sessions caching so we can restore them after reload
@@ -27,6 +31,17 @@ class UserSession:  # todo: sessions caching so we can restore them after reload
         self.locale = locale(self.lang_code)
 
 
+class UserSessions:
+    """A wrapper around `dict[int, UserSession]`."""
+    def __init__(self):
+        self._storage: dict[int, UserSession] = {}
+
+    def __getitem__(self, item):
+        if item in self._storage:
+            self._storage[item].timestamp = dt.datetime.now().timestamp()
+        return self._storage[item]
+
+
 class BClient(Client):
     """
     Custom pyrogram.Client class to add custom properties and methods and stop Pycharm annoy me.
@@ -35,27 +50,31 @@ class BClient(Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._sessions: dict[int, UserSession] = {}
+        self._sessions: UserSessions = UserSessions()
         self.current_session: UserSession | None = None
 
     @property
     def came_from(self):
+        warnings.warn('Deprecated. Use `UserSession.came_from`.', DeprecationWarning, stacklevel=2)
         return self.current_session.came_from
 
     @property
     def session_lang_code(self):
+        warnings.warn('Deprecated. Use `UserSession.lang_code`.', DeprecationWarning, stacklevel=2)
         return self.current_session.lang_code
 
     @property
     def locale(self):
+        warnings.warn('Deprecated. Use `UserSession.locale`.', DeprecationWarning, stacklevel=2)
         return self.current_session.locale
 
     @property
-    def sessions(self) -> dict[int, UserSession]:
+    def sessions(self) -> UserSessions:
         return self._sessions
 
     def register_session(self, user: User, *, force_lang: str = None):
         self._sessions[user.id] = UserSession(user, force_lang=force_lang)
+        return self._sessions[user.id]
 
     def clear_timeout_sessions(self, *, hours: int = None, minutes: int = None, seconds: int = None):
         """
@@ -79,12 +98,14 @@ class BClient(Client):
     def clear_sessions(self):
         self._sessions.clear()
 
+    # noinspection PyUnresolvedReferences
     async def listen_message(self,
                              chat_id: int,
                              filters=None,
                              timeout: int = None) -> Message:
         return await super().listen_message(chat_id, filters, timeout)
 
+    # noinspection PyUnresolvedReferences
     async def ask_message(self,
                           chat_id: int,
                           text: str,
@@ -112,6 +133,7 @@ class BClient(Client):
                                          protect_content,
                                          reply_markup)
 
+    # noinspection PyUnresolvedReferences
     async def listen_callback(self,
                               chat_id: int = None,
                               message_id: int = None,
