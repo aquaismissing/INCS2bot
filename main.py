@@ -270,7 +270,7 @@ async def send_dc_us_north(client: BClient, session: UserSession, callback_query
     await send_dc_state(client, session, callback_query, datacenter_handlers.us_north, keyboards.dc_us_markup)
 
 
-@bot.on_callback_request(LK.dc_hongkong)
+@bot.on_callback_request(LK.dc_us_south)
 @came_from(datacenters)
 async def send_dc_us_south(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.us_south, keyboards.dc_us_markup)
@@ -378,7 +378,7 @@ async def user_profile_info(client: BClient, session: UserSession,
     except ParsingUserStatsError as e:
         await steam_url.delete()
         error_msg = await user_info_handle_error(client, session, steam_url, e)
-        return await user_game_stats(client, session, callback_query, last_error=error_msg)
+        return await user_profile_info(client, session, callback_query, last_error=error_msg)
     except Exception as e:
         await steam_url.delete()
         raise e
@@ -728,8 +728,6 @@ async def send_gun_info(client: BClient, session: UserSession, callback_query: C
 async def welcome(client: BClient, session: UserSession, message: Message):
     """First bot's message"""
 
-    # session = client.sessions[message.from_user.id]
-
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, session, message)
 
@@ -742,8 +740,6 @@ async def welcome(client: BClient, session: UserSession, message: Message):
 @bot.on_command('feedback')
 async def leave_feedback(client: BClient, session: UserSession, message: Message):
     """Send feedback"""
-
-    # session = client.sessions[message.from_user.id]
 
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, session, message)
@@ -769,8 +765,6 @@ async def leave_feedback(client: BClient, session: UserSession, message: Message
 @bot.on_command('help')
 async def _help(client: BClient, session: UserSession, message: Message):
     """/help message"""
-    
-    # session = client.sessions[message.from_user.id]
 
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, session, message)
