@@ -1,5 +1,4 @@
 import datetime as dt
-import warnings
 
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -47,23 +46,9 @@ class BClient(Client):
         super().__init__(*args, **kwargs)
 
         self._sessions: UserSessions = UserSessions()
-        self.current_session: UserSession | None = None
+
+        self._available_commands: dict[str, callable] = {}
         self._available_functions: dict[str, callable] = {}
-
-    @property
-    def came_from(self):
-        warnings.warn('Deprecated. Use `UserSession.came_from`.', DeprecationWarning, stacklevel=2)
-        return self.current_session.came_from
-
-    @property
-    def session_lang_code(self):
-        warnings.warn('Deprecated. Use `UserSession.lang_code`.', DeprecationWarning, stacklevel=2)
-        return self.current_session.lang_code
-
-    @property
-    def locale(self):
-        warnings.warn('Deprecated. Use `UserSession.locale`.', DeprecationWarning, stacklevel=2)
-        return self.current_session.locale
 
     @property
     def sessions(self) -> UserSessions:
@@ -95,18 +80,37 @@ class BClient(Client):
     def clear_sessions(self):
         self._sessions.clear()
 
-    def on_callback_request(self, query: str):
+    def on_command(self, command: str, *args, **kwargs):
         def decorator(func):
-            self._available_functions[query] = func
+            self._available_commands['/' + command] = (func, args, kwargs)
             return func
 
         return decorator
 
+    def on_callback_request(self, query: str, *args, **kwargs):
+        def decorator(func):
+            self._available_functions[query] = (func, args, kwargs)
+            return func
+
+        return decorator
+
+    async def get_func_by_command(self, session: UserSession, message: Message):
+        try:
+            func, args, kwargs = self._available_commands[message.text]
+        except KeyError:
+            if '_' not in self._available_commands:
+                return
+            func, args, kwargs = self._available_commands['_']
+        return await func(self, session, message, *args, **kwargs)
+
     async def get_func_by_callback(self, session: UserSession, callback_query: CallbackQuery):
         try:
-            return await self._available_functions[callback_query.data](self, session, callback_query)
+            func, args, kwargs = self._available_functions[callback_query.data]
         except KeyError:
-            return await self._available_functions['_'](self, session, callback_query)
+            if '_' not in self._available_functions:
+                return
+            func, args, kwargs = self._available_functions['_']
+        return await func(self, session, callback_query, *args, **kwargs)
 
     # noinspection PyUnresolvedReferences
     async def listen_message(self,
