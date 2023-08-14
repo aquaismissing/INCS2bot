@@ -10,14 +10,10 @@
         "",
         "telegra.ph/Podrobnoe-opisanie-03-07"
     ],
-    "bot_feedback_text": [
-        "💬 Botdan foydalanishda duch keladigan **Istaklaringiz**  yoki **muammolar** haqida bizga xabar bering.",
-        "",
-        "So'rovni bekor qilish uchun /cancel buyrug'idan foydalaning."
-    ],
+    "bot_feedback_text": "💬 Botdan foydalanishda duch keladigan **Istaklaringiz**  yoki **muammolar** haqida bizga xabar bering.",
     "bot_choose_cmd": "📖 Ushbu buyruqlardan birini tanlang:",
     "bot_choose_func": "🔖 Hohlangan funksiyani tanlang:",
-    "bot_use_cancel": "bot_use_cancel",
+    "bot_use_cancel": "So'rovni bekor qilish uchun /cancel buyrug'idan foydalaning.",
     "bot_feedback_success": "Zor! Xabaringiz jo'natildi.",
     "bot_pmonly_text": "Bu xususiyat faqat shaxsiy xabarlarda ishlaydi..",
     "bot_back": "⏪ Orqaga",
@@ -30,16 +26,8 @@
     "crosshair": "🆕 Prisel",
     "crosshair_generate": "Yarating",
     "crosshair_decode": "Rashifrovka",
-    "crosshair_decode_example": [
-        "📖 Iltimos, rashifrini ochmoqchi bo'lgan o'zaro faoliyat kodni kiriting (masalan: `CSGO-O4Jsi-V36wY-rTMGK-9w7qF-jQ8WB`).",
-        "",
-        "So'rovni bekor qilish uchun /cancel buyrug'idan foydalaning."
-    ],
-    "crosshair_decode_error": [
-        "⚠️ Kod noto‘g‘ri, qayta urinib ko‘ring.",
-        "",
-        "So'rovni bekor qilish uchun /cancel buyrug'idan foydalaning."
-    ],
+    "crosshair_decode_example": "📖 Iltimos, rashifrini ochmoqchi bo'lgan o'zaro faoliyat kodni kiriting (masalan: `CSGO-O4Jsi-V36wY-rTMGK-9w7qF-jQ8WB`).",
+    "crosshair_decode_error": "⚠️ Kod noto‘g‘ri, qayta urinib ko‘ring.",
     "crosshair_decode_result": [
         "🧬 Ushbu Prisel kodining rashifrlangan parametrlari:",
         "",
@@ -401,9 +389,7 @@
         "• Profilga havola (Masalan.: `https://steamcommunity.com/id/aquaismissing`)",
         "• Profilga doimiy havola (Masalan.: `https://steamcommunity.com/profiles/76561198346163255`)",
         "• SteamID (Masalan.: `76561198346163255`)",
-        "• Shaxsiy havola (Masalan.: `aquaismissing`)",
-        "",
-        "So'rovni bekor qilish uchun /cancel buyrug'idan foydalaning."
+        "• Shaxsiy havola (Masalan.: `aquaismissing`)"
     ],
     "user_gamestats_button_title": "CS o'yin statistikasi",
     "user_gamestats_inline_title": "Sizning o'yin statistikangiz",
