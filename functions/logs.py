@@ -29,7 +29,7 @@ async def log_message(client: Client, message: Message):
         f"✍️ User: {display_name}\n"
         f"ID: {message.from_user.id}\n"
         f"Language: {message.from_user.language_code}\n"
-        f"Private message: {message.text}"
+        f"Private message: {message.text!r}"
     )
     await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
 
@@ -47,7 +47,7 @@ async def log_callback(client: Client, callback_query: CallbackQuery):
         f"✍️ User: {display_name}\n"
         f"ID: {callback_query.from_user.id}\n"
         f"Language: {callback_query.from_user.language_code}\n"
-        f"Callback query: {callback_query.data}"
+        f"Callback query: {callback_query.data!r}"
     )
     await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
 
@@ -65,6 +65,6 @@ async def log_inline(client: Client, inline_query: InlineQuery):
         f"🛰 User: {display_name}\n"
         f"ID: {inline_query.from_user.id}\n"
         f"Language: {inline_query.from_user.language_code}\n"
-        f"Inline query: {inline_query.query}"
+        f"Inline query: {inline_query.query!r}"
     )
     await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
