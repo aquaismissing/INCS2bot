@@ -4,7 +4,6 @@ gevent.monkey.patch_all()
 
 import json
 import logging
-import os
 import platform
 import sys
 from threading import Thread
@@ -64,10 +63,7 @@ def handle_disconnect():
     #     logging.info('Reconnecting...')   # https://github.com/ValvePython/steam/issues/439
     #     client.reconnect(maxdelay=30)
 
-    def restart():
-        os.execv(sys.executable, ['python'] + sys.argv)  # a temporary solution - just reboot the script
-
-    Thread(target=restart).start()
+    sys.exit()  # a temporary solution - just stop the script and reboot it from another script
 
 
 @cs.on('connection_status')
