@@ -43,9 +43,9 @@ def ignore_blocking(func):
     """Decorator to ignore `pyrogram.errors.UserIsBlocked`."""
 
     @wraps(func)
-    async def inner(client: Client, session: UserSession, callback_query: CallbackQuery, *args, **kwargs):
+    async def inner(client: Client, *args, **kwargs):
         try:
-            await func(client, session, callback_query, *args, **kwargs)
+            await func(client, *args, **kwargs)
         except UserIsBlocked:
             pass
 
