@@ -41,6 +41,15 @@ class UserSessions:
             self._storage[item].timestamp = dt.datetime.now().timestamp()
         return self._storage[item]
 
+    def __setitem__(self, key, value):
+        self._storage[key] = value
+
+    def __delitem__(self, key):
+        del self._storage[key]
+
+    def clear(self):
+        self._storage.clear()
+
 
 class BClient(Client):
     """
