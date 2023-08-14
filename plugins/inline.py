@@ -78,6 +78,7 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
     session = client.sessions[user.id]
     query = inline_query.query.strip()
 
+    # if-chain because it's a plugin
     if is_user_stats_page(inline_query):
         return await share_inline(client, session, inline_query)
     if query.startswith('price'):
