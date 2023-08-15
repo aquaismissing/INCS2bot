@@ -10,7 +10,7 @@ from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessa
 # noinspection PyUnresolvedReferences
 import env
 import config
-from functions import datacenter_handlers, log_inline, server_stats_handlers
+from functions import datacenter_handlers, log_inline, info_formatters
 import keyboards
 from l10n import dump_tags
 from utypes import (BClient, DatacenterInlineResult, ExchangeRate,
@@ -262,15 +262,15 @@ async def default_inline(client: BClient, inline_query: InlineQuery):
 
     game_version_data = GameVersionData.cached_data()
 
-    server_status_text = server_stats_handlers.get_server_status_summary(GameServersData.cached_server_status(),
-                                                                         lang_code)
-    matchmaking_stats_text = server_stats_handlers.get_matchmaking_stats_summary(
+    server_status_text = info_formatters.format_server_status(GameServersData.cached_server_status(),
+                                                              lang_code)
+    matchmaking_stats_text = info_formatters.format_matchmaking_stats(
         GameServersData.cached_matchmaking_stats(), lang_code
     )
 
-    valve_hq_time_text = server_stats_handlers.get_valve_hq_time(lang_code)
+    valve_hq_time_text = info_formatters.format_valve_hq_time(lang_code)
     drop_cap_reset_timer_text = client.locale.game_dropcaptimer_text.format(*drop_cap_reset_timer())
-    game_version_text = server_stats_handlers.get_game_version_summary(game_version_data, lang_code)
+    game_version_text = info_formatters.format_game_version_info(game_version_data, lang_code)
 
     inline_btn = keyboards.markup_inline_button(client.locale)
 

@@ -18,7 +18,7 @@ from pyropatch import pyropatch  # do not delete!!
 from telegraph.aio import Telegraph
 
 import config
-from functions import datacenter_handlers, server_stats_handlers, ufilters
+from functions import datacenter_handlers, info_formatters, ufilters
 from functions.decorators import *
 from functions.logs import *
 import keyboards
@@ -193,7 +193,7 @@ async def send_server_status(client: BClient, callback_query: CallbackQuery):
     if data == States.UNKNOWN:
         return await something_went_wrong(client, callback_query)
 
-    text = server_stats_handlers.get_server_status_summary(data, lang_code)
+    text = info_formatters.format_server_status(data, lang_code)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.ss_markup(client.locale))
 
@@ -211,7 +211,7 @@ async def send_matchmaking_stats(client: BClient, callback_query: CallbackQuery)
     if data == States.UNKNOWN:
         return await something_went_wrong(client, callback_query)
 
-    text = server_stats_handlers.get_matchmaking_stats_summary(data, lang_code)
+    text = info_formatters.format_matchmaking_stats(data, lang_code)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.ss_markup(client.locale))
 
@@ -562,7 +562,7 @@ async def send_valve_hq_time(client: BClient, callback_query: CallbackQuery):
 
     lang_code = callback_query.from_user.language_code
 
-    text = server_stats_handlers.get_valve_hq_time(lang_code)
+    text = info_formatters.format_valve_hq_time(lang_code)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(client.locale))
 
@@ -590,7 +590,7 @@ async def send_game_version(client: BClient, callback_query: CallbackQuery):
     if data == States.UNKNOWN:
         return await something_went_wrong(client, callback_query)
 
-    text = server_stats_handlers.get_game_version_summary(data, lang_code)
+    text = info_formatters.format_game_version_info(data, lang_code)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(client.locale),
                                            disable_web_page_preview=True)

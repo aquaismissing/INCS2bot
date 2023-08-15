@@ -1,6 +1,6 @@
 from . import (datacenter_handlers,
                decorators,
                ufilters,
-               server_stats_handlers)
+               info_formatters)
 from .locale import locale
 from .logs import *
