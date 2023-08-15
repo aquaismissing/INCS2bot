@@ -89,11 +89,11 @@ class GameVersionData(NamedTuple):
         
         csgo_client_version = cache_file["csgo_client_version"]
         csgo_patch_version = cache_file["csgo_patch_version"]
-        csgo_version_dt = dt.datetime.utcfromtimestamp(cache_file["csgo_version_timestamp"]) + dt.timedelta(hours=8)
+        csgo_version_dt = dt.datetime.fromtimestamp(cache_file["csgo_version_timestamp"], dt.UTC) + dt.timedelta(hours=8)
 
         cs2_client_version = cache_file["cs2_client_version"]
         cs2_patch_version = cache_file["cs2_patch_version"]
-        cs2_version_dt = dt.datetime.utcfromtimestamp(cache_file["cs2_version_timestamp"]) + dt.timedelta(hours=8)
+        cs2_version_dt = dt.datetime.fromtimestamp(cache_file["cs2_version_timestamp"], dt.UTC) + dt.timedelta(hours=8)
 
         return (csgo_patch_version, csgo_client_version, csgo_version_dt,
                 cs2_patch_version, cs2_client_version, cs2_version_dt)
@@ -189,7 +189,7 @@ class GameServersData(NamedTuple):
         if cache_file["api_timestamp"] == 'unknown':
             return States.UNKNOWN
         
-        game_server_dt = dt.datetime.utcfromtimestamp(cache_file["api_timestamp"])
+        game_server_dt = dt.datetime.fromtimestamp(cache_file["api_timestamp"], dt.UTC)
         gc_state = States.get(cache_file["game_coordinator"])
         sl_state = States.get(cache_file["sessions_logon"])
         ms_state = States.get(cache_file["matchmaking_scheduler"])
@@ -211,7 +211,7 @@ class GameServersData(NamedTuple):
         if cache_file["api_timestamp"] == 'unknown':
             return States.UNKNOWN
         
-        game_server_dt = dt.datetime.utcfromtimestamp(cache_file["api_timestamp"])
+        game_server_dt = dt.datetime.fromtimestamp(cache_file["api_timestamp"], dt.UTC)
         
         gc_state = States.get(cache_file["game_coordinator"])
         sl_state = States.get(cache_file["sessions_logon"])
@@ -244,7 +244,7 @@ class GameServersData(NamedTuple):
         if cache_file["api_timestamp"] == 'unknown':
             return States.UNKNOWN
 
-        return dt.datetime.utcfromtimestamp(cache_file["api_timestamp"])
+        return dt.datetime.fromtimestamp(cache_file["api_timestamp"], dt.UTC)
 
     def asdict(self):
         return self._asdict()
