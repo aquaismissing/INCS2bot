@@ -38,6 +38,9 @@ class BClient(Client):
         self._sessions: dict[int, UserSession] = {}
         self.current_session: UserSession | None = None
 
+        self.logs_timeout = dt.timedelta(seconds=2)  # define how often logs should be sent
+        self.latest_log_dt = dt.datetime.now()  # todo: implement logs functions in BClient?
+
     @property
     def came_from(self):
         return self.current_session.came_from
@@ -53,6 +56,14 @@ class BClient(Client):
     @property
     def sessions(self) -> dict[int, UserSession]:
         return self._sessions
+
+    @property
+    def can_log(self) -> bool:
+        return (dt.datetime.now() - self.latest_log_dt) >= self.logs_timeout
+
+    @property
+    def can_log_after_time(self) -> dt.timedelta:
+        return self.logs_timeout - (dt.datetime.now() - self.latest_log_dt)
 
     def register_session(self, user: User, *, force_lang: str = None):
         self._sessions[user.id] = UserSession(user, force_lang=force_lang)
