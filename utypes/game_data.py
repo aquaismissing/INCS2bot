@@ -196,7 +196,7 @@ class GameServersData(NamedTuple):
         sc_state = States.get(cache_file["steam_community"])
         webapi_state = States.get(cache_file["webapi"])
         
-        now = dt.datetime.utcnow()
+        now = dt.datetime.now(dt.UTC)
         is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
             and not (gc_state == States.NORMAL and sl_state == States.NORMAL)
 
@@ -227,7 +227,7 @@ class GameServersData(NamedTuple):
         player_alltime_peak = cache_file["player_alltime_peak"]
         monthly_unique_players = cache_file["monthly_unique_players"]
 
-        now = dt.datetime.utcnow()
+        now = dt.datetime.now(tz=dt.UTC)
         is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
             and (gc_state != States.NORMAL or sl_state != States.NORMAL)
 
@@ -261,7 +261,7 @@ def drop_cap_reset_timer():
     wanted_weekday = 2
     wanted_time = 2
 
-    now = dt.datetime.utcnow()
+    now = dt.datetime.now(tz=dt.UTC)
     days_left = (wanted_weekday - now.weekday() - 1) % 7
 
     wanted_date = (now + dt.timedelta(days=days_left)).replace(hour=wanted_time, minute=0, second=0, microsecond=0)

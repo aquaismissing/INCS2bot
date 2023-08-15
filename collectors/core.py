@@ -123,10 +123,9 @@ async def update_cache_info():
             await send_alert('online_players', cache['player_alltime_peak'])
 
         df = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
-        end_date = dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        start_date = (dt.datetime.utcnow() - dt.timedelta(days=1)).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        now = dt.datetime.now(dt.UTC)
+        end_date = f'{now:%Y-%m-%d %H:%M:%S}'
+        start_date = f'{(now - dt.timedelta(days=1)):%Y-%m-%d %H:%M:%S}'
         mask = (df["DateTime"] > start_date) & (df["DateTime"] <= end_date)
         player_24h_peak = int(df.loc[mask]["Players"].max())
 

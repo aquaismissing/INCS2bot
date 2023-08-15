@@ -40,7 +40,7 @@ def graph_maker():
             old_player_data.drop(0, axis=0, inplace=True)
 
         temp_player_data = pd.DataFrame(
-            [[f'{dt.datetime.utcnow():%Y-%m-%d %H:%M:%S}', player_count]],
+            [[f'{dt.datetime.now(dt.UTC):%Y-%m-%d %H:%M:%S}', player_count]],
             columns=["DateTime", "Players"],
         )
         temp_player_data["Players"] = temp_player_data["Players"].astype("int64")
