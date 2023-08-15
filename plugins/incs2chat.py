@@ -65,11 +65,12 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
     if message.from_user.id not in admins:
         return
 
-    reply_to = message
-    should_reply = False
     if message.reply_to_message:
         reply_to = message.reply_to_message
         should_reply = True
+    else:
+        reply_to = message
+        should_reply = False
 
     if message.animation:
         animation = message.animation.file_id
