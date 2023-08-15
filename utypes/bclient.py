@@ -45,7 +45,7 @@ class BClient(Client):
         self._sessions: UserSessions = UserSessions()
         self.current_session: UserSession | None = None
 
-        self.logs_timeout = dt.timedelta(seconds=2)  # define how often logs should be sent
+        self.logs_timeout = dt.timedelta(seconds=4)  # define how often logs should be sent
         self.latest_log_dt = dt.datetime.now()  # todo: implement logs functions in BClient?
 
     @property
