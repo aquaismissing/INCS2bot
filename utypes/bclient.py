@@ -27,6 +27,13 @@ class UserSession:  # todo: sessions caching so we can restore them after reload
         self.locale = locale(self.lang_code)
 
 
+class UserSessions(dict[int, UserSession]):
+    def __getitem__(self, key):
+        item = super().__getitem__(key)
+        item.timestamp = dt.datetime.now().timestamp()
+        return item
+
+
 class BClient(Client):
     """
     Custom pyrogram.Client class to add custom properties and methods and stop Pycharm annoy me.
@@ -35,7 +42,7 @@ class BClient(Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._sessions: dict[int, UserSession] = {}
+        self._sessions: UserSessions = UserSessions()
         self.current_session: UserSession | None = None
 
         self.logs_timeout = dt.timedelta(seconds=2)  # define how often logs should be sent
@@ -54,7 +61,7 @@ class BClient(Client):
         return self.current_session.locale
 
     @property
-    def sessions(self) -> dict[int, UserSession]:
+    def sessions(self) -> UserSessions:
         return self._sessions
 
     @property
