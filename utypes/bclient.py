@@ -38,6 +38,7 @@ class BClient(Client):
     """
     Custom pyrogram.Client class to add custom properties and methods and stop Pycharm annoy me.
     """
+    LOGS_TIMEOUT = dt.timedelta(seconds=4)  # define how often logs should be sent
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,7 +46,6 @@ class BClient(Client):
         self._sessions: UserSessions = UserSessions()
         self.current_session: UserSession | None = None
 
-        self.logs_timeout = dt.timedelta(seconds=4)  # define how often logs should be sent
         self.latest_log_dt = dt.datetime.now()  # todo: implement logs functions in BClient?
 
     @property
@@ -66,11 +66,11 @@ class BClient(Client):
 
     @property
     def can_log(self) -> bool:
-        return (dt.datetime.now() - self.latest_log_dt) >= self.logs_timeout
+        return (dt.datetime.now() - self.latest_log_dt) >= self.LOGS_TIMEOUT
 
     @property
     def can_log_after_time(self) -> dt.timedelta:
-        return self.logs_timeout - (dt.datetime.now() - self.latest_log_dt)
+        return self.LOGS_TIMEOUT - (dt.datetime.now() - self.latest_log_dt)
 
     def register_session(self, user: User, *, force_lang: str = None):
         self._sessions[user.id] = UserSession(user, force_lang=force_lang)
