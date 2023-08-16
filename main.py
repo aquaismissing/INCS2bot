@@ -454,7 +454,7 @@ async def user_game_stats(client: BClient, callback_query: CallbackQuery, last_e
 
     steamid, *stats = user_stats
     stats_page_title = client.locale.user_gamestats_page_title.format(steamid)
-    stats_page_text = client.locale.user_gamestats_text.format(*stats)
+    stats_page_text = info_formatters.format_user_game_stats(stats, client.locale)
 
     try:
         telegraph_response = await telegraph.create_page(stats_page_title,
