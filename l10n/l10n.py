@@ -310,7 +310,52 @@ class Locale(NamedTuple):
     user_gamestats_button_title: str
     user_gamestats_inline_title: str
     user_gamestats_page_title: str  # Statistics for #{}
-    user_gamestats_text: str
+
+    user_gamestats_text: str  # todo: deprecate it
+    user_gamestats_generated_with: str
+    user_gamestats_header: str
+    user_gamestats_playtime: str
+    user_gamestats_kills: str
+    user_gamestats_deaths: str
+    user_gamestats_kd_ratio: str
+    user_gamestats_matches_played: str
+    user_gamestats_matches_won: str
+    user_gamestats_win_percentage: str
+    user_gamestats_rounds_played: str
+    user_gamestats_pistol_rounds_won: str
+    user_gamestats_aim_stats: str
+    user_gamestats_shots: str
+    user_gamestats_hits: str
+    user_gamestats_aim_accuracy: str
+    user_gamestats_hs_percentage: str
+    user_gamestats_maps_stats: str
+    user_gamestats_best_map: str
+    user_gamestats_misc_stats: str
+    user_gamestats_mvp_rewards: str
+    user_gamestats_total_income: str
+    user_gamestats_hostages_rescued: str
+    user_gamestats_weapons_dropped: str
+    user_gamestats_windows_broken: str
+    user_gamestats_dealt_damage: str
+    user_gamestats_bombs_planted: str
+    user_gamestats_bombs_defused: str
+    user_gamestats_knife_kills: str
+    user_gamestats_grenade_kills: str
+    user_gamestats_molotov_kills: str
+    user_gamestats_zeus_shots: str
+    user_gamestats_zeus_kills: str
+    user_gamestats_zeus_aim_accuracy: str
+    user_gamestats_knife_fights_won: str
+    user_gamestats_enemy_weapon_kills: str
+    user_gamestats_flashed_enemies_kills: str
+    user_gamestats_scoped_snipers_kills: str
+    user_gamestats_gun_stats: str
+    user_gamestats_pistols_stats: str
+    user_gamestats_heavy_stats: str
+    user_gamestats_smgs_stats: str
+    user_gamestats_rifles_stats: str
+    user_gamestats_snipers_stats: str
+
     user_gamestats_share: str
     user_invalidlink_error: str
     user_invalidrequest_error: str
