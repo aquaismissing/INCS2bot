@@ -16,10 +16,14 @@ jobs:
         python-version: [ 3.11 ]
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Set up project
+        uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - run: python -m pip install --upgrade pip
-      - run: pip install pytest
-      - run: pytest -q test.py
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install pytest and run test
+        run: |
+          pip install pytest
+          pytest -q test.py
