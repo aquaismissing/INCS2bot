@@ -1,17 +1,17 @@
 from __future__ import annotations
-import json  # todo: json5 for multiline strings instead of lists?
+import json  # todo: json5 for comments inside files?
 import logging
 from pathlib import Path
-from typing import NamedTuple
+from typing import IO, NamedTuple
 import warnings
 
 
-__all__ = ('Locale', 'L10n', 'locale', 'LocaleKeys')
+__all__ = ('L10n', 'Locale', 'LocaleKeys', 'locale')
 
 
 _l10n = None  # L10n singleton for fast lookups
 
-logger = logging.getLogger('l10n')
+logger = logging.getLogger(__name__)
 logger.formatter = logging.Formatter("%(asctime)s | L10n: %(message)s", "%H:%M:%S — %d/%m/%Y")
 
 
@@ -31,6 +31,7 @@ class Locale(NamedTuple):
     """Object containing all the localization strings. All strings
        can be accessed as object attributes or by string keys using
        get(key) method. Can be converted to dict using to_dict() method."""
+
     # bot
     bot_start_text: str
     bot_help_text: str
@@ -410,14 +411,14 @@ class L10n:
     def __init__(self, path: str | Path = None):
         self.path = Path(path) if path else Path(__file__).parent
         if not (self.path / 'en.json').exists():
-            warnings.warn(f"Can't find English in locales, generating a file...", PrimaryLangFileNotFound)
-            L10n.create_lang_file(self.path, 'en')
+            warnings.warn("Can't find English in locales, generating a file...", PrimaryLangFileNotFound)
+            self.create_lang_file(self.path, 'en')
 
         self.locales = {}
         self._define_locales()
 
     def _define_locales(self):
-        """Finds all lang files to make Locales."""
+        """Finds all lang files to make Locales and store them in memory."""
 
         for file in self.path.glob('*.json'):
             if file.stem == 'tags':
@@ -425,12 +426,8 @@ class L10n:
             self.locales[file.stem] = self._get_locale(file)
 
     @classmethod
-    def _get_locale(cls, file: Path):
-        """Creates a Locale object from lang file and stores it in memory."""
-
-        lang = file.stem
-        if lang == 'tags':
-            return
+    def _get_locale(cls, file: Path) -> Locale:
+        """Creates a Locale object from lang file."""
 
         with open(file, encoding='utf-8') as f:
             data = json.load(f)
@@ -464,7 +461,7 @@ class L10n:
             with open(file, 'w', encoding='utf-8') as f:
                 data = {key: data[key] for key in Locale._fields + tuple(used_reserved_fields)
                         + tuple(unexpected_keys)}  # fixing pairs order
-                json.dump(data, f, indent=4, ensure_ascii=False)
+                cls.dump(data, f)
 
         # Remove unexpected keys
         for key in tuple(unexpected_keys) + cls._reserved_fields:
@@ -494,7 +491,7 @@ class L10n:
     def create_lang_file(cls, path: str | Path, lang: str, override: bool = False):
         """
         Creates a sample lang file in a requested path.
-        If you want to override existing file - set 'override' to True.
+        If you want to override existing file - set `override` to True.
 
         Useful for fast lang file creation.
         """
@@ -510,7 +507,18 @@ class L10n:
             return
 
         with open(path, 'w', encoding='utf-8') as f:
-            json.dump(sample.to_dict(), f, indent=4, ensure_ascii=False)
+            cls.dump(sample, f)
+
+    @classmethod
+    def dump(cls, data, file: IO[str]):
+        """
+        `json.dump()` shortcut with some preset attributes.
+        """
+
+        if isinstance(data, Locale):
+            data = data.to_dict()
+
+        json.dump(data, file, ensure_ascii=False, indent=4)
 
 
 def locale(lang: str = None) -> Locale:
