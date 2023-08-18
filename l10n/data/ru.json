@@ -500,6 +500,5 @@
     "valve_hqtime_inline_title": "Время в Белвью",
     "valve_hqtime_inline_description": "Время в штаб-кв. Valve",
     "valve_hqtime_text": "{} Время в Белвью (штаб-кв. Valve): {}",
-    "valve_steam_maintenance_text": "🛠️ **Steam отключается на плановое техобслуживание каждый вторник.**",
-    "user_gamestats_text": "user_gamestats_text"
+    "valve_steam_maintenance_text": "🛠️ **Steam отключается на плановое техобслуживание каждый вторник.**"
 }
