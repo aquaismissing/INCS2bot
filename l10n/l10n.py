@@ -378,8 +378,6 @@ class Locale(NamedTuple):
 
     valve_steam_maintenance_text: str
 
-    user_gamestats_text: str = DEPRECATED
-
     @classmethod
     def sample(cls) -> Locale:
         """Returns a sample Locale object with key names as values"""
