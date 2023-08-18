@@ -420,7 +420,6 @@
     "user_gamestats_button_title": "Игровая статистика CS",
     "user_gamestats_inline_title": "Ваша игровая статистика",
     "user_gamestats_page_title": "Статистика для #{}",
-    "user_gamestats_text": "DEPRECATED",
     "user_gamestats_generated_with": "Cгенерировано с помощью",
     "user_gamestats_header": "📊 Общая игровая статистика:",
     "user_gamestats_playtime": "Время в игре (матчмейкинг):",
@@ -501,5 +500,6 @@
     "valve_hqtime_inline_title": "Время в Белвью",
     "valve_hqtime_inline_description": "Время в штаб-кв. Valve",
     "valve_hqtime_text": "{} Время в Белвью (штаб-кв. Valve): {}",
-    "valve_steam_maintenance_text": "🛠️ **Steam отключается на плановое техобслуживание каждый вторник.**"
+    "valve_steam_maintenance_text": "🛠️ **Steam отключается на плановое техобслуживание каждый вторник.**",
+    "user_gamestats_text": "user_gamestats_text"
 }

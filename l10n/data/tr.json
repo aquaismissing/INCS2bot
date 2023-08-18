@@ -394,7 +394,6 @@
     "user_gamestats_button_title": "CS oyun istatistikleri",
     "user_gamestats_inline_title": "Oyun istatistikleriniz",
     "user_gamestats_page_title": "#{} için istatistikler",
-    "user_gamestats_text": "DEPRECATED",
     "user_gamestats_generated_with": "İle oluşturuldu",
     "user_gamestats_header": "📊 Genel oyun istatistikleri:",
     "user_gamestats_playtime": "Oyunda geçen süre (Matchmaking):",

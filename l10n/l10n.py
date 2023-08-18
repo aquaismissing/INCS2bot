@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json  # todo: json5 for comments inside files?
+import json
 import logging
 from pathlib import Path
 from typing import IO, NamedTuple
@@ -10,6 +10,8 @@ __all__ = ('L10n', 'Locale', 'LocaleKeys', 'locale')
 
 
 _l10n = None  # L10n singleton for fast lookups
+
+DEPRECATED = 'DEPRECATED'
 
 logger = logging.getLogger(__name__)
 logger.formatter = logging.Formatter("%(asctime)s | L10n: %(message)s", "%H:%M:%S — %d/%m/%Y")
@@ -312,7 +314,6 @@ class Locale(NamedTuple):
     user_gamestats_inline_title: str
     user_gamestats_page_title: str  # Statistics for #{}
 
-    user_gamestats_text: str  # todo: deprecate it
     user_gamestats_generated_with: str
     user_gamestats_header: str
     user_gamestats_playtime: str
@@ -377,6 +378,8 @@ class Locale(NamedTuple):
 
     valve_steam_maintenance_text: str
 
+    user_gamestats_text: str = DEPRECATED
+
     @classmethod
     def sample(cls) -> Locale:
         """Returns a sample Locale object with key names as values"""
@@ -435,7 +438,7 @@ class L10n:
         # Add undefined keys
         found_undefined_keys = False
         for key in Locale._fields:
-            if key not in data and key not in cls._reserved_fields:
+            if key not in data and key not in cls._reserved_fields and Locale[key] != DEPRECATED:
                 warnings.warn(f'Found undefined key "{key}" in "{file}"', UndefinedLocaleKey, stacklevel=4)
                 data[key] = key
                 found_undefined_keys = True

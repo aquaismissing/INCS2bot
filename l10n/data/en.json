@@ -393,7 +393,6 @@
     "user_gamestats_button_title": "CS in-game statistics",
     "user_gamestats_inline_title": "Your in-game statistics",
     "user_gamestats_page_title": "Statistics for #{}",
-    "user_gamestats_text": "DEPRECATED",
     "user_gamestats_generated_with": "Generated using",
     "user_gamestats_header": "📊 General in-game statistics:",
     "user_gamestats_playtime": "Playtime (matchmaking):",
