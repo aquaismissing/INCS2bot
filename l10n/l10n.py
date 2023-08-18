@@ -438,7 +438,7 @@ class L10n:
         # Add undefined keys
         found_undefined_keys = False
         for key in Locale._fields:
-            if key not in data and key not in cls._reserved_fields and Locale[key] != DEPRECATED:
+            if key not in data and key not in cls._reserved_fields and Locale._field_defaults[key] != DEPRECATED:
                 warnings.warn(f'Found undefined key "{key}" in "{file}"', UndefinedLocaleKey, stacklevel=4)
                 data[key] = key
                 found_undefined_keys = True
@@ -462,8 +462,9 @@ class L10n:
             if redump:
                 logger.info(f'Redumping {file.name}...')
             with open(file, 'w', encoding='utf-8') as f:
-                data = {key: data[key] for key in Locale._fields + tuple(used_reserved_fields)
-                        + tuple(unexpected_keys)}  # fixing pairs order
+                fields = tuple(field for field in Locale._fields if data.get(field))
+                data = {key: data[key] for key in fields + tuple(used_reserved_fields)  # fixing pairs order
+                        + tuple(unexpected_keys)}
                 cls.dump(data, f)
 
         # Remove unexpected keys
