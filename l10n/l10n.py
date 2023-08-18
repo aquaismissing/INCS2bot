@@ -438,7 +438,7 @@ class L10n:
         # Add undefined keys
         found_undefined_keys = False
         for key in Locale._fields:
-            if key not in data and key not in cls._reserved_fields and Locale._field_defaults[key] != DEPRECATED:
+            if key not in data and key not in cls._reserved_fields and Locale._field_defaults.get(key) != DEPRECATED:
                 warnings.warn(f'Found undefined key "{key}" in "{file}"', UndefinedLocaleKey, stacklevel=4)
                 data[key] = key
                 found_undefined_keys = True
