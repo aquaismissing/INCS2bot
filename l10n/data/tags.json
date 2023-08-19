@@ -17,7 +17,9 @@
         "австралия",
         "сидней",
         "avstraliya",
-        "sidney"
+        "sidney",
+        "австралія",
+        "сідней"
     ],
     "dc_southamerica": [
         "🇧🇷",
@@ -68,7 +70,8 @@
         "🇪🇺",
         "europe",
         "европа",
-        "yevropa"
+        "yevropa",
+        "європа"
     ],
     "dc_europe_north": [
         "🇸🇪",
@@ -97,7 +100,8 @@
         "мадрид",
         "g'arbiy",
         "germaniya",
-        "ispaniya"
+        "ispaniya",
+        "іспанія"
     ],
     "dc_europe_east": [
         "🇦🇹",
@@ -161,7 +165,8 @@
         "sharqiy",
         "g'arbiy",
         "chikago",
-        "mozes leyk"
+        "mozes leyk",
+        "чікаго"
     ],
     "dc_us_south": [
         "southeast",
@@ -192,7 +197,8 @@
     "dc_asia": [
         "asia",
         "азия",
-        "osiyo"
+        "osiyo",
+        "азія"
     ],
     "dc_asia_india": [
         "🇮🇳",
@@ -203,7 +209,8 @@
         "мумбаи",
         "ченнай",
         "hindiston",
-        "mumbay"
+        "mumbay",
+        "індія"
     ],
     "dc_asia_japan": [
         "🇯🇵",
@@ -212,7 +219,8 @@
         "япония",
         "токио",
         "yaponiya",
-        "tokio"
+        "tokio",
+        "токіо"
     ],
     "dc_asia_china": [
         "🇨🇳",
@@ -276,7 +284,8 @@
         "eur",
         "euro",
         "евро",
-        "yevro"
+        "yevro",
+        "євро"
     ],
     "currencies_rub": [
         "rub",
@@ -347,7 +356,8 @@
         "uah",
         "hrywna",
         "гривна",
-        "grivna"
+        "grivna",
+        "гривня"
     ],
     "currencies_mxn": [
         "mxn",
@@ -373,7 +383,8 @@
         "pln",
         "zloty",
         "злотый",
-        "zlotiy"
+        "zlotiy",
+        "злота"
     ],
     "currencies_chf": [
         "chf",
