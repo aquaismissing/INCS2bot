@@ -9,13 +9,14 @@ Then check [Contributing](#contributing) section to know how to start translatin
 
 Here you can see translations' progress and contributors' list:
 
-| Code | Language |    Progress     |           Summary            | Contributors |
-|:----:|----------|:---------------:|:----------------------------:|:------------:|
-|  gb  | English  | ██████████ 100% |           built in           |              |
-|  ru  | Russian  | ██████████ 100% |           built in           |              |
-|  fa  | Persian  | ████████▒▒ 80%  |       tags not filled        |   [@A460N]   |
-|  tr  | Turkish  | ████████▒▒ 80%  |       tags not filled        |  [@ITMiroN]  |
-|  uz  | Uzbek    | █████████▒ 90%  |   user_gamestats_text left   | [@d1az1337]  |
+| Code | Language  |    Progress     |            Summary             |        Contributors        |
+|:----:|-----------|:---------------:|:------------------------------:|:--------------------------:|
+|  gb  | English   | ██████████ 100% |            built in            |                            |
+|  ru  | Russian   | ██████████ 100% |            built in            |                            |
+|  fa  | Persian   | ████████▒▒ 80%  |          tags missing          |    [@A460N] (telegram)     |
+|  tr  | Turkish   | ████████▒▒ 80%  |          tags missing          |   [@ITMiroN] (telegram)    |
+|  uz  | Uzbek     | █████████▒ 90%  |    user_gamestats_text left    |   [@d1az1337] (telegram)   |
+|  uk  | Ukrainian | ██████████ 100% | fully done, currently not used | [akimerslys], [Agent47Dev] |
 
 ## Contributing 
 
@@ -56,3 +57,5 @@ Here you can see translations' progress and contributors' list:
 [@A460N]: https://t.me/A460N
 [@ITMiroN]: https://t.me/ITMiroN
 [@d1az1337]: https://t.me/d1az1337
+[akimerslys]: https://github.com/akimerslys
+[Agent47Dev]: https://github.com/Agent47Dev
