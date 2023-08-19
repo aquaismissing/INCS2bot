@@ -24,6 +24,7 @@ from functions.decorators import *
 from functions.logs import *
 import keyboards
 from keyboards import ExtendedIKB, ExtendedIKM
+# noinspection PyPep8Naming
 from l10n import LocaleKeys as LK
 from utypes import (BClient, Crosshair, ExchangeRate, GameServersData,
                     GameVersionData, GunInfo, ParsingUserStatsError, ProfileInfo,
@@ -54,6 +55,7 @@ def log_exception_callback(func):
     """Decorator to catch and log exceptions in bot functions. Also call `something_went_wrong(message)`."""
 
     async def inner(client: BClient, session: UserSession, callback_query: CallbackQuery, *args, **kwargs):
+        # noinspection PyBroadException
         try:
             await func(client, session, callback_query, *args, **kwargs)
         except Exception:

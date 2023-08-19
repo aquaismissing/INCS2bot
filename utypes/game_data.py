@@ -89,11 +89,13 @@ class GameVersionData(NamedTuple):
         
         csgo_client_version = cache_file["csgo_client_version"]
         csgo_patch_version = cache_file["csgo_patch_version"]
-        csgo_version_dt = dt.datetime.fromtimestamp(cache_file["csgo_version_timestamp"], dt.UTC) + dt.timedelta(hours=8)
+        csgo_version_dt = (dt.datetime.fromtimestamp(cache_file["csgo_version_timestamp"], dt.UTC)
+                           + dt.timedelta(hours=8))
 
         cs2_client_version = cache_file["cs2_client_version"]
         cs2_patch_version = cache_file["cs2_patch_version"]
-        cs2_version_dt = dt.datetime.fromtimestamp(cache_file["cs2_version_timestamp"], dt.UTC) + dt.timedelta(hours=8)
+        cs2_version_dt = (dt.datetime.fromtimestamp(cache_file["cs2_version_timestamp"], dt.UTC)
+                          + dt.timedelta(hours=8))
 
         return (csgo_patch_version, csgo_client_version, csgo_version_dt,
                 cs2_patch_version, cs2_client_version, cs2_version_dt)
