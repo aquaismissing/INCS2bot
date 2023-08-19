@@ -9,9 +9,8 @@ __pycache__/
 .venv/
 
 # secrets
-data/
-!l10n/data/
-config.py
+/data/
+/config.py
 
 # bot sessions
 INCS2bot.session
