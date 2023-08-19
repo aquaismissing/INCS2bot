@@ -4,6 +4,7 @@ import json
 from json import JSONDecodeError
 from typing import Callable
 import logging
+import sys
 import traceback
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -839,6 +840,7 @@ async def main():
     scheduler.start()
 
     try:
+        bot.load_sessions(config.LAST_SESSIONS_PATH)
         await bot.start()
         await log(bot, 'Bot started.')
 
@@ -851,7 +853,9 @@ async def main():
     finally:
         logging.info('Shutting down the bot...')
         await log(bot, 'Bot is shutting down...')
+        bot.dump_sessions(config.LAST_SESSIONS_PATH)
         await bot.stop()
+        sys.exit()
 
 
 if __name__ == '__main__':

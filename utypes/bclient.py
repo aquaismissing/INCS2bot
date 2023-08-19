@@ -1,4 +1,6 @@
 import datetime as dt
+from pathlib import Path
+import pickle
 
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -46,6 +48,7 @@ class BClient(Client):
         self._sessions: UserSessions = UserSessions()
         self.current_session: UserSession | None = None
 
+        self.sessions_timeout = dt.timedelta(hours=1)
         self.latest_log_dt = dt.datetime.now()  # todo: implement logs functions in BClient?
 
     @property
@@ -75,24 +78,33 @@ class BClient(Client):
     def register_session(self, user: User, *, force_lang: str = None):
         self._sessions[user.id] = UserSession(user, force_lang=force_lang)
 
-    def clear_timeout_sessions(self, *, hours: int = None, minutes: int = None, seconds: int = None):
+    def clear_timeout_sessions(self):
         """
         Clear all sessions that exceed given timeout.
-        Defaults to 1 hour if no values passed in.
         """
 
-        if hours is minutes is seconds is None:
-            hours = 1
-            minutes = 0
-            seconds = 0
-
         now = dt.datetime.now()
-        timeout_duration = dt.timedelta(hours=hours, minutes=minutes, seconds=seconds)
 
         for _id in self._sessions:
             session_time = dt.datetime.fromtimestamp(self._sessions[_id].timestamp)
-            if now - session_time > timeout_duration:
+            if (now - session_time) > self.sessions_timeout:
                 del self._sessions[_id]
+
+    def load_sessions(self, path: Path):
+        if not path.exists():
+            self._sessions = UserSessions()
+            return
+
+        with open(path, 'rb') as f:
+            self._sessions = pickle.load(f)
+
+        self.clear_timeout_sessions()
+
+    def dump_sessions(self, path: Path):
+        self.clear_timeout_sessions()
+
+        with open(path, 'wb') as f:
+            pickle.dump(self._sessions, f)
 
     def clear_sessions(self):
         self._sessions.clear()
