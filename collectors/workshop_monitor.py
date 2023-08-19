@@ -33,6 +33,7 @@ bot = Client(config.BOT_WM_MODULE_NAME,
 
 
 def get_initial_ids():
+    # noinspection PyBroadException
     try:
         initial_data = requests.get(workshop_url, timeout=15).json()["response"]["publishedfiledetails"]
         return [_map["publishedfileid"] for _map in initial_data]
@@ -43,6 +44,7 @@ def get_initial_ids():
 
 
 def _get_rerun_data():
+    # noinspection PyBroadException
     try:
         return requests.get(workshop_url, timeout=15).json()["response"]["publishedfiledetails"]
     except Exception:
@@ -51,6 +53,7 @@ def _get_rerun_data():
 
 
 def _get_updated_maps(maps_data, maps_ids):
+    # noinspection PyBroadException
     try:
         return {x["publishedfileid"]: re.sub(pattern, "", x['title']).strip()
                 for x in maps_data if x["publishedfileid"] in maps_ids}

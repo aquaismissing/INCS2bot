@@ -45,6 +45,7 @@ bot = Client(config.BOT_GC_MODULE_NAME,
 
 @scheduler.scheduled_job('interval', seconds=45)
 async def scan_for_gc_update():
+    # noinspection PyBroadException
     try:
         with open(config.GC_PREV_CACHE_FILE_PATH, encoding='utf-8') as f:
             prev_cache = json.load(f)

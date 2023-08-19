@@ -1,4 +1,4 @@
-from .bclient import BClient
+from .bclient import *
 from .crosshairs import *
 from .datacenters import *
 from .game_data import *

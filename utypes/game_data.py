@@ -229,7 +229,7 @@ class GameServersData(NamedTuple):
 
         now = dt.datetime.now(tz=dt.UTC)
         is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
-            and (gc_state != States.NORMAL or sl_state != States.NORMAL)
+            and (gc_state is not States.NORMAL or sl_state is not States.NORMAL)
 
         return (game_server_dt, graph_url, online_servers, online_players,
                 active_players, searching_players, average_search_time,

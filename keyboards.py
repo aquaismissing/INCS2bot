@@ -4,6 +4,7 @@ from pyrogram.types import (CallbackGame,
                             LoginUrl,
                             WebAppInfo)
 
+# noinspection PyPep8Naming
 from l10n import Locale, LocaleKeys as LK
 
 

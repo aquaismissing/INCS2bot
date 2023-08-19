@@ -2,6 +2,7 @@ from dataclasses import asdict, dataclass
 import json
 
 import config
+# noinspection PyPep8Naming
 from l10n import LocaleKeys as LK
 
 

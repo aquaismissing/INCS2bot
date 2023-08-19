@@ -13,7 +13,10 @@ from pyropatch import pyropatch  # do not delete!!
 from keyboards import ExtendedIKM
 
 
-class UserSession:  # todo: sessions caching so we can restore them after reload
+__all__ = ('BClient', 'UserSession')
+
+
+class UserSession:
     __slots__ = ('user', 'timestamp', 'came_from', 'lang_code', 'locale')
 
     def __init__(self, user: User, *, force_lang: str = None):
@@ -46,22 +49,11 @@ class BClient(Client):
         super().__init__(*args, **kwargs)
 
         self._sessions: UserSessions = UserSessions()
-        self.current_session: UserSession | None = None
 
+        self._available_commands: dict[str, callable] = {}
+        self._available_functions: dict[str, callable] = {}
         self.sessions_timeout = dt.timedelta(hours=1)
         self.latest_log_dt = dt.datetime.now()  # todo: implement logs functions in BClient?
-
-    @property
-    def came_from(self):
-        return self.current_session.came_from
-
-    @property
-    def session_lang_code(self):
-        return self.current_session.lang_code
-
-    @property
-    def locale(self):
-        return self.current_session.locale
 
     @property
     def sessions(self) -> UserSessions:
@@ -75,8 +67,9 @@ class BClient(Client):
     def can_log_after_time(self) -> dt.timedelta:
         return self.LOGS_TIMEOUT - (dt.datetime.now() - self.latest_log_dt)
 
-    def register_session(self, user: User, *, force_lang: str = None):
+    def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
         self._sessions[user.id] = UserSession(user, force_lang=force_lang)
+        return self._sessions[user.id]
 
     def clear_timeout_sessions(self):
         """
@@ -109,12 +102,46 @@ class BClient(Client):
     def clear_sessions(self):
         self._sessions.clear()
 
+    def on_command(self, command: str, *args, **kwargs):
+        def decorator(func):
+            self._available_commands['/' + command] = (func, args, kwargs)
+            return func
+
+        return decorator
+
+    def on_callback_request(self, query: str, *args, **kwargs):
+        def decorator(func):
+            self._available_functions[query] = (func, args, kwargs)
+            return func
+
+        return decorator
+
+    async def get_func_by_command(self, session: UserSession, message: Message):
+        try:
+            func, args, kwargs = self._available_commands[message.text]
+        except KeyError:
+            if '_' not in self._available_commands:
+                return
+            func, args, kwargs = self._available_commands['_']
+        return await func(self, session, message, *args, **kwargs)
+
+    async def get_func_by_callback(self, session: UserSession, callback_query: CallbackQuery):
+        try:
+            func, args, kwargs = self._available_functions[callback_query.data]
+        except KeyError:
+            if '_' not in self._available_functions:
+                return
+            func, args, kwargs = self._available_functions['_']
+        return await func(self, session, callback_query, *args, **kwargs)
+
+    # noinspection PyUnresolvedReferences
     async def listen_message(self,
                              chat_id: int,
                              filters=None,
                              timeout: int = None) -> Message:
         return await super().listen_message(chat_id, filters, timeout)
 
+    # noinspection PyUnresolvedReferences
     async def ask_message(self,
                           chat_id: int,
                           text: str,
@@ -142,6 +169,7 @@ class BClient(Client):
                                          protect_content,
                                          reply_markup)
 
+    # noinspection PyUnresolvedReferences
     async def listen_callback(self,
                               chat_id: int = None,
                               message_id: int = None,
