@@ -7,7 +7,8 @@ from babel.dates import format_datetime
 from jinja2 import Environment, FileSystemLoader
 
 from .locale import locale
-from l10n import Locale, LocaleKeys as LK
+# noinspection PyPep8Naming
+from l10n import Locale
 from utypes import States
 
 
@@ -104,9 +105,6 @@ def format_valve_hq_time(lang_code: str):
 
 
 def format_user_game_stats(stats, _locale: Locale):
-    if _locale.user_gamestats_header == LK.user_gamestats_header:
-        return _locale.user_gamestats_text.format(*stats)  # backwards compat with old locale schema
-
     rendered_page = game_stats_template.render(**_locale.to_dict())
 
     # for some reason telegraph interprets newline <li></li> as two <li></li>, one of which is empty
