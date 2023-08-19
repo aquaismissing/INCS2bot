@@ -41,7 +41,6 @@ bot = BClient(config.BOT_NAME,
               api_hash=config.API_HASH,
               bot_token=config.BOT_TOKEN,
               plugins={'root': 'plugins'})
-rate_limit_sleep = 0.2
 
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
@@ -89,7 +88,6 @@ async def sync_user_data(client: BClient, message: Message):
 
         client.register_session(user, force_lang=config.FORCE_LANG)
 
-    await asyncio.sleep(rate_limit_sleep)  # rate limit
     message.continue_propagation()
 
 
@@ -139,7 +137,6 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
 
     session = client.sessions[user.id]
 
-    await asyncio.sleep(rate_limit_sleep)  # rate limit
     return await client.get_func_by_callback(session, callback_query)
 
 
