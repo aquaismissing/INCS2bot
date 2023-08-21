@@ -13,7 +13,6 @@ __all__ = ('GameVersionData',  'ExchangeRate', 'GameServersData',
 
 
 MONTHLY_UNIQUE_PLAYERS_API = "https://api.steampowered.com/ICSGOServers_730/GetMonthlyPlayerCount/v1"
-CSGO_VERSION_DATA_URL = "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf"
 CS2_VERSION_DATA_URL = "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/game/csgo/steam.inf"
 GET_KEY_PRICES_API = f"https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/?appid={config.CS_APP_ID}" \
                      f"&key={config.STEAM_API_KEY}"
@@ -27,10 +26,6 @@ HOUR = 60 * MINUTE
 
 
 class GameVersionData(NamedTuple):
-    csgo_client_version: int
-    csgo_server_version: int
-    csgo_patch_version: str
-    csgo_version_timestamp: float
     cs2_client_version: int
     cs2_server_version: int
     cs2_patch_version: str
@@ -40,21 +35,6 @@ class GameVersionData(NamedTuple):
     def request():
         # noinspection PyArgumentList
         options = {}
-
-        # csgo
-        csgo_data = requests.get(CSGO_VERSION_DATA_URL, headers=HEADERS, timeout=15).text
-        config_entries = (line for line in csgo_data.split('\n') if line)
-
-        for entry in config_entries:
-            key, val = entry.split('=')
-            options[key] = val
-
-        version_datetime = f'{options["VersionDate"]} {options["VersionTime"]}'
-
-        csgo_client_version = int(options["ClientVersion"])
-        csgo_server_version = int(options["ServerVersion"])
-        csgo_patch_version = options["PatchVersion"]
-        csgo_version_timestamp = dt.datetime.strptime(version_datetime, "%b %d %Y %H:%M:%S").timestamp()
 
         # cs2
         cs2_data = requests.get(CS2_VERSION_DATA_URL, headers=HEADERS, timeout=15).text
@@ -71,11 +51,7 @@ class GameVersionData(NamedTuple):
         cs2_patch_version = options["PatchVersion"]
         cs2_version_timestamp = dt.datetime.strptime(version_datetime, "%b %d %Y %H:%M:%S").timestamp()
 
-        return GameVersionData(csgo_client_version,
-                               csgo_server_version,
-                               csgo_patch_version,
-                               csgo_version_timestamp,
-                               cs2_client_version,
+        return GameVersionData(cs2_client_version,
                                cs2_server_version,
                                cs2_patch_version,
                                cs2_version_timestamp)
@@ -86,19 +62,13 @@ class GameVersionData(NamedTuple):
 
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
-        
-        csgo_client_version = cache_file["csgo_client_version"]
-        csgo_patch_version = cache_file["csgo_patch_version"]
-        csgo_version_dt = (dt.datetime.fromtimestamp(cache_file["csgo_version_timestamp"], dt.UTC)
-                           + dt.timedelta(hours=8))
 
-        cs2_client_version = cache_file["cs2_client_version"]
-        cs2_patch_version = cache_file["cs2_patch_version"]
-        cs2_version_dt = (dt.datetime.fromtimestamp(cache_file["cs2_version_timestamp"], dt.UTC)
+        cs2_client_version = cache_file['cs2_client_version']
+        cs2_patch_version = cache_file['cs2_patch_version']
+        cs2_version_dt = (dt.datetime.fromtimestamp(cache_file['cs2_version_timestamp'], dt.UTC)
                           + dt.timedelta(hours=8))
 
-        return (csgo_patch_version, csgo_client_version, csgo_version_dt,
-                cs2_patch_version, cs2_client_version, cs2_version_dt)
+        return cs2_patch_version, cs2_client_version, cs2_version_dt
 
     def asdict(self):
         return self._asdict()

@@ -7,7 +7,6 @@ from babel.dates import format_datetime
 from jinja2 import Environment, FileSystemLoader
 
 from .locale import locale
-# noinspection PyPep8Naming
 from l10n import Locale
 from utypes import States
 
@@ -81,16 +80,11 @@ def format_game_version_info(data, lang_code: str):
     if data is States.UNKNOWN:
         return loc.error_internal
 
-    (csgo_patch_version, csgo_client_version, csgo_version_dt,
-     cs2_patch_version, cs2_client_version, cs2_version_dt) = data
+    (*data, cs2_version_dt) = data
 
-    csgo_version_dt = f'{format_datetime(csgo_version_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
     cs2_version_dt = f'{format_datetime(cs2_version_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
 
-    data = (csgo_patch_version, csgo_client_version, csgo_version_dt,
-            cs2_patch_version, cs2_client_version, cs2_version_dt)
-
-    return loc.game_version_text.format(*data)
+    return loc.game_version_text.format(*data, cs2_version_dt)
 
 
 def format_valve_hq_time(lang_code: str):

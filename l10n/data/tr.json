@@ -252,12 +252,7 @@
     "game_version_inline_title": "Oyun versiyonu",
     "game_version_inline_description": "Oyunun en son sürümünü kontrol etmek",
     "game_version_text": [
-        "⚙️ Mevcut oyun versiyonu:",
-        "",
-        "CS:GO: `{}` `({})`",
-        "Son güncelleme: {}",
-        "",
-        "CS2: `{}` `({})`",
+        "⚙️ Mevcut oyun versiyonu: `{}` `({})`",
         "Son güncelleme: {}"
     ],
     "game_dropcap_button_title": "Kısıtlamaları Sıfırlamak",

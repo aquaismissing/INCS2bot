@@ -252,12 +252,7 @@
     "game_version_inline_title": "O'yin versiyasi",
     "game_version_inline_description": "O'yinning so'nggi versiyasini tekshiring",
     "game_version_text": [
-        "⚙️ Joriy o'yin versiyasi:",
-        "",
-        "CS:GO: `{}` `({})`",
-        "Oxirgi yangilanish: {}",
-        "",
-        "CS2: `{}` `({})`",
+        "⚙️ Joriy o'yin versiyasi: `{}` `({})`",
         "Oxirgi yangilanish: {}"
     ],
     "game_dropcap_button_title": "Cheklovlarni olib tashlang",

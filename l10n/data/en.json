@@ -251,12 +251,7 @@
     "game_version_inline_title": "Game version",
     "game_version_inline_description": "Check the latest game version",
     "game_version_text": [
-        "⚙️ Current game version:",
-        "",
-        "CS:GO: `{}` `({})`",
-        "Latest update: {}",
-        "",
-        "CS2: `{}` `({})`",
+        "⚙️ Current game version: `{}` `({})`",
         "Latest update: {}"
     ],
     "game_dropcap_button_title": "Drop cap reset",
