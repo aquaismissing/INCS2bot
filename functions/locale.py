@@ -1,7 +1,7 @@
 from l10n import Locale, locale as _loc
 
 
-CIS_LANG_CODES = ('be', 'kk', 'ru')
+CIS_LANG_CODES = ('be', 'kk')
 
 
 def locale(lang: str = 'en') -> Locale:

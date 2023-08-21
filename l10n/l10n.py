@@ -1,39 +1,13 @@
 from __future__ import annotations
-import json
-import logging
 from pathlib import Path
-from typing import IO, NamedTuple
-import warnings
+
+from sl10n import SL10n, SLocale
 
 
-__all__ = ('L10n', 'Locale', 'LocaleKeys', 'locale')
+__all__ = ('SL10n', 'Locale', 'LocaleKeys', 'locale')
 
 
-_l10n = None  # L10n singleton for fast lookups
-
-DEPRECATED = 'DEPRECATED'
-
-logger = logging.getLogger(__name__)
-logger.formatter = logging.Formatter("%(asctime)s | L10n: %(message)s", "%H:%M:%S — %d/%m/%Y")
-
-
-class UnexpectedLocaleKey(UserWarning):
-    pass
-
-
-class UndefinedLocaleKey(UserWarning):
-    pass
-
-
-class PrimaryLangFileNotFound(UserWarning):
-    pass
-
-
-class Locale(NamedTuple):
-    """Object containing all the localization strings. All strings
-       can be accessed as object attributes or by string keys using
-       get(key) method. Can be converted to dict using to_dict() method."""
-
+class Locale(SLocale):
     # bot
     bot_start_text: str
     bot_help_text: str
@@ -378,149 +352,10 @@ class Locale(NamedTuple):
 
     valve_steam_maintenance_text: str
 
-    @classmethod
-    def sample(cls) -> Locale:
-        """Returns a sample Locale object with key names as values"""
-
-        return cls(**{field: field for field in cls._fields})
-
-    def to_dict(self) -> dict[str, str]:
-        """Returns a dict converted from a Locale object."""
-
-        return self._asdict()
-
-    def get(self, key: str) -> str:
-        """
-        Returns a string associated with the given key
-        (if such key exists, otherwise returns the key itself).
-        """
-
-        if key not in self._fields:
-            warnings.warn(f'Got unexpected key "{key}", returned the key', UnexpectedLocaleKey, stacklevel=2)
-            return key
-        return getattr(self, key)
-
 
 LocaleKeys = Locale.sample()
 
-
-class L10n:
-    """Simple text localization system."""
-
-    _reserved_fields = ('l10n_redump',)
-
-    def __init__(self, path: str | Path = None):
-        self.path = Path(path) if path else Path(__file__).parent
-        if not (self.path / 'en.json').exists():
-            warnings.warn("Can't find English in locales, generating a file...", PrimaryLangFileNotFound)
-            self.create_lang_file(self.path, 'en')
-
-        self.locales = {}
-        self._define_locales()
-
-    def _define_locales(self):
-        """Finds all lang files to make Locales and store them in memory."""
-
-        for file in self.path.glob('*.json'):
-            if file.stem == 'tags':
-                continue
-            self.locales[file.stem] = self._get_locale(file)
-
-    @classmethod
-    def _get_locale(cls, file: Path) -> Locale:
-        """Creates a Locale object from lang file."""
-
-        with open(file, encoding='utf-8') as f:
-            data = json.load(f)
-
-        # Add undefined keys
-        found_undefined_keys = False
-        for key in Locale._fields:
-            if key not in data and key not in cls._reserved_fields and Locale._field_defaults.get(key) != DEPRECATED:
-                warnings.warn(f'Found undefined key "{key}" in "{file}"', UndefinedLocaleKey, stacklevel=4)
-                data[key] = key
-                found_undefined_keys = True
-
-        used_reserved_fields = []
-        for field in cls._reserved_fields:
-            if field in data:
-                used_reserved_fields.append(field)
-
-        redump = data.get('l10n_redump')  # explicitly tells the parser to redump a file
-
-        # Find unexpected keys
-        unexpected_keys = []
-        for key in tuple(data):
-            if key not in Locale._fields and key not in cls._reserved_fields:
-                warnings.warn(f'Got unexpected key "{key}" in "{file}"', UnexpectedLocaleKey, stacklevel=4)
-                unexpected_keys.append(key)
-
-        # Dump data with undefined and unexpected keys
-        if found_undefined_keys or unexpected_keys or redump:
-            if redump:
-                logger.info(f'Redumping {file.name}...')
-            with open(file, 'w', encoding='utf-8') as f:
-                fields = tuple(field for field in Locale._fields if data.get(field))
-                data = {key: data[key] for key in fields + tuple(used_reserved_fields)  # fixing pairs order
-                        + tuple(unexpected_keys)}
-                cls.dump(data, f)
-
-        # Remove unexpected keys
-        for key in tuple(unexpected_keys) + cls._reserved_fields:
-            if key in data:
-                del data[key]
-
-        # Concat strings from lists with '\n'
-        for key, val in data.items():
-            if isinstance(val, list):
-                data[key] = '\n'.join(val)
-
-        return Locale(**data)
-
-    def locale(self, lang: str = 'en') -> Locale:
-        """
-        Returns a Locale object, containing all defined string keys translated to the requested language
-        (if such translation exists, otherwise returns English).
-        """
-
-        if self.locales.get(lang) is None:
-            warnings.warn(f'Got unexpected lang "{lang}", returned "en"', UnexpectedLocaleKey, stacklevel=2)
-            lang = 'en'
-
-        return self.locales.get(lang)
-
-    @classmethod
-    def create_lang_file(cls, path: str | Path, lang: str, override: bool = False):
-        """
-        Creates a sample lang file in a requested path.
-        If you want to override existing file - set `override` to True.
-
-        Useful for fast lang file creation.
-        """
-
-        if (Path(path) / 'en.json').exists():
-            sample = cls._get_locale(Path(path) / 'en.json')
-        else:
-            sample = Locale.sample()
-
-        path = Path(path) / f'{lang}.json'
-        if override is False and path.exists():
-            warnings.warn(f'Lang file "{path}" already exists.', stacklevel=2)
-            return
-
-        with open(path, 'w', encoding='utf-8') as f:
-            cls.dump(sample, f)
-
-    @classmethod
-    def dump(cls, data, file: IO[str]):
-        """
-        `json.dump()` shortcut with some preset attributes.
-        """
-
-        if isinstance(data, Locale):
-            data = data.to_dict()
-
-        json.dump(data, file, ensure_ascii=False, indent=4)
+_l10n = SL10n(Locale, Path(__file__).parent / 'data', ignore_filenames=['tags'])  # SL10n singleton for fast lookups
 
 
 def locale(lang: str = None) -> Locale:
@@ -534,10 +369,10 @@ def locale(lang: str = None) -> Locale:
 
     global _l10n
 
-    if _l10n is None:
-        _l10n = L10n(Path(__file__).parent / 'data')
+    if not _l10n.initialized:
+        _l10n.init()
     return _l10n.locale(lang)
 
 
 if __name__ == '__main__':
-    L10n('data')
+    SL10n(Locale, 'data', ignore_filenames=['tags']).init()
