@@ -1,4 +1,6 @@
 import datetime as dt
+from functools import wraps
+import logging
 from pathlib import Path
 import pickle
 
@@ -10,6 +12,8 @@ from pyrogram.types import (CallbackQuery, Message, MessageEntity,
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 
+from db import db_session
+from db.users import User as UserDB
 from keyboards import ExtendedIKM
 
 
@@ -17,19 +21,26 @@ __all__ = ('BClient', 'UserSession')
 
 
 class UserSession:
-    __slots__ = ('user', 'timestamp', 'came_from', 'lang_code', 'locale')
+    __slots__ = ('userdb', 'timestamp', 'came_from_id', 'lang_code', 'locale')
 
-    def __init__(self, user: User, *, force_lang: str = None):
+    def __init__(self, userdb: UserDB, *, force_lang: str = None):
         from functions import locale
 
-        self.user = user
+        self.userdb = userdb
         self.timestamp = dt.datetime.now().timestamp()
-        self.came_from: callable = None
-        if force_lang:
-            self.lang_code = force_lang
-        else:
-            self.lang_code = user.language_code
+        self.came_from_id = userdb.came_from_id
+        self.lang_code = force_lang or userdb.language
         self.locale = locale(self.lang_code)
+
+    def sync_with_db(self):
+        db_sess = db_session.create_session()
+
+        userdb = self.userdb
+        userdb.came_from_id = self.came_from_id
+        userdb.language = self.lang_code
+
+        logging.debug(f'UserSession synced with db! {userdb.came_from_id=}, {userdb.language=}')
+        db_sess.commit()
 
 
 class UserSessions(dict[int, UserSession]):
@@ -52,6 +63,8 @@ class BClient(Client):
 
         self._available_commands: dict[str, callable] = {}
         self._available_functions: dict[str, callable] = {}
+
+        self._came_from_functions: dict[int, callable] = {}
         self.sessions_timeout = dt.timedelta(hours=1)
         self.latest_log_dt = dt.datetime.now()  # todo: implement logs functions in BClient?
 
@@ -68,7 +81,18 @@ class BClient(Client):
         return self.LOGS_TIMEOUT - (dt.datetime.now() - self.latest_log_dt)
 
     def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
-        self._sessions[user.id] = UserSession(user, force_lang=force_lang)
+        logging.debug(f'Registering session with user {user}, {force_lang=}')
+        db_sess = db_session.create_session()
+
+        userdb = db_sess.query(UserDB).filter(UserDB.userid == str(user.id)).first()
+        if userdb is None:
+            userdb = UserDB(userid=user.id,
+                            language=user.language_code)
+            db_sess.add(userdb)
+            db_sess.commit()
+            logging.debug(f'New record in db! {userdb=}')
+
+        self._sessions[user.id] = UserSession(userdb, force_lang=force_lang)
         return self._sessions[user.id]
 
     def clear_timeout_sessions(self):
@@ -81,6 +105,7 @@ class BClient(Client):
         for _id in self._sessions:
             session_time = dt.datetime.fromtimestamp(self._sessions[_id].timestamp)
             if (now - session_time) > self.sessions_timeout:
+                self._sessions[_id].sync_with_db()
                 del self._sessions[_id]
 
     def load_sessions(self, path: Path):
@@ -133,6 +158,36 @@ class BClient(Client):
                 return
             func, args, kwargs = self._available_functions['_']
         return await func(self, session, callback_query, *args, **kwargs)
+
+    def came_from(self, f: callable, _id: int = None):
+        """
+        Decorator to track from what functions we came from. Accepts explicit id as arg.
+        """
+
+        def decorator(func: callable):
+            @wraps(func)
+            async def inner(_, session: UserSession, callback_query: CallbackQuery, *args, **kwargs):
+                if f not in self._came_from_functions.values():
+                    i = _id or len(self._came_from_functions)  # getting id for new function
+                    self._came_from_functions[i] = f
+                else:
+                    i = tuple(k for k, v in self._came_from_functions if v == f)[0]
+                session.came_from_id = i
+                await func(self, session, callback_query, *args, **kwargs)
+
+            return inner
+
+        return decorator
+
+    async def go_back(self, session: UserSession, callback_query: CallbackQuery):
+        if session.came_from_id is None:
+            if '_' not in self._available_functions:
+                return
+            func, args, kwargs = self._available_functions['_']
+            return await func(self, session, callback_query, *args, **kwargs)
+
+        came_from = self._came_from_functions[session.came_from_id]
+        await came_from(self, session, callback_query)
 
     # noinspection PyUnresolvedReferences
     async def listen_message(self,

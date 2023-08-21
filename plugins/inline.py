@@ -60,7 +60,7 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
     await log_inline(client, inline_query)
 
     if user.id not in client.sessions:
-        data = pd.read_csv(config.USER_DB_FILE_PATH)
+        '''data = pd.read_csv(config.USER_DB_FILE_PATH)
         if not data["UserID"].isin([user.id]).any():
             new_data = pd.DataFrame(
                 [
@@ -72,7 +72,7 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
                 ],
                 columns=["Name", "UserID", "Language"],
             )
-            pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)
+            pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)'''
 
         client.register_session(user, force_lang=config.FORCE_LANG)
 
