@@ -253,9 +253,8 @@
     "game_version_inline_description": "Проверить последнюю версию игры",
     "game_version_text": [
         "⚙️ Текущая версия игры: `{}` `({})`",
-        "Последнее обновление: {}",
         "",
-        "ℹ️ Трекер обновлений Counter-Strike: [@cstracker](http://t.me/cstracker/7)"
+        "Последнее обновление: {}"
     ],
     "game_dropcap_button_title": "Сброс ограничений",
     "game_dropcaptimer_inline_title": "Сброс ограничений",

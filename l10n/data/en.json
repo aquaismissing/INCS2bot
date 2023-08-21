@@ -252,6 +252,7 @@
     "game_version_inline_description": "Check the latest game version",
     "game_version_text": [
         "⚙️ Current game version: `{}` `({})`",
+        "",
         "Latest update: {}"
     ],
     "game_dropcap_button_title": "Drop cap reset",

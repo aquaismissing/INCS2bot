@@ -253,9 +253,8 @@
     "game_version_inline_description": "Перевірити останню версію гри",
     "game_version_text": [
         "⚙️ Актуальна версія гри: `{}` `({})`",
-        "Останнє оновлення: {}",
         "",
-        "ℹ️ Трекер оновлень Counter-Strike: [@cstracker](http://t.me/cstracker/7)"
+        "Останнє оновлення: {}"
     ],
     "game_dropcap_button_title": "Оновлення обмежень",
     "game_dropcaptimer_inline_title": "Оновлення обмежень",
@@ -311,64 +310,40 @@
     "gun_origin_south_africa": "Південна Африка",
     "latest_data_update": "Останнє оновлення данних: {}",
     "notifs_build_public": [
-        "⚡️ [Публічна збірка](https://t.me/cstracker/28) Counter-Strike була оновлена.",
-        "",
-        "Ідентифікатор нової збірки: `{}`"
+        "notifs_build_public"
     ],
     "notifs_build_dpr": [
-        "🔒 Приватна [DPR-гілка](https://t.me/cstracker/25) Counter-Strike була оновлена.",
-        "",
-        "Ідентифікатор нової збірки: `{}`"
+        "notifs_build_dpr"
     ],
     "notifs_build_dprp": [
-        "🔒 Приватна [DPRP-гілка](https://t.me/cstracker/25) Counter-Strike була оновлена.",
-        "",
-        "Ідентифікатор нової збірки: `{}`"
+        "notifs_build_dprp"
     ],
     "notifs_build_sdk": [
-        "🛠 [SDK](https://t.me/cstracker/37) Counter-Strike були оновлені.",
-        "",
-        "Ідентифікатор нової збірки: `{}`"
+        "notifs_build_sdk"
     ],
     "notifs_build_ds": [
-        "🧰 [Сервера](https://t.me/cstracker/38) Counter-Strike були оновлені.",
-        "",
-        "Ідентифікатор нової збірки: `{}`"
+        "notifs_build_ds"
     ],
     "notifs_build_valve_ds": [
-        "🖥 [Сервера](https://t.me/cstracker/26) Valve були оновлені.",
-        "",
-        "Номер оновлення: `{}`"
+        "notifs_build_valve_ds"
     ],
     "notifs_build_cs2_client": [
-        "🔐 [Невідоме клієнтське оновлення](https://t.me/cstracker/40) було оновлено.",
-        "",
-        "Номер оновлення: `{}`"
+        "notifs_build_cs2_client"
     ],
     "notifs_build_cs2_server": [
-        "🔐 [Невідоме серверне оновлення CS2](https://t.me/cstracker/40) було оновлено.",
-        "",
-        "Номер оновлення: `{}`"
+        "notifs_build_cs2_server"
     ],
     "notifs_new_map": [
-        "<a href=\"https://steamcommunity.com/sharedfiles/filedetails/?id={}\">‎</a>🆕 Офіційний аккаунт Counter-Strike завантажив мапу **{}** [в Майстерню Steam](https://t.me/cstracker/29).",
-        "",
-        "🔗 steamcommunity.com/sharedfiles/filedetails/?id={}"
+        "notifs_new_map"
     ],
     "notifs_new_map_multiple": [
-        "<a href=\"https://steamcommunity.com/profiles/76561198082857351/myworkshopfiles/?appid=730\">‎</a>🆕 Офіційний аккаунт Counter-Strike завантажив мапи **{}** [в Майстерню Steam](https://t.me/cstracker/29).",
-        "",
-        "🔗 steamcommunity.com/profiles/76561198082857351/myworkshopfiles/?appid=730"
+        "notifs_new_map_multiple"
     ],
     "notifs_new_playerspeak": [
-        "🤩 Зареєстрований новий рекорд онлайну Counter-Strike.",
-        "",
-        "К-ть гравців: {:,}"
+        "notifs_new_playerspeak"
     ],
     "notifs_new_monthlyunique": [
-        "📊 К-ть щомісячних унікальних Counter-Strike було оновлено!",
-        "",
-        "{:,} ➡️ {:,}"
+        "notifs_new_monthlyunique"
     ],
     "states_low": "низька",
     "states_medium": "середня",

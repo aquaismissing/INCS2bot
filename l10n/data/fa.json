@@ -252,6 +252,7 @@
     "game_version_inline_description": "بررسی اخرین ورژن بازی",
     "game_version_text": [
         "⚙️ ورژن در حال حاضر بازی: `{}` `({})`",
+        "",
         "آخرین بروزرسانی: {}"
     ],
     "game_dropcap_button_title": "بازرسانی دراپ کیس و آیتم",

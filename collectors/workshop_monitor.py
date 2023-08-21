@@ -63,16 +63,16 @@ def _get_updated_maps(maps_data, maps_ids):
 
 
 def _format_updated_maps_data(updated_maps):
-    ru_loc = locale('ru')
+    loc = locale('ru')
 
     if len(updated_maps) == 1:
         map_id, map_name = updated_maps.items()[0]
-        return ru_loc.notifs_new_map.format(map_id, map_name, map_id)
+        return loc.notifs_new_map.format(map_id, map_name, map_id)
 
     maps_names = updated_maps.values()
     maps_names = " и ".join(maps_names if len(maps_names) == 2
                             else [", ".join(maps_names.values()[:-1]), maps_names[-1]])
-    return ru_loc.notifs_new_map_multiple.format(maps_names)
+    return loc.notifs_new_map_multiple.format(maps_names)
 
 
 async def main():  # todo: rewrite to use bot task scheduler
