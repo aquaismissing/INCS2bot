@@ -11,3 +11,9 @@ def locale(lang: str = 'en') -> Locale:
         lang = 'ru'
 
     return _loc(lang)
+
+
+def get_refined_lang_code(_locale: Locale) -> str:
+    """Get refined lang code that Babel can accept."""
+
+    return _locale.lang_code.replace('-', '_')

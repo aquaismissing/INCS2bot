@@ -25,7 +25,7 @@ from functions.logs import *
 import keyboards
 from keyboards import ExtendedIKB, ExtendedIKM
 # noinspection PyPep8Naming
-from l10n import LocaleKeys as LK
+from l10n import Locale, LocaleKeys as LK
 from utypes import (BClient, Crosshair, ExchangeRate, GameServersData,
                     GameVersionData, GunInfo, ParsingUserStatsError, ProfileInfo,
                     State, States, UserGameStats, UserSession, drop_cap_reset_timer)
@@ -178,7 +178,7 @@ async def send_server_status(client: BClient, session: UserSession, callback_que
     if data == States.UNKNOWN:
         return await something_went_wrong(client, session, callback_query)
 
-    text = info_formatters.format_server_status(data, session.lang_code)
+    text = info_formatters.format_server_status(data, session.locale)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.ss_markup(session.locale))
 
@@ -194,7 +194,7 @@ async def send_matchmaking_stats(client: BClient, session: UserSession, callback
     if data == States.UNKNOWN:
         return await something_went_wrong(client, callback_query)
 
-    text = info_formatters.format_matchmaking_stats(data, session.lang_code)
+    text = info_formatters.format_matchmaking_stats(data, session.locale)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.ss_markup(session.locale))
 
@@ -324,11 +324,12 @@ async def send_dc_south_korea(client: BClient, session: UserSession, callback_qu
     await send_dc_state(client, session, callback_query, datacenter_handlers.south_korea, keyboards.dc_asia_markup)
 
 
+@log_exception_callback
 @ignore_message_not_modified
 async def send_dc_state(client: BClient, session: UserSession, callback_query: CallbackQuery,
-                        dc_state_func: Callable[[str], str | State], reply_markup: ExtendedIKM):
+                        dc_state_func: Callable[[Locale], str | State], reply_markup: ExtendedIKM):
 
-    state = dc_state_func(session.lang_code)
+    state = dc_state_func(session.locale)
 
     if state == States.UNKNOWN:
         return await something_went_wrong(client, session, callback_query)
@@ -565,7 +566,7 @@ async def send_exchange_rate(_, session: UserSession, callback_query: CallbackQu
 async def send_valve_hq_time(_, session: UserSession, callback_query: CallbackQuery):
     """Send the time in Valve headquarters (Bellevue, Washington, US)"""
 
-    text = info_formatters.format_valve_hq_time(session.lang_code)
+    text = info_formatters.format_valve_hq_time(session.locale)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(session.locale))
 
@@ -592,7 +593,7 @@ async def send_game_version(client: BClient, session: UserSession, callback_quer
     if data == States.UNKNOWN:
         return await something_went_wrong(client, session, callback_query)
 
-    text = info_formatters.format_game_version_info(data, session.lang_code)
+    text = info_formatters.format_game_version_info(data, session.locale)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(session.locale),
                                            disable_web_page_preview=True)
