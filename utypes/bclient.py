@@ -10,6 +10,7 @@ from pyrogram.types import (CallbackQuery, Message, MessageEntity,
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 
+from functions.locale import locale
 from keyboards import ExtendedIKM
 
 
@@ -20,8 +21,6 @@ class UserSession:
     __slots__ = ('user', 'timestamp', 'came_from', 'lang_code', 'locale')
 
     def __init__(self, user: User, *, force_lang: str = None):
-        from functions import locale
-
         self.user = user
         self.timestamp = dt.datetime.now().timestamp()
         self.came_from: callable = None
@@ -92,6 +91,10 @@ class BClient(Client):
             self._sessions = pickle.load(f)
 
         self.clear_timeout_sessions()
+
+        for session in self._sessions:
+            # Update locale for loaded sessions
+            session.locale = locale(self.lang_code)
 
     def dump_sessions(self, path: Path):
         self.clear_timeout_sessions()
