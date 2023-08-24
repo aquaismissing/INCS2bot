@@ -10,7 +10,6 @@ from pyrogram.types import (CallbackQuery, Message, MessageEntity,
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 
-from functions.locale import locale
 from keyboards import ExtendedIKM
 
 
@@ -21,6 +20,8 @@ class UserSession:
     __slots__ = ('user', 'timestamp', 'came_from', 'lang_code', 'locale')
 
     def __init__(self, user: User, *, force_lang: str = None):
+        from functions import locale
+
         self.user = user
         self.timestamp = dt.datetime.now().timestamp()
         self.came_from: callable = None
@@ -83,6 +84,8 @@ class BClient(Client):
                 del self._sessions[_id]
 
     def load_sessions(self, path: Path):
+        from functions import locale
+
         if not path.exists():
             self._sessions = UserSessions()
             return
