@@ -110,3 +110,9 @@ async def cs_l10n_update(_, message: Message):
             and message.forward_from_chat.id == config.INCS2CHANNEL
             and "Обновлены файлы локализации" in message.text):
         await message.reply_sticker("CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ")
+
+
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
+async def filter_forwards(_, message: Message):
+    if message.forward_from_chat.id in config.FILTER_FORWARDS:
+        await message.delete()
