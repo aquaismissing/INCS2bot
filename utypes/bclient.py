@@ -38,6 +38,16 @@ class UserSessions(dict[int, UserSession]):
         item.timestamp = dt.datetime.now().timestamp()
         return item
 
+    def update_locale(self):
+        from functions import locale
+
+        for session in self.values():
+            session.locale = locale(session.lang_code)
+
+    def clear_locale(self):
+        for session in self.values():
+            session.locale = None
+
 
 class BClient(Client):
     """
@@ -84,8 +94,6 @@ class BClient(Client):
                 del self._sessions[_id]
 
     def load_sessions(self, path: Path):
-        from functions import locale
-
         if not path.exists():
             self._sessions = UserSessions()
             return
@@ -94,13 +102,11 @@ class BClient(Client):
             self._sessions = pickle.load(f)
 
         self.clear_timeout_sessions()
-
-        for session in self._sessions:
-            # Update locale for loaded sessions
-            session.locale = locale(self.lang_code)
+        self._sessions.update_locale()
 
     def dump_sessions(self, path: Path):
         self.clear_timeout_sessions()
+        self._sessions.clear_locale()
 
         with open(path, 'wb') as f:
             pickle.dump(self._sessions, f)
