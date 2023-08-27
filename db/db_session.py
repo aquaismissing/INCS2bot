@@ -1,17 +1,18 @@
 import logging
 from pathlib import Path
 
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session
+from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 
-SqlAlchemyBase = declarative_base()
+
+class SqlAlchemyBase(AsyncAttrs, DeclarativeBase):
+    pass
+
 
 _factory: async_sessionmaker | None = None
 
 
-def global_init(db_file: Path):
+async def init(db_file: Path):
     global _factory
 
     if _factory:
@@ -21,14 +22,15 @@ def global_init(db_file: Path):
     logging.info(f'Connecting to database in {conn_str}')
 
     engine = create_async_engine(conn_str, echo=False)
-    _factory = async_sessionmaker(bind=engine)
 
+    # noinspection PyUnresolvedReferences
     from . import __all_models
 
-    SqlAlchemyBase.metadata.create_all(engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(SqlAlchemyBase.metadata.create_all)
+
+    _factory = async_sessionmaker(bind=engine)
 
 
 def create_session() -> Session:
-    global _factory
-
     return _factory()

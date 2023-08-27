@@ -822,7 +822,7 @@ async def main():
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=10)
 
     scheduler.start()
-    db_session.global_init(config.USER_DB_FILE_PATH)
+    await db_session.init(config.USER_DB_FILE_PATH)
     try:
         bot.load_sessions(config.LAST_SESSIONS_PATH)
         await bot.start()
