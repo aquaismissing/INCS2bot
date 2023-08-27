@@ -812,9 +812,7 @@ async def unknown_request(_, session: UserSession, callback_query: CallbackQuery
 
 @bot.on_callback_request(LK.bot_back)
 async def back(client: BClient, session: UserSession, callback_query: CallbackQuery):
-    if session.came_from is None:
-        return await main_menu(client, session, callback_query, session_timeout=True)
-    await session.came_from(client, session, callback_query)
+    await client.go_back(session, callback_query)
 
 
 async def main():
