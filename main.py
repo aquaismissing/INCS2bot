@@ -9,7 +9,6 @@ import traceback
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_datetime
-import pandas as pd
 from pyrogram import filters, idle
 from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
@@ -836,7 +835,7 @@ async def main():
     finally:
         logging.info('Shutting down the bot...')
         await log(bot, 'Bot is shutting down...')
-        await bot.dump_sessions(config.LAST_SESSIONS_PATH)
+        await bot.dump_sessions()
         await bot.stop()
         sys.exit()
 

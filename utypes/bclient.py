@@ -1,8 +1,6 @@
 import datetime as dt
 from functools import wraps
 import logging
-from pathlib import Path
-import pickle
 
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -60,21 +58,10 @@ class UserSessions(dict[int, UserSession]):
                 # noinspection PyUnresolvedReferences
                 dbuser = (await db_sess.execute(query)).scalar()
                 dbuser.came_from_id = session.came_from_id
-                dbuser.language = session.lang_code
 
             logging.info(f'UserSessions synced with db! {len(self)} sessions were synced.')
             # noinspection PyUnresolvedReferences
             await db_sess.commit()
-
-    def update_locale(self):
-        from functions import locale
-
-        for session in self.values():
-            session.locale = locale(session.lang_code)
-
-    def clear_locale(self):
-        for session in self.values():
-            session.locale = None
 
 
 class BClient(Client):
@@ -140,24 +127,9 @@ class BClient(Client):
                 await self._sessions[_id].sync_with_db()
                 del self._sessions[_id]
 
-    async def load_sessions(self, path: Path):
-        if not path.exists():
-            self._sessions = UserSessions()
-            return
-
-        with open(path, 'rb') as f:
-            self._sessions = pickle.load(f)
-
+    async def dump_sessions(self):
         await self.clear_timeout_sessions()
-        self._sessions.update_locale()
-
-    async def dump_sessions(self, path: Path):
-        await self.clear_timeout_sessions()
-        # self._sessions.clear_locale()
         await self._sessions.sync_with_db()
-
-        # with open(path, 'wb') as f:
-        #     pickle.dump(self._sessions, f)
 
     def clear_sessions(self):
         self._sessions.clear()
