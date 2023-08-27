@@ -74,7 +74,7 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
             )
             pd.concat([data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)'''
 
-        client.register_session(user, force_lang=config.FORCE_LANG)
+        await client.register_session(user, force_lang=config.FORCE_LANG)
 
     session = client.sessions[user.id]
     query = inline_query.query.strip()
@@ -243,7 +243,7 @@ async def inline_datacenters(_, session: UserSession, inline_query: InlineQuery)
                 resulted_dcs.append(_dc)
                 res = InlineQueryResultArticle(
                         _dc.title,
-                        InputTextMessageContent(_dc.summary_from(session.lang_code)),
+                        InputTextMessageContent(_dc.summary_from(session.locale)),
                         f'{i}',
                         description=session.locale.dc_status_inline_description,
                         reply_markup=inline_btn,
@@ -257,19 +257,17 @@ async def inline_datacenters(_, session: UserSession, inline_query: InlineQuery)
 
 @log_exception_inline
 async def default_inline(_, session: UserSession, inline_query: InlineQuery):
-    lang_code = session.lang_code
-
     game_version_data = GameVersionData.cached_data()
 
     server_status_text = info_formatters.format_server_status(GameServersData.cached_server_status(),
-                                                              lang_code)
+                                                              session.locale)
     matchmaking_stats_text = info_formatters.format_matchmaking_stats(
-        GameServersData.cached_matchmaking_stats(), lang_code
+        GameServersData.cached_matchmaking_stats(), session.locale
     )
 
-    valve_hq_time_text = info_formatters.format_valve_hq_time(lang_code)
+    valve_hq_time_text = info_formatters.format_valve_hq_time(session.locale)
     drop_cap_reset_timer_text = session.locale.game_dropcaptimer_text.format(*drop_cap_reset_timer())
-    game_version_text = info_formatters.format_game_version_info(game_version_data, lang_code)
+    game_version_text = info_formatters.format_game_version_info(game_version_data, session.locale)
 
     inline_btn = keyboards.markup_inline_button(session.locale)
 
