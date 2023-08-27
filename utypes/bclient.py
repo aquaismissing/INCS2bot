@@ -22,26 +22,28 @@ __all__ = ('BClient', 'UserSession')
 
 
 class UserSession:
-    __slots__ = ('dbuser', 'timestamp', 'came_from_id', 'lang_code', 'locale')
+    __slots__ = ('dbuser_id', 'timestamp', 'came_from_id', 'lang_code', 'locale')
 
     def __init__(self, dbuser: DBUser, *, force_lang: str = None):
         from functions import locale
 
-        self.dbuser = dbuser
+        self.dbuser_id = dbuser.id
         self.timestamp = dt.datetime.now().timestamp()
         self.came_from_id = dbuser.came_from_id
         self.lang_code = force_lang or dbuser.language
         self.locale = locale(self.lang_code)
 
-    def sync_with_db(self):
-        db_sess = db_session.create_session()
+    async def sync_with_db(self):
+        async with db_session.create_session() as db_sess:
+            # noinspection PyTypeChecker
+            query = select(DBUser).where(DBUser.id == self.dbuser_id)
+            # noinspection PyUnresolvedReferences
+            dbuser = (await db_sess.execute(query)).scalar()
+            dbuser.came_from_id = self.came_from_id
+            dbuser.language = self.lang_code
 
-        dbuser = self.dbuser
-        dbuser.came_from_id = self.came_from_id
-        dbuser.language = self.lang_code
-
-        logging.debug(f'UserSession synced with db! {dbuser.came_from_id=}, {dbuser.language=}')
-        db_sess.commit()
+            logging.info(f'UserSession synced with db! {dbuser.came_from_id=}, {dbuser.language=}')
+            await db_sess.commit()
 
 
 class UserSessions(dict[int, UserSession]):
@@ -49,6 +51,20 @@ class UserSessions(dict[int, UserSession]):
         item = super().__getitem__(key)
         item.timestamp = dt.datetime.now().timestamp()
         return item
+
+    async def sync_with_db(self):
+        async with db_session.create_session() as db_sess:
+            for session in self.values():
+                # noinspection PyTypeChecker
+                query = select(DBUser).where(DBUser.id == session.dbuser_id)
+                # noinspection PyUnresolvedReferences
+                dbuser = (await db_sess.execute(query)).scalar()
+                dbuser.came_from_id = session.came_from_id
+                dbuser.language = session.lang_code
+
+            logging.info(f'UserSessions synced with db! {len(self)} sessions were synced.')
+            # noinspection PyUnresolvedReferences
+            await db_sess.commit()
 
     def update_locale(self):
         from functions import locale
@@ -92,24 +108,26 @@ class BClient(Client):
         return self.LOGS_TIMEOUT - (dt.datetime.now() - self.latest_log_dt)
 
     async def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
-        logging.debug(f'Registering session with user {user}, {force_lang=}')
-        db_sess = db_session.create_session()
+        logging.info(f'Registering session with user {user.id=}, {user.username=}, {user.language_code=}')
 
-        # noinspection PyUnresolvedReferences
-        results = await db_sess.execute(select(DBUser).where(DBUser.userid == user.id))
-        dbuser = results.first()
-        if dbuser is None:
-            dbuser = DBUser(userid=user.id,
-                            language=user.language_code)
-            db_sess.add(dbuser)
+        async with db_session.create_session() as db_sess:
+            query = select(DBUser).where(DBUser.userid == user.id)
             # noinspection PyUnresolvedReferences
-            await db_sess.commit()
-            logging.debug(f'New record in db! {dbuser=}')
+            dbuser = (await db_sess.execute(query)).scalar()
+            if dbuser is None:
+                dbuser = DBUser(userid=user.id,
+                                language=user.language_code)
+                db_sess.add(dbuser)
+                # noinspection PyUnresolvedReferences
+                await db_sess.commit()
+                logging.info(f'New record in db! {dbuser=}')
+            else:
+                logging.info(f'Got existing record in db. {dbuser=}')
 
         self._sessions[user.id] = UserSession(dbuser, force_lang=force_lang)
         return self._sessions[user.id]
 
-    def clear_timeout_sessions(self):
+    async def clear_timeout_sessions(self):
         """
         Clear all sessions that exceed given timeout.
         """
@@ -119,10 +137,10 @@ class BClient(Client):
         for _id in self._sessions:
             session_time = dt.datetime.fromtimestamp(self._sessions[_id].timestamp)
             if (now - session_time) > self.sessions_timeout:
-                self._sessions[_id].sync_with_db()
+                await self._sessions[_id].sync_with_db()
                 del self._sessions[_id]
 
-    def load_sessions(self, path: Path):
+    async def load_sessions(self, path: Path):
         if not path.exists():
             self._sessions = UserSessions()
             return
@@ -130,15 +148,16 @@ class BClient(Client):
         with open(path, 'rb') as f:
             self._sessions = pickle.load(f)
 
-        self.clear_timeout_sessions()
+        await self.clear_timeout_sessions()
         self._sessions.update_locale()
 
-    def dump_sessions(self, path: Path):
-        self.clear_timeout_sessions()
-        self._sessions.clear_locale()
+    async def dump_sessions(self, path: Path):
+        await self.clear_timeout_sessions()
+        # self._sessions.clear_locale()
+        await self._sessions.sync_with_db()
 
-        with open(path, 'wb') as f:
-            pickle.dump(self._sessions, f)
+        # with open(path, 'wb') as f:
+        #     pickle.dump(self._sessions, f)
 
     def clear_sessions(self):
         self._sessions.clear()
@@ -180,15 +199,14 @@ class BClient(Client):
         Decorator to track from what functions we came from. Accepts explicit id as arg.
         """
 
+        if f not in self._came_from_functions.values():
+            i = _id or len(self._came_from_functions)  # getting id for new function
+            self._came_from_functions[i] = f
+
         def decorator(func: callable):
             @wraps(func)
             async def inner(_, session: UserSession, callback_query: CallbackQuery, *args, **kwargs):
-                if f not in self._came_from_functions.values():
-                    i = _id or len(self._came_from_functions)  # getting id for new function
-                    self._came_from_functions[i] = f
-                else:
-                    i = tuple(k for k, v in self._came_from_functions if v == f)[0]
-                session.came_from_id = i
+                session.came_from_id = [k for k, v in self._came_from_functions.items() if v is f][0]
                 await func(self, session, callback_query, *args, **kwargs)
 
             return inner

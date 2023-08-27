@@ -9,7 +9,7 @@ class User(SqlAlchemyBase, SerializerMixin):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     userid = sqlalchemy.Column(sqlalchemy.Integer, unique=True)
-    came_from_id = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
+    came_from_id = sqlalchemy.Column(sqlalchemy.Integer)
     language = sqlalchemy.Column(sqlalchemy.String)
 
     def __repr__(self):

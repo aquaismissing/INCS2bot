@@ -35,7 +35,7 @@ GUNS_INFO = GunInfo.load()
 
 ALL_COMMANDS = ['start', 'help', 'feedback']
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(threadName)s: %(message)s",
                     datefmt="%H:%M:%S — %d/%m/%Y")
 
@@ -822,7 +822,7 @@ async def main():
     scheduler.start()
     await db_session.init(config.USER_DB_FILE_PATH)
     try:
-        bot.load_sessions(config.LAST_SESSIONS_PATH)
+        # bot.load_sessions(config.LAST_SESSIONS_PATH)
         await bot.start()
         await log(bot, 'Bot started.')
 
@@ -835,7 +835,7 @@ async def main():
     finally:
         logging.info('Shutting down the bot...')
         await log(bot, 'Bot is shutting down...')
-        bot.dump_sessions(config.LAST_SESSIONS_PATH)
+        await bot.dump_sessions(config.LAST_SESSIONS_PATH)
         await bot.stop()
         sys.exit()
 

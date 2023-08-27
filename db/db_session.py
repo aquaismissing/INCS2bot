@@ -29,7 +29,7 @@ async def init(db_file: Path):
     async with engine.begin() as conn:
         await conn.run_sync(SqlAlchemyBase.metadata.create_all)
 
-    _factory = async_sessionmaker(bind=engine)
+    _factory = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
 def create_session() -> Session:
