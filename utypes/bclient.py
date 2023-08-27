@@ -13,7 +13,7 @@ from pyrogram.types import (CallbackQuery, Message, MessageEntity,
 from pyropatch import pyropatch  # do not delete!!
 
 from db import db_session
-from db.users import User as UserDB
+from db.users import User as DBUser
 from keyboards import ExtendedIKM
 
 
@@ -21,25 +21,25 @@ __all__ = ('BClient', 'UserSession')
 
 
 class UserSession:
-    __slots__ = ('userdb', 'timestamp', 'came_from_id', 'lang_code', 'locale')
+    __slots__ = ('dbuser', 'timestamp', 'came_from_id', 'lang_code', 'locale')
 
-    def __init__(self, userdb: UserDB, *, force_lang: str = None):
+    def __init__(self, dbuser: DBUser, *, force_lang: str = None):
         from functions import locale
 
-        self.userdb = userdb
+        self.dbuser = dbuser
         self.timestamp = dt.datetime.now().timestamp()
-        self.came_from_id = userdb.came_from_id
-        self.lang_code = force_lang or userdb.language
+        self.came_from_id = dbuser.came_from_id
+        self.lang_code = force_lang or dbuser.language
         self.locale = locale(self.lang_code)
 
     def sync_with_db(self):
         db_sess = db_session.create_session()
 
-        userdb = self.userdb
-        userdb.came_from_id = self.came_from_id
-        userdb.language = self.lang_code
+        dbuser = self.dbuser
+        dbuser.came_from_id = self.came_from_id
+        dbuser.language = self.lang_code
 
-        logging.debug(f'UserSession synced with db! {userdb.came_from_id=}, {userdb.language=}')
+        logging.debug(f'UserSession synced with db! {dbuser.came_from_id=}, {dbuser.language=}')
         db_sess.commit()
 
 
@@ -48,6 +48,16 @@ class UserSessions(dict[int, UserSession]):
         item = super().__getitem__(key)
         item.timestamp = dt.datetime.now().timestamp()
         return item
+
+    def update_locale(self):
+        from functions import locale
+
+        for session in self.values():
+            session.locale = locale(session.lang_code)
+
+    def clear_locale(self):
+        for session in self.values():
+            session.locale = None
 
 
 class BClient(Client):
@@ -84,9 +94,9 @@ class BClient(Client):
         logging.debug(f'Registering session with user {user}, {force_lang=}')
         db_sess = db_session.create_session()
 
-        userdb = db_sess.query(UserDB).filter(UserDB.userid == str(user.id)).first()
+        userdb = db_sess.query(DBUser).filter(DBUser.userid == str(user.id)).first()
         if userdb is None:
-            userdb = UserDB(userid=user.id,
+            userdb = DBUser(userid=user.id,
                             language=user.language_code)
             db_sess.add(userdb)
             db_sess.commit()
@@ -117,9 +127,11 @@ class BClient(Client):
             self._sessions = pickle.load(f)
 
         self.clear_timeout_sessions()
+        self._sessions.update_locale()
 
     def dump_sessions(self, path: Path):
         self.clear_timeout_sessions()
+        self._sessions.clear_locale()
 
         with open(path, 'wb') as f:
             pickle.dump(self._sessions, f)
