@@ -227,7 +227,7 @@ async def inline_datacenters(_, session: UserSession, inline_query: InlineQuery)
             resulted_articles.append(
                 InlineQueryResultArticle(
                     _dc.title,
-                    InputTextMessageContent(_dc.summary_from(session.lang_code)),
+                    InputTextMessageContent(_dc.summary_from(session.locale)),
                     f'{i}',
                     description=session.locale.dc_status_inline_description,
                     reply_markup=inline_btn,
