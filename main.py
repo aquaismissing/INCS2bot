@@ -90,7 +90,7 @@ async def sync_user_data(client: BClient, message: Message):
             )
             pd.concat([user_data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)'''
 
-        client.register_session(user, force_lang=config.FORCE_LANG)
+        await client.register_session(user, force_lang=config.FORCE_LANG)
 
     message.continue_propagation()
 
@@ -104,7 +104,7 @@ async def any_command(client: BClient, message: Message):
 
     if (message.chat.type != ChatType.PRIVATE
             and user.id not in client.sessions):
-        client.register_session(user, force_lang=config.FORCE_LANG)
+        await client.register_session(user, force_lang=config.FORCE_LANG)
 
     session = client.sessions[user.id]
 
@@ -133,7 +133,7 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
             )
             pd.concat([user_data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)'''
 
-        client.register_session(user, force_lang=config.FORCE_LANG)
+        await client.register_session(user, force_lang=config.FORCE_LANG)
 
     # Render selection indicator on selectable markups
     for markup in keyboards.all_selectable_markups:

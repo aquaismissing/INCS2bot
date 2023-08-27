@@ -11,6 +11,7 @@ from pyrogram.types import (CallbackQuery, Message, MessageEntity,
                             ReplyKeyboardRemove, ForceReply, User)
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
+from sqlalchemy.future import select
 
 from db import db_session
 from db.users import User as DBUser
@@ -90,19 +91,22 @@ class BClient(Client):
     def can_log_after_time(self) -> dt.timedelta:
         return self.LOGS_TIMEOUT - (dt.datetime.now() - self.latest_log_dt)
 
-    def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
+    async def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
         logging.debug(f'Registering session with user {user}, {force_lang=}')
         db_sess = db_session.create_session()
 
-        userdb = db_sess.query(DBUser).filter(DBUser.userid == str(user.id)).first()
-        if userdb is None:
-            userdb = DBUser(userid=user.id,
+        # noinspection PyUnresolvedReferences
+        results = await db_sess.execute(select(DBUser).where(DBUser.userid == user.id))
+        dbuser = results.first()
+        if dbuser is None:
+            dbuser = DBUser(userid=user.id,
                             language=user.language_code)
-            db_sess.add(userdb)
-            db_sess.commit()
-            logging.debug(f'New record in db! {userdb=}')
+            db_sess.add(dbuser)
+            # noinspection PyUnresolvedReferences
+            await db_sess.commit()
+            logging.debug(f'New record in db! {dbuser=}')
 
-        self._sessions[user.id] = UserSession(userdb, force_lang=force_lang)
+        self._sessions[user.id] = UserSession(dbuser, force_lang=force_lang)
         return self._sessions[user.id]
 
     def clear_timeout_sessions(self):
