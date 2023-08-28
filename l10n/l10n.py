@@ -1,7 +1,10 @@
 from __future__ import annotations
+
+import json
 from pathlib import Path
 
 from sl10n import SL10n, SLocale
+from sl10n.pimpl import JSONImpl
 
 
 __all__ = ('SL10n', 'Locale', 'LocaleKeys', 'locale')
@@ -353,9 +356,10 @@ class Locale(SLocale):
     valve_steam_maintenance_text: str
 
 
-LocaleKeys = Locale.sample()
+LocaleKeys: Locale = Locale.sample()
 
-_l10n = SL10n(Locale, Path(__file__).parent / 'data', ignore_filenames=['tags'])  # SL10n singleton for fast lookups
+_l10n = SL10n(Locale, Path(__file__).parent / 'data', ignore_filenames=['tags'],
+              parsing_impl=JSONImpl(json, indent=4, ensure_ascii=False))  # SL10n singleton for fast lookups
 
 
 def locale(lang: str = None) -> Locale:
@@ -375,4 +379,4 @@ def locale(lang: str = None) -> Locale:
 
 
 if __name__ == '__main__':
-    SL10n(Locale, 'data', ignore_filenames=['tags']).init()
+    _l10n.init()
