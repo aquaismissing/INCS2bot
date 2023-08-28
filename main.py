@@ -586,22 +586,22 @@ async def guns(_, session: UserSession, callback_query: CallbackQuery):
 @bot.came_from(guns, 4)
 async def pistols(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
-        choosed_gun = await client.listen_callback(callback_query.message.chat.id,
-                                                   callback_query.message.id)
+        chosen_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                  callback_query.message.id)
     else:
-        choosed_gun = await client.ask_callback_silently(callback_query,
-                                                         session.locale.gun_select_pistol,
-                                                         reply_markup=keyboards.pistols_markup(session.locale))
+        chosen_gun = await client.ask_callback_silently(callback_query,
+                                                        session.locale.gun_select_pistol,
+                                                        reply_markup=keyboards.pistols_markup(session.locale))
 
-    await log_callback(client, choosed_gun)
+    await log_callback(client, chosen_gun)
 
-    choosed_gun = choosed_gun.data
+    chosen_gun = chosen_gun.data
 
-    if choosed_gun in GUNS_INFO:
-        keyboards.pistols_markup.select_button_by_key(choosed_gun)
-        return await send_gun_info(client, session, callback_query, pistols, GUNS_INFO[choosed_gun],
+    if chosen_gun in GUNS_INFO:
+        keyboards.pistols_markup.select_button_by_key(chosen_gun)
+        return await send_gun_info(client, session, callback_query, pistols, GUNS_INFO[chosen_gun],
                                    reply_markup=keyboards.pistols_markup)
-    if choosed_gun == LK.bot_back:
+    if chosen_gun == LK.bot_back:
         return await back(client, session, callback_query)
     return await unknown_request(client, session, callback_query, keyboards.pistols_markup)
 
@@ -610,22 +610,22 @@ async def pistols(client: BClient, session: UserSession, callback_query: Callbac
 @bot.came_from(guns)
 async def heavy(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
-        choosed_gun = await client.listen_callback(callback_query.message.chat.id,
-                                                   callback_query.message.id)
+        chosen_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                  callback_query.message.id)
     else:
-        choosed_gun = await client.ask_callback_silently(callback_query,
-                                                         session.locale.gun_select_heavy,
-                                                         reply_markup=keyboards.heavy_markup(session.locale))
+        chosen_gun = await client.ask_callback_silently(callback_query,
+                                                        session.locale.gun_select_heavy,
+                                                        reply_markup=keyboards.heavy_markup(session.locale))
 
-    await log_callback(client, choosed_gun)
+    await log_callback(client, chosen_gun)
 
-    choosed_gun = choosed_gun.data
+    chosen_gun = chosen_gun.data
 
-    if choosed_gun in GUNS_INFO:
-        keyboards.heavy_markup.select_button_by_key(choosed_gun)
-        return await send_gun_info(client, session, callback_query, heavy, GUNS_INFO[choosed_gun],
+    if chosen_gun in GUNS_INFO:
+        keyboards.heavy_markup.select_button_by_key(chosen_gun)
+        return await send_gun_info(client, session, callback_query, heavy, GUNS_INFO[chosen_gun],
                                    reply_markup=keyboards.heavy_markup)
-    if choosed_gun == LK.bot_back:
+    if chosen_gun == LK.bot_back:
         return await back(client, session, callback_query)
     return await unknown_request(client, session, callback_query, keyboards.heavy_markup)
 
@@ -634,21 +634,21 @@ async def heavy(client: BClient, session: UserSession, callback_query: CallbackQ
 @bot.came_from(guns)
 async def smgs(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
-        choosed_gun = await client.listen_callback(callback_query.message.chat.id,
-                                                   callback_query.message.id)
+        chosen_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                  callback_query.message.id)
     else:
-        choosed_gun = await client.ask_callback_silently(callback_query,
-                                                         session.locale.gun_select_smg,
-                                                         reply_markup=keyboards.smgs_markup(session.locale))
+        chosen_gun = await client.ask_callback_silently(callback_query,
+                                                        session.locale.gun_select_smg,
+                                                        reply_markup=keyboards.smgs_markup(session.locale))
 
-    await log_callback(client, choosed_gun)
+    await log_callback(client, chosen_gun)
 
-    choosed_gun = choosed_gun.data
-    if choosed_gun in GUNS_INFO:
-        keyboards.smgs_markup.select_button_by_key(choosed_gun)
-        return await send_gun_info(client, session, callback_query, smgs, GUNS_INFO[choosed_gun],
+    chosen_gun = chosen_gun.data
+    if chosen_gun in GUNS_INFO:
+        keyboards.smgs_markup.select_button_by_key(chosen_gun)
+        return await send_gun_info(client, session, callback_query, smgs, GUNS_INFO[chosen_gun],
                                    reply_markup=keyboards.smgs_markup)
-    if choosed_gun == LK.bot_back:
+    if chosen_gun == LK.bot_back:
         return await back(client, session, callback_query)
     return await unknown_request(client, session, callback_query, keyboards.smgs_markup)
 
@@ -657,21 +657,21 @@ async def smgs(client: BClient, session: UserSession, callback_query: CallbackQu
 @bot.came_from(guns)
 async def rifles(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
-        choosed_gun = await client.listen_callback(callback_query.message.chat.id,
-                                                   callback_query.message.id)
+        chosen_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                  callback_query.message.id)
     else:
-        choosed_gun = await client.ask_callback_silently(callback_query,
-                                                         session.locale.gun_select_rifle,
-                                                         reply_markup=keyboards.rifles_markup(session.locale))
+        chosen_gun = await client.ask_callback_silently(callback_query,
+                                                        session.locale.gun_select_rifle,
+                                                        reply_markup=keyboards.rifles_markup(session.locale))
 
-    await log_callback(client, choosed_gun)
+    await log_callback(client, chosen_gun)
 
-    choosed_gun = choosed_gun.data
-    if choosed_gun in GUNS_INFO:
-        keyboards.rifles_markup.select_button_by_key(choosed_gun)
-        return await send_gun_info(client, session, callback_query, rifles, GUNS_INFO[choosed_gun],
+    chosen_gun = chosen_gun.data
+    if chosen_gun in GUNS_INFO:
+        keyboards.rifles_markup.select_button_by_key(chosen_gun)
+        return await send_gun_info(client, session, callback_query, rifles, GUNS_INFO[chosen_gun],
                                    reply_markup=keyboards.rifles_markup)
-    if choosed_gun == LK.bot_back:
+    if chosen_gun == LK.bot_back:
         return await back(client, session, callback_query)
     return await unknown_request(client, session, callback_query, keyboards.rifles_markup)
 
@@ -712,18 +712,18 @@ async def settings(_, session: UserSession, callback_query: CallbackQuery):
 async def language(client: BClient, session: UserSession, callback_query: CallbackQuery):
     keyboards.language_settings_markup.select_button_by_key(session.locale.lang_code)
 
-    choosed_lang = await client.ask_callback_silently(
+    chosen_lang = await client.ask_callback_silently(
         callback_query,
         session.locale.settings_language_choose.format(AVAILABLE_LANGUAGES.get(session.locale.lang_code)),
         reply_markup=keyboards.language_settings_markup(session.locale)
     )
 
-    await log_callback(client, choosed_lang)
+    await log_callback(client, chosen_lang)
 
-    choosed_lang = choosed_lang.data
-    if choosed_lang == LK.bot_back:
+    chosen_lang = chosen_lang.data
+    if chosen_lang == LK.bot_back:
         return await back(client, session, callback_query)
-    session.update_lang(choosed_lang)
+    session.update_lang(chosen_lang)
     return await language(client, session, callback_query)
 
 
