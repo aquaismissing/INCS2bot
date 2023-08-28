@@ -21,6 +21,7 @@ import config
 from db import db_session
 from functions import datacenter_handlers, info_formatters
 from functions.decorators import *
+from functions.locale import get_available_languages
 from functions.logs import *
 import keyboards
 from keyboards import ExtendedIKB, ExtendedIKM
@@ -31,7 +32,7 @@ from utypes import (BClient, Crosshair, ExchangeRate, GameServersData,
                     State, States, UserGameStats, UserSession, drop_cap_reset_timer)
 
 GUNS_INFO = GunInfo.load()
-
+AVAILABLE_LANGUAGES = get_available_languages()
 ALL_COMMANDS = ['start', 'help', 'feedback']
 
 logging.basicConfig(level=logging.INFO,
@@ -46,7 +47,6 @@ bot = BClient(config.BOT_NAME,
 
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
-'''user_data = pd.read_csv(config.USER_DB_FILE_PATH)'''
 
 # cat: Main
 
@@ -720,6 +720,38 @@ async def send_gun_info(client: BClient, session: UserSession, callback_query: C
         pass
     finally:
         return await _from(client, session, callback_query, loop=True)
+
+
+# cat: Settings
+
+
+@bot.on_callback_request(LK.bot_settings)
+@bot.came_from(main_menu)
+@ignore_message_not_modified
+async def settings(_, session: UserSession, callback_query: CallbackQuery):
+    await callback_query.edit_message_text(session.locale.bot_choose_setting,
+                                           reply_markup=keyboards.settings_markup(session.locale))
+
+
+@bot.on_callback_request(LK.settings_language_button_title)
+@bot.came_from(settings, 5)
+@ignore_message_not_modified
+async def language(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    keyboards.language_settings_markup.select_button_by_key(session.locale.lang_code)
+
+    choosed_lang = await client.ask_callback_silently(
+        callback_query,
+        session.locale.settings_language_choose.format(AVAILABLE_LANGUAGES.get(session.locale.lang_code)),
+        reply_markup=keyboards.language_settings_markup(session.locale)
+    )
+
+    await log_callback(client, choosed_lang)
+
+    choosed_lang = choosed_lang.data
+    if choosed_lang == LK.bot_back:
+        return await back(client, session, callback_query)
+    session.update_lang(choosed_lang)
+    return await language(client, session, callback_query)
 
 
 # cat: Commands

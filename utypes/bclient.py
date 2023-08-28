@@ -43,6 +43,12 @@ class UserSession:
             logging.info(f'UserSession synced with db! {dbuser.came_from_id=}, {dbuser.language=}')
             await db_sess.commit()
 
+    def update_lang(self, lang_code: str):
+        from functions import locale
+
+        self.lang_code = lang_code
+        self.locale = locale(self.lang_code)
+
 
 class UserSessions(dict[int, UserSession]):
     def __getitem__(self, key):
@@ -58,6 +64,7 @@ class UserSessions(dict[int, UserSession]):
                 # noinspection PyUnresolvedReferences
                 dbuser = (await db_sess.execute(query)).scalar()
                 dbuser.came_from_id = session.came_from_id
+                dbuser.language = session.lang_code
 
             logging.info(f'UserSessions synced with db! {len(self)} sessions were synced.')
             # noinspection PyUnresolvedReferences

@@ -1,19 +1,25 @@
 from __future__ import annotations
+
+import json
 from pathlib import Path
 
 from sl10n import SL10n, SLocale
+from sl10n.pimpl import JSONImpl
 
 
-__all__ = ('SL10n', 'Locale', 'LocaleKeys', 'locale')
+__all__ = ('SL10n', 'Locale', 'LocaleKeys', 'locale', 'get_available_languages')
 
 
 class Locale(SLocale):
+    lang: str
+
     # bot
     bot_start_text: str
     bot_help_text: str
     bot_feedback_text: str
     bot_choose_cmd: str
     bot_choose_func: str
+    bot_choose_setting: str
     bot_use_cancel: str
     bot_feedback_success: str
     bot_pmonly_text: str
@@ -24,6 +30,7 @@ class Locale(SLocale):
     bot_servers_stats: str
     bot_profile_info: str
     bot_extras: str
+    bot_settings: str
 
     # crosshair
     crosshair: str
@@ -283,6 +290,10 @@ class Locale(SLocale):
     # steam
     steam_url_example: str
 
+    # settings
+    settings_language_button_title: str
+    settings_language_choose: str
+
     # user stats
     user_gamestats_button_title: str
     user_gamestats_inline_title: str
@@ -353,26 +364,36 @@ class Locale(SLocale):
     valve_steam_maintenance_text: str
 
 
-LocaleKeys = Locale.sample()
+LocaleKeys: Locale = Locale.sample()
 
-_l10n = SL10n(Locale, Path(__file__).parent / 'data', ignore_filenames=['tags'])  # SL10n singleton for fast lookups
+_l10n = SL10n(Locale, Path(__file__).parent / 'data', ignore_filenames=['tags'],
+              parsing_impl=JSONImpl(json, indent=4, ensure_ascii=False))  # SL10n singleton for fast lookups
 
 
 def locale(lang: str = None) -> Locale:
     """
-    Creates a L10n singleton and returns a Locale object, containing
+    Initializes a L10n singleton and returns a Locale object, containing
     all defined string keys translated to the requested language
     (if such translation exists, otherwise returns English 'en').
 
     Useful for fast Locale object creation.
     """
 
-    global _l10n
-
     if not _l10n.initialized:
         _l10n.init()
     return _l10n.locale(lang)
 
 
+def get_available_languages() -> dict[str, str]:
+    """
+    Initializes a L10n singleton and returns a dictionary with lang codes (access keys, not overriden!)
+    as keys and lang names as values.
+    """
+
+    if not _l10n.initialized:
+        _l10n.init()
+    return {lang_code: container.lang for lang_code, container in _l10n.locales.items()}
+
+
 if __name__ == '__main__':
-    SL10n(Locale, 'data', ignore_filenames=['tags']).init()
+    _l10n.init()

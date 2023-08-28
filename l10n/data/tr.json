@@ -1,4 +1,5 @@
 {
+    "lang": "🇹🇷 Türkçe",
     "bot_start_text": [
         "👋🏼 Merhaba, {}!",
         "Bu bot, çevrimiçi oyuncuların sayısını ve Counter-Strike sunucularının kullanılabilirliğini kontrol etmek için tasarlanmıştır.",
@@ -13,6 +14,7 @@
     "bot_feedback_text": "💬 Lütfen botu kullanırken karşılaştığınız **dileklerinizi** veya **sorunlarınızı** bize bildirin.",
     "bot_choose_cmd": "📖 Aşağıdaki komutlardan birini kullanın:",
     "bot_choose_func": "🔖 İstediğiniz işlevi seçin:",
+    "bot_choose_setting": "⚙️ Use one of the following settings:",
     "bot_use_cancel": "Bir komutu iptal etmek için /cancel kullanın.",
     "bot_feedback_success": "Harika! Mesajınız gönderildi.",
     "bot_pmonly_text": "Bu komut sadece özel mesajlarda çalışır.",
@@ -23,6 +25,7 @@
     "bot_servers_stats": "Sunucu istatistikleri",
     "bot_profile_info": "Profil bilgisi",
     "bot_extras": "Ek fonksyonlar",
+    "bot_settings": "🆕 Settings",
     "crosshair": "🆕 Nişangah",
     "crosshair_generate": "Yaratmak",
     "crosshair_decode": "Deşifre etmek",
@@ -386,6 +389,12 @@
         "• SteamID (ör.: `76561198346163255`)",
         "• kişisel bağlantı (ör.: `aquaismissing`)"
     ],
+    "settings_language_button_title": "Language",
+    "settings_language_choose": [
+        "🔖 Choose the desired language:",
+        "",
+        "Your current language is {}."
+    ],
     "user_gamestats_button_title": "CS oyun istatistikleri",
     "user_gamestats_inline_title": "Oyun istatistikleriniz",
     "user_gamestats_page_title": "#{} için istatistikler",
@@ -469,5 +478,6 @@
     "valve_hqtime_inline_title": "Bellevue'deki saat",
     "valve_hqtime_inline_description": "Valve Genel Merkezindeki saat",
     "valve_hqtime_text": "{} Bellevue'deki saat (Valve Genel Merkezi): {}",
-    "valve_steam_maintenance_text": "🛠️ **Steam, her Salı planlı bakım nedeniyle kapatılıyor.**"
+    "valve_steam_maintenance_text": "🛠️ **Steam, her Salı planlı bakım nedeniyle kapatılıyor.**",
+    "$redump": true
 }
