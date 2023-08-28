@@ -9,14 +9,14 @@ Then check [Contributing](#contributing) section to know how to start translatin
 
 Here you can see translations' progress and contributors' list:
 
-| Code | Language  |    Progress     |            Summary             |        Contributors        |
-|:----:|-----------|:---------------:|:------------------------------:|:--------------------------:|
-|  gb  | English   | ██████████ 100% |            built in            |                            |
-|  ru  | Russian   | ██████████ 100% |            built in            |                            |
-|  fa  | Persian   | ████████▒▒ 80%  |          tags missing          |    [@A460N] (telegram)     |
-|  tr  | Turkish   | ████████▒▒ 80%  |          tags missing          |   [@ITMiroN] (telegram)    |
-|  uz  | Uzbek     | █████████▒ 90%  |    user_gamestats_text left    |   [@d1az1337] (telegram)   |
-|  uk  | Ukrainian | ██████████ 100% | fully done, currently not used | [akimerslys], [Agent47Dev] |
+| Code | Language  |    Progress     |         Summary          |        Contributors        |
+|:----:|-----------|:---------------:|:------------------------:|:--------------------------:|
+|  gb  | English   | ██████████ 100% |         built in         |                            |
+|  ru  | Russian   | ██████████ 100% |         built in         |                            |
+|  fa  | Persian   | ████████▒▒ 80%  |       tags missing       |    [@A460N] (telegram)     |
+|  tr  | Turkish   | ████████▒▒ 80%  |       tags missing       |   [@ITMiroN] (telegram)    |
+|  uz  | Uzbek     | █████████▒ 90%  | user_gamestats_text left |   [@d1az1337] (telegram)   |
+|  uk  | Ukrainian | ██████████ 100% |        fully done        | [akimerslys], [Agent47Dev] |
 
 ## Contributing 
 
