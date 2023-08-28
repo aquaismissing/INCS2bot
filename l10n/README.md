@@ -13,7 +13,7 @@ Here you can see translations' progress and contributors' list:
 |:----:|-----------|:---------------:|:------------------------:|:--------------------------:|
 |  gb  | English   | ██████████ 100% |         built in         |                            |
 |  ru  | Russian   | ██████████ 100% |         built in         |                            |
-|  fa  | Persian   | ████████▒▒ 80%  |       tags missing       |    [@A460N] (telegram)     |
+|  fa  | Persian   | ██████████ 100% |        fully done        |    [@A460N] (telegram)     |
 |  tr  | Turkish   | ████████▒▒ 80%  |       tags missing       |   [@ITMiroN] (telegram)    |
 |  uz  | Uzbek     | █████████▒ 90%  | user_gamestats_text left |   [@d1az1337] (telegram)   |
 |  uk  | Ukrainian | ██████████ 100% |        fully done        | [akimerslys], [Agent47Dev] |
