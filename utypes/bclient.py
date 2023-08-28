@@ -73,7 +73,7 @@ class UserSessions(dict[int, UserSession]):
 
 class BClient(Client):
     """
-    Custom pyrogram.Client class to add custom properties and methods and stop Pycharm annoy me.
+    Custom pyrogram.Client class to add custom properties and methods and stop PyCharm annoy me.
     """
     LOGS_TIMEOUT = dt.timedelta(seconds=4)  # define how often logs should be sent
 
@@ -122,9 +122,7 @@ class BClient(Client):
         return self._sessions[user.id]
 
     async def clear_timeout_sessions(self):
-        """
-        Clear all sessions that exceed given timeout.
-        """
+        """Clear all sessions that exceed given timeout."""
 
         now = dt.datetime.now()
 

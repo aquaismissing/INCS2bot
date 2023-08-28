@@ -1,7 +1,6 @@
 import asyncio
 import datetime as dt
 import json
-from json import JSONDecodeError
 from typing import Callable
 import logging
 import sys
@@ -76,19 +75,6 @@ async def sync_user_data(client: BClient, message: Message):
     await log_message(client, message)
 
     if user.id not in client.sessions:
-        '''if not user_data["UserID"].isin([user.id]).any():
-            new_data = pd.DataFrame(
-                [
-                    [
-                        user.first_name,
-                        user.id,
-                        user.language_code,
-                    ]
-                ],
-                columns=["Name", "UserID", "Language"],
-            )
-            pd.concat([user_data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)'''
-
         await client.register_session(user, force_lang=config.FORCE_LANG)
 
     message.continue_propagation()
@@ -119,19 +105,6 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
     await log_callback(client, callback_query)
 
     if user.id not in client.sessions:
-        '''if not user_data["UserID"].isin([user.id]).any():
-            new_data = pd.DataFrame(
-                [
-                    [
-                        user.first_name,
-                        user.id,
-                        user.language_code,
-                    ]
-                ],
-                columns=["Name", "UserID", "Language"],
-            )
-            pd.concat([user_data, new_data]).to_csv(config.USER_DB_FILE_PATH, index=False)'''
-
         await client.register_session(user, force_lang=config.FORCE_LANG)
 
     # Render selection indicator on selectable markups
@@ -463,7 +436,7 @@ async def user_game_stats(client: BClient, session: UserSession, callback_query:
                                                          html_content=stats_page_text,
                                                          author_name="@INCS2bot",
                                                          author_url="https://t.me/INCS2bot")
-    except JSONDecodeError:  # Telegraph is a piece of garbage
+    except json.JSONDecodeError:
         await steam_url.delete()
         return await user_game_stats(client, session, callback_query, last_error=session.locale.user_telegraph_error)
 
@@ -852,9 +825,8 @@ async def main():
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=10)
 
     scheduler.start()
-    await db_session.init(config.USER_DB_FILE_PATH)
     try:
-        # bot.load_sessions(config.LAST_SESSIONS_PATH)
+        await db_session.init(config.USER_DB_FILE_PATH)
         await bot.start()
         await log(bot, 'Bot started.')
 
