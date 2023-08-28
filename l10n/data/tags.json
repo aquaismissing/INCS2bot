@@ -8,7 +8,8 @@
         "южная африка",
         "йоханнесбург",
         "janubiy afrika",
-        "yoxannesburg"
+        "yoxannesburg",
+        "آفریقا"
     ],
     "dc_australia": [
         "🇦🇺",
@@ -19,7 +20,8 @@
         "avstraliya",
         "sidney",
         "австралія",
-        "сідней"
+        "сідней",
+        "استرالیا"
     ],
     "dc_southamerica": [
         "🇧🇷",
@@ -64,14 +66,17 @@
         "chili",
         "santyago",
         "buenos-ayres",
-        "buenos ayres"
+        "buenos ayres",
+        "آمریکا جنوبی",
+        "برزیل"
     ],
     "dc_europe": [
         "🇪🇺",
         "europe",
         "европа",
         "yevropa",
-        "європа"
+        "європа",
+        "اروپا"
     ],
     "dc_europe_north": [
         "🇸🇪",
@@ -83,7 +88,9 @@
         "стокгольм",
         "shimoliy",
         "shvetsiya",
-        "stokgolm"
+        "stokgolm",
+        "شمال",
+        "استکهلم"
     ],
     "dc_europe_west": [
         "🇩🇪",
@@ -101,7 +108,9 @@
         "g'arbiy",
         "germaniya",
         "ispaniya",
-        "іспанія"
+        "іспанія",
+        "اسپانیا",
+        "مادرید"
     ],
     "dc_europe_east": [
         "🇦🇹",
@@ -121,7 +130,9 @@
         "avstriya",
         "vena",
         "polsha",
-        "varshava"
+        "varshava",
+        "اتریش",
+        "لهستان"
     ],
     "dc_us": [
         "🇺🇸",
@@ -134,7 +145,8 @@
         "соединённые штаты америки",
         "сша",
         "aqsh",
-        "amerika qo'shma shtatlari"
+        "amerika qo'shma shtatlari",
+        "آمریکا"
     ],
     "dc_us_north": [
         "northcentral",
@@ -166,7 +178,9 @@
         "g'arbiy",
         "chikago",
         "mozes leyk",
-        "чікаго"
+        "чікаго",
+        "کانادا",
+        "شیکاگو"
     ],
     "dc_us_south": [
         "southeast",
@@ -192,13 +206,15 @@
         "janubiy",
         "sharqiy",
         "g'arbiy",
-        "los anjeles"
+        "los anjeles",
+        "لس آنچلس"
     ],
     "dc_asia": [
         "asia",
         "азия",
         "osiyo",
-        "азія"
+        "азія",
+        "آسیا"
     ],
     "dc_asia_india": [
         "🇮🇳",
@@ -210,7 +226,8 @@
         "ченнай",
         "hindiston",
         "mumbay",
-        "індія"
+        "індія",
+        "هند"
     ],
     "dc_asia_japan": [
         "🇯🇵",
@@ -220,7 +237,8 @@
         "токио",
         "yaponiya",
         "tokio",
-        "токіо"
+        "токіо",
+        "توکیو"
     ],
     "dc_asia_china": [
         "🇨🇳",
@@ -235,7 +253,8 @@
         "xitoy",
         "shanxay",
         "tyantszin",
-        "guanchjou"
+        "guanchjou",
+        "چین"
     ],
     "dc_asia_emirates": [
         "🇦🇪",
@@ -244,20 +263,23 @@
         "эмираты",
         "дубай",
         "amirliklar",
-        "dubay"
+        "dubay",
+        "دوبی"
     ],
     "dc_asia_singapore": [
         "🇸🇬",
         "singapore",
         "сингапур",
-        "singapur"
+        "singapur",
+        "سنگاپور"
     ],
     "dc_asia_hongkong": [
         "🇭🇰",
         "hongkong",
         "hong kong",
         "гонконг",
-        "gonkong"
+        "gonkong",
+        "هنگ‌کنگ"
     ],
     "dc_asia_southkorea": [
         "🇰🇷",
@@ -266,220 +288,264 @@
         "южная корея",
         "сеул",
         "janubiy koreya",
-        "seul"
+        "seul",
+        "کره جنوبی"
     ],
     "currencies_usd": [
         "usd",
         "dollar",
-        "доллар"
+        "доллар",
+        "دلار"
     ],
     "currencies_gbp": [
         "gbp",
         "pound",
         "фунт",
         "funt",
-        "sterling"
+        "sterling",
+        "پوند"
     ],
     "currencies_eur": [
         "eur",
         "euro",
         "евро",
         "yevro",
-        "євро"
+        "євро",
+        "یورو"
     ],
     "currencies_rub": [
         "rub",
         "ruble",
         "рубль",
-        "rubli"
+        "rubli",
+        "روبل"
     ],
     "currencies_brl": [
         "brl",
         "real",
-        "реал"
+        "реал",
+        "برزیلی"
     ],
     "currencies_jpy": [
         "jpy",
         "yen",
         "иена",
-        "iyen"
+        "iyen",
+        "ین"
     ],
     "currencies_nok": [
         "nok",
         "krone",
         "крона",
-        "krona"
+        "krona",
+        "کرون"
     ],
     "currencies_idr": [
         "idr",
         "rupiah",
         "рупия",
-        "rupiya"
+        "rupiya",
+        "روپیه"
     ],
     "currencies_myr": [
         "myr",
         "ringgit",
-        "ринггит"
+        "ринггит",
+        "رینگت مالزی"
     ],
     "currencies_php": [
         "php",
         "peso",
-        "песо"
+        "песо",
+        "پزو"
     ],
     "currencies_sgd": [
         "sgd",
         "dollar",
-        "доллар"
+        "доллар",
+        "دلار",
+        "سنگاپور"
     ],
     "currencies_thb": [
         "thb",
         "baht",
-        "бат"
+        "бат",
+        "بهت"
     ],
     "currencies_vnd": [
         "vnd",
         "dong",
-        "донг"
+        "донг",
+        "دنگ"
     ],
     "currencies_krw": [
         "krw",
         "won",
         "вона",
-        "von"
+        "von",
+        "وان"
     ],
     "currencies_try": [
         "try",
         "lira",
-        "лира"
+        "лира",
+        "لیر"
     ],
     "currencies_uah": [
         "uah",
         "hrywna",
         "гривна",
         "grivna",
-        "гривня"
+        "гривня",
+        "هیروانا"
     ],
     "currencies_mxn": [
         "mxn",
         "peso",
-        "песо"
+        "песо",
+        "پزو"
     ],
     "currencies_cad": [
         "cad",
         "dollar",
-        "доллар"
+        "доллар",
+        "دلار",
+        "کانادا"
     ],
     "currencies_aud": [
         "aud",
         "dollar",
-        "доллар"
+        "доллар",
+        "دلار"
     ],
     "currencies_nzd": [
         "nzd",
         "dollar",
-        "доллар"
+        "доллар",
+        "دلار",
+        "نیوزیلند"
     ],
     "currencies_pln": [
         "pln",
         "zloty",
         "злотый",
         "zlotiy",
-        "злота"
+        "злота",
+        "زلوتی"
     ],
     "currencies_chf": [
         "chf",
         "franc",
         "франк",
-        "frank"
+        "frank",
+        "چک"
     ],
     "currencies_aed": [
         "aed",
         "dirham",
-        "дирхам"
+        "дирхам",
+        "درهم"
     ],
     "currencies_clp": [
         "clp",
         "peso",
-        "песо"
+        "песо",
+        "پزو"
     ],
     "currencies_cny": [
         "cny",
         "yuan",
-        "юань"
+        "юань",
+        "یوان"
     ],
     "currencies_cop": [
         "cop",
         "peso",
-        "песо"
+        "песо",
+        "پزو"
     ],
     "currencies_pen": [
         "pen",
         "sol",
         "соль",
-        "tuzi"
+        "tuzi",
+        "پن",
+        "سول"
     ],
     "currencies_sar": [
         "sar",
         "riyal",
-        "риял"
+        "риял",
+        "ریال"
     ],
     "currencies_twd": [
         "twd",
         "dollar",
-        "доллар"
+        "доллар",
+        "دلار"
     ],
     "currencies_hkd": [
         "hkd",
         "dollar",
-        "доллар"
+        "доллар",
+        "دلار"
     ],
     "currencies_zar": [
         "zar",
         "rand",
-        "рэнд"
+        "рэнд",
+        "زر"
     ],
     "currencies_inr": [
         "inr",
         "rupee",
         "рупия",
-        "rupisi"
+        "rupisi",
+        "روپیه"
     ],
     "currencies_ars": [
         "ars",
         "peso",
-        "песо"
+        "песо",
+        "نکو"
     ],
     "currencies_crc": [
         "crc",
         "colon",
         "колон",
-        "ichak"
+        "ichak",
+        "کلن"
     ],
     "currencies_ils": [
         "ils",
         "shekel",
-        "шекель"
+        "шекель",
+        "شکل"
     ],
     "currencies_kwd": [
         "kwd",
         "dinar",
         "динар",
-        "dinor"
+        "dinor",
+        "دینار"
     ],
     "currencies_qar": [
         "qar",
         "riyal",
         "риал",
-        "rial"
+        "rial",
+        "ریال"
     ],
     "currencies_uyu": [
         "uyu",
         "peso",
-        "песо"
+        "песо",
+        "پزو"
     ],
     "currencies_kzt": [
         "kzt",
         "tenge",
-        "тенге"
+        "тенге",
+        "قزاق"
     ]
 }
