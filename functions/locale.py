@@ -1,4 +1,4 @@
-from l10n import Locale, locale as _loc
+from l10n import Locale, locale as _loc, get_available_languages as _gal
 
 
 CIS_LANG_CODES = ('be', 'kk')
@@ -17,3 +17,9 @@ def get_refined_lang_code(_locale: Locale) -> str:
     """Get refined lang code that Babel can accept."""
 
     return _locale.lang_code.replace('-', '_')
+
+
+def get_available_languages() -> dict[str, str]:
+    """Returns a dictionary with lang codes as keys and lang names as values."""
+
+    return _gal()

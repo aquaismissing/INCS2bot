@@ -12,7 +12,7 @@ def _format_dc_data(dc: DatacenterVariation, locale: Locale):
     game_servers_datetime = GameServersData.latest_info_update()
     if game_servers_datetime is States.UNKNOWN:
         return States.UNKNOWN
-    
+
     lang_code = get_refined_lang_code(locale)
 
     game_servers_datetime = (f'{format_datetime(game_servers_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()}'
@@ -37,7 +37,7 @@ def _format_dc_data(dc: DatacenterVariation, locale: Locale):
                                                            locale.get(dc_state.capacity.l10n_key))
             summaries.append(summary)
         return '\n\n'.join((header, '\n\n'.join(summaries), locale.latest_data_update.format(game_servers_datetime)))
-    
+
     if isinstance(state, DatacenterGroupState):
         infos = []
         for region_state in state.region_states:

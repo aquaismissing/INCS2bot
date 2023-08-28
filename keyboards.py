@@ -5,7 +5,7 @@ from pyrogram.types import (CallbackGame,
                             WebAppInfo)
 
 # noinspection PyPep8Naming
-from l10n import Locale, LocaleKeys as LK
+from l10n import Locale, LocaleKeys as LK, get_available_languages
 
 
 class ExtendedIKB(InlineKeyboardButton):
@@ -91,11 +91,13 @@ markup_inline_button = ExtendedIKM([[inline_button_channel_link]])
 _server_stats = ExtendedIKB(LK.bot_servers_stats, LK.bot_servers_stats)
 _profile_info = ExtendedIKB(LK.bot_profile_info, LK.bot_profile_info)
 _extra_features = ExtendedIKB(LK.bot_extras, LK.bot_extras)
+_settings = ExtendedIKB(LK.bot_settings, LK.bot_settings)
 
 main_markup = ExtendedIKM([
     [_server_stats],
     [_profile_info],
-    [_extra_features]
+    [_extra_features],
+    [_settings]
 ])
 
 # Server Statistics
@@ -134,6 +136,14 @@ extra_markup = ExtendedIKM([
     [_crosshair, _currency, _game_version],
     [_valve_hq_time, _timer],
     [_guns],
+    [back_button]
+])
+
+# Settings
+
+_language = ExtendedIKB(LK.settings_language_button_title, LK.settings_language_button_title)
+settings_markup = ExtendedIKM([
+    [_language],
     [back_button]
 ])
 
@@ -289,6 +299,24 @@ crosshair_markup = ExtendedIKM([
     [back_button]
 ])
 
+# Language
+_available_langs = get_available_languages()
+columns = 3
+
+_language_buttons = []
+_row = []
+for lang_code, lang_name in _available_langs.items():
+    _row.append(ExtendedIKB(lang_name, lang_code, translatable=False))
+    if len(_row) == columns:
+        _language_buttons.append(_row)  # yes, we append lists
+        _row = []
+if _row:
+    _language_buttons.append(_row)
+
+_language_buttons.append([back_button])
+
+language_settings_markup = ExtendedIKM(_language_buttons)
+
 
 all_selectable_markups = (ss_markup, extra_markup, dc_markup, dc_asia_markup, dc_eu_markup, dc_us_markup,
-                          pistols_markup, heavy_markup, smgs_markup, rifles_markup)
+                          pistols_markup, heavy_markup, smgs_markup, rifles_markup, language_settings_markup)

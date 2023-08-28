@@ -1,4 +1,5 @@
 {
+    "lang": "🇬🇧 English",
     "bot_start_text": [
         "👋🏼 Hey, {}!",
         "This bot is designed to check the number of online players and the availability of Counter-Strike servers.",
@@ -13,6 +14,7 @@
     "bot_feedback_text": "💬 Please, tell us about your **suggestions** or **problems** that you have encountered using our bot.",
     "bot_choose_cmd": "📖 Use one of the following commands:",
     "bot_choose_func": "🔖 Choose the desired function:",
+    "bot_choose_setting": "⚙️ Use one of the following settings:",
     "bot_use_cancel": "Use /cancel to cancel this command.",
     "bot_feedback_success": "Nice! Your message has been sent.",
     "bot_pmonly_text": "This command only works in private messages.",
@@ -23,7 +25,8 @@
     "bot_servers_stats": "Servers stats",
     "bot_profile_info": "Profile information",
     "bot_extras": "Extra features",
-    "crosshair": "🆕 Crosshair",
+    "bot_settings": "🆕 Settings",
+    "crosshair": "Crosshair",
     "crosshair_generate": "Generate",
     "crosshair_decode": "Decode",
     "crosshair_decode_example": "📖 Please, enter the crosshair code that you would like to decode (ex: `CSGO-O4Jsi-V36wY-rTMGK-9w7qF-jQ8WB`).",
@@ -386,6 +389,12 @@
         "• SteamID (ex: `76561198346163255`)",
         "• Custom URL (ex: `aquaismissing`)"
     ],
+    "settings_language_button_title": "Language",
+    "settings_language_choose": [
+        "🔖 Choose the desired language:",
+        "",
+        "Your current language is {}."
+    ],
     "user_gamestats_button_title": "CS in-game statistics",
     "user_gamestats_inline_title": "Your in-game statistics",
     "user_gamestats_page_title": "Statistics for #{}",
@@ -469,5 +478,6 @@
     "valve_hqtime_inline_title": "Bellevue time",
     "valve_hqtime_inline_description": "Time in Valve HQ",
     "valve_hqtime_text": "{} Time in Bellevue (Valve HQ): {}",
-    "valve_steam_maintenance_text": "🛠️ **Steam is down for routine maintenance every Tuesday.**"
+    "valve_steam_maintenance_text": "🛠️ **Steam is down for routine maintenance every Tuesday.**",
+    "$redump": true
 }
