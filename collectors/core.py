@@ -42,19 +42,19 @@ def remap_dc_info(info: dict):
     remapped_info = {}
     for _obj in dcs:
         if isinstance(_obj, Datacenter):
-            remapped_info[_obj.id] = {"capacity": "unknown", "load": "unknown"}
+            remapped_info[_obj.id] = {'capacity': 'unknown', 'load': 'unknown'}
 
         if isinstance(_obj, DatacenterRegion):
             remapped_info[_obj.id] = {}
             for dc in _obj.datacenters:
-                remapped_info[_obj.id][dc.id] = {"capacity": "unknown", "load": "unknown"}
+                remapped_info[_obj.id][dc.id] = {'capacity': 'unknown', 'load': 'unknown'}
         
         if isinstance(_obj, DatacenterGroup):
             remapped_info[_obj.id] = {}
             for region in _obj.regions:
                 remapped_info[_obj.id][region.id] = {}
                 for dc in region.datacenters:
-                    remapped_info[_obj.id][region.id][dc.id] = {"capacity": "unknown", "load": "unknown"}
+                    remapped_info[_obj.id][region.id][dc.id] = {'capacity': 'unknown', 'load': 'unknown'}
 
     # ремапим вручную, потому что писать ещё костыли не хочется
     remapped_info['south_africa']['johannesburg'] = info['South Africa']
@@ -120,23 +120,25 @@ async def update_cache_info():
         cache['datacenters'] = remap_dc_info(overall_data.datacenters)
 
         if cache['online_players'] > cache.get('player_alltime_peak', 0):
+            if scheduler.get_job('players_peak') is None:
+                scheduler.add_job(update_players_peak,
+                                  next_run_time=dt.datetime.now() + dt.timedelta(minutes=15), coalesce=True)
             cache['player_alltime_peak'] = cache['online_players']
-            await send_alert('online_players', cache['player_alltime_peak'])
 
         df = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
         now = dt.datetime.now(dt.UTC)
         end_date = f'{now:%Y-%m-%d %H:%M:%S}'
         start_date = f'{(now - dt.timedelta(days=1)):%Y-%m-%d %H:%M:%S}'
-        mask = (df["DateTime"] > start_date) & (df["DateTime"] <= end_date)
-        player_24h_peak = int(df.loc[mask]["Players"].max())
+        mask = (df['DateTime'] > start_date) & (df['DateTime'] <= end_date)
+        player_24h_peak = int(df.loc[mask]['Players'].max())
 
-        if player_24h_peak != cache.get("player_24h_peak", 0):
+        if player_24h_peak != cache.get('player_24h_peak', 0):
             cache['player_24h_peak'] = player_24h_peak
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4)
     except Exception:
-        logging.exception("Caught exception in the main thread!")
+        logging.exception('Caught exception in the main thread!')
 
 
 @scheduler.scheduled_job('cron', hour=execution_start_dt.hour, minute=execution_start_dt.minute + 1)
@@ -148,15 +150,15 @@ async def unique_monthly():
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
-        if data != cache.get("monthly_unique_players"):
+        if data != cache.get('monthly_unique_players'):
             cache['monthly_unique_players'] = data
-            await send_alert("monthly_unique_players",
-                             (cache["monthly_unique_players"], data))
+            await send_alert('monthly_unique_players',
+                             (cache['monthly_unique_players'], data))
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4)
     except Exception:
-        logging.exception("Caught exception while gathering monthly players!")
+        logging.exception('Caught exception while gathering monthly players!')
         time.sleep(45)
         return await unique_monthly()
 
@@ -176,20 +178,32 @@ async def check_currency():
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4)
     except Exception:
-        logging.exception("Caught exception while gathering key price!")
+        logging.exception('Caught exception while gathering key price!')
         time.sleep(45)
         return await check_currency()
+
+
+async def update_players_peak():
+    try:
+        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache = json.load(f)
+
+        await send_alert('online_players', cache['player_alltime_peak'])
+    except Exception:
+        logging.exception('Caught exception while alerting players peak!')
+        time.sleep(45)
+        return await update_players_peak()
 
 
 async def send_alert(key, new_value):
     loc = locale('ru')
     
-    if key == "online_players":
+    if key == 'online_players':
         text = loc.notifs_new_playerspeak.format(new_value)
-    elif key == "monthly_unique_players": 
+    elif key == 'monthly_unique_players':
         text = loc.notifs_new_monthlyunique.format(*new_value)
     else:
-        logging.warning(f"Got wrong key to send alert: {key}")
+        logging.warning(f'Got wrong key to send alert: {key}')
         return
 
     if not config.TEST_MODE:
@@ -211,5 +225,5 @@ def main():
         logging.info('Shutting down the bot...')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
