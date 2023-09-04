@@ -17,7 +17,7 @@ Here you can see translations' progress and contributors' list:
 |  tr  | Turkish      | ████████▒▒ 80%  |      settings, tags missing      |   [@ITMiroN] (telegram)    |
 |  uz  | Uzbek        | ████████▒▒ 80%  | user gamestats, settings missing |   [@d1az1337] (telegram)   |
 |  uk  | Ukrainian    | ██████████ 100% |            fully done            | [akimerslys], [Agent47Dev] |
-|  be  | Belorussian  | ██████████ 100% |            fully done            |       [HiddenDeath]        |
+|  be  | Belarusian   | ██████████ 100% |            fully done            |       [HiddenDeath]        |
 
 ## Contributing 
 

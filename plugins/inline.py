@@ -56,12 +56,12 @@ def get_triggered_tags(query: str):
 @BClient.on_inline_query()
 async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
     user = inline_query.from_user
-    await log_inline(client, inline_query)
-
     if user.id not in client.sessions:
         await client.register_session(user, force_lang=config.FORCE_LANG)
 
     session = client.sessions[user.id]
+    await log_inline(client, inline_query, session)
+
     query = inline_query.query.strip()
 
     # if-chain because it's a plugin

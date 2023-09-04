@@ -72,10 +72,11 @@ async def sync_user_data(client: BClient, message: Message):
         message.continue_propagation()
 
     user = message.from_user
-    await log_message(client, message)
-
     if user.id not in client.sessions:
         await client.register_session(user, force_lang=config.FORCE_LANG)
+
+    session = client.sessions[user.id]
+    await log_message(client, message, session)
 
     message.continue_propagation()
 
@@ -102,16 +103,16 @@ async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery
         return
 
     user = callback_query.from_user
-    await log_callback(client, callback_query)
 
     if user.id not in client.sessions:
         await client.register_session(user, force_lang=config.FORCE_LANG)
 
+    session = client.sessions[user.id]
+    await log_callback(client, callback_query, session)
+
     # Render selection indicator on selectable markups
     for markup in keyboards.all_selectable_markups:
         markup.select_button_by_key(callback_query.data)
-
-    session = client.sessions[user.id]
 
     return await client.get_func_by_callback(session, callback_query)
 
@@ -338,7 +339,7 @@ async def user_profile_info(client: BClient, session: UserSession,
 
     steam_url = await client.ask_message_silently(callback_query, text)
 
-    await log_message(client, steam_url)
+    await log_message(client, steam_url, session)
 
     if steam_url.text == "/cancel":
         await steam_url.delete()
@@ -408,7 +409,7 @@ async def user_game_stats(client: BClient, session: UserSession, callback_query:
 
     steam_url = await client.ask_message_silently(callback_query, text)
 
-    await log_message(client, steam_url)
+    await log_message(client, steam_url, session)
 
     if steam_url.text == "/cancel":
         await steam_url.delete()
@@ -502,7 +503,7 @@ async def decode_crosshair(client: BClient, session: UserSession,
 
     decode_input = await client.ask_message_silently(callback_query, text)
 
-    await log_message(client, decode_input)
+    await log_message(client, decode_input, session)
 
     if decode_input.text == "/cancel":
         await decode_input.delete()
@@ -593,7 +594,7 @@ async def pistols(client: BClient, session: UserSession, callback_query: Callbac
                                                         session.locale.gun_select_pistol,
                                                         reply_markup=keyboards.pistols_markup(session.locale))
 
-    await log_callback(client, chosen_gun)
+    await log_callback(client, chosen_gun, session)
 
     chosen_gun = chosen_gun.data
 
@@ -617,7 +618,7 @@ async def heavy(client: BClient, session: UserSession, callback_query: CallbackQ
                                                         session.locale.gun_select_heavy,
                                                         reply_markup=keyboards.heavy_markup(session.locale))
 
-    await log_callback(client, chosen_gun)
+    await log_callback(client, chosen_gun, session)
 
     chosen_gun = chosen_gun.data
 
@@ -641,7 +642,7 @@ async def smgs(client: BClient, session: UserSession, callback_query: CallbackQu
                                                         session.locale.gun_select_smg,
                                                         reply_markup=keyboards.smgs_markup(session.locale))
 
-    await log_callback(client, chosen_gun)
+    await log_callback(client, chosen_gun, session)
 
     chosen_gun = chosen_gun.data
     if chosen_gun in GUNS_INFO:
@@ -664,7 +665,7 @@ async def rifles(client: BClient, session: UserSession, callback_query: Callback
                                                         session.locale.gun_select_rifle,
                                                         reply_markup=keyboards.rifles_markup(session.locale))
 
-    await log_callback(client, chosen_gun)
+    await log_callback(client, chosen_gun, session)
 
     chosen_gun = chosen_gun.data
     if chosen_gun in GUNS_INFO:
@@ -718,7 +719,7 @@ async def language(client: BClient, session: UserSession, callback_query: Callba
         reply_markup=keyboards.language_settings_markup(session.locale)
     )
 
-    await log_callback(client, chosen_lang)
+    await log_callback(client, chosen_lang, session)
 
     chosen_lang = chosen_lang.data
     if chosen_lang == LK.bot_back:

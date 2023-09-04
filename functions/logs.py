@@ -4,7 +4,7 @@ import datetime as dt
 from pyrogram.types import CallbackQuery, InlineQuery, Message
 
 import config
-from utypes import BClient
+from utypes import BClient, UserSession
 
 
 __all__ = ('log', 'log_message', 'log_callback', 'log_inline')
@@ -16,22 +16,22 @@ async def log(client: BClient, text: str, no_log_in_test: bool = False, disable_
     asyncio.create_task(_log(client, text, no_log_in_test, disable_notification))
 
 
-async def log_message(client: BClient, message: Message):
+async def log_message(client: BClient, message: Message, session: UserSession):
     """Sends message log to the log channel."""
 
-    asyncio.create_task(_log_message(client, message))
+    asyncio.create_task(_log_message(client, message, session))
 
 
-async def log_callback(client: BClient, callback_query: CallbackQuery):
+async def log_callback(client: BClient, callback_query: CallbackQuery, session: UserSession):
     """Sends callback log to the log channel."""
 
-    asyncio.create_task(_log_callback(client, callback_query))
+    asyncio.create_task(_log_callback(client, callback_query, session))
 
 
-async def log_inline(client: BClient, inline_query: InlineQuery):
+async def log_inline(client: BClient, inline_query: InlineQuery, session: UserSession):
     """Sends an inline query to the log channel."""
 
-    asyncio.create_task(_log_inline(client, inline_query))
+    asyncio.create_task(_log_inline(client, inline_query, session))
 
 
 async def _log(client: BClient, text: str, no_log_in_test: bool, disable_notification: bool):
@@ -47,7 +47,7 @@ async def _log(client: BClient, text: str, no_log_in_test: bool, disable_notific
     await client.send_message(config.LOGCHANNEL, text, disable_notification=disable_notification)
 
 
-async def _log_message(client: BClient, message: Message):
+async def _log_message(client: BClient, message: Message, session: UserSession):
     if config.TEST_MODE:
         return
 
@@ -63,13 +63,14 @@ async def _log_message(client: BClient, message: Message):
     text = (
         f"✍️ User: {display_name}\n"
         f"ID: {message.from_user.id}\n"
-        f"Language: {message.from_user.language_code}\n"
+        f"Telegram language: {message.from_user.language_code}\n"
+        f"Chosen language: {session.locale.lang_code}\n"
         f"Private message: {message.text!r}"
     )
     await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
 
 
-async def _log_callback(client: BClient, callback_query: CallbackQuery):
+async def _log_callback(client: BClient, callback_query: CallbackQuery, session: UserSession):
     if config.TEST_MODE:
         return
 
@@ -83,15 +84,16 @@ async def _log_callback(client: BClient, callback_query: CallbackQuery):
     display_name = f'@{username}' if username is not None else f'{callback_query.from_user.mention} (username hidden)'
 
     text = (
-        f"✍️ User: {display_name}\n"
+        f"🔀 User: {display_name}\n"
         f"ID: {callback_query.from_user.id}\n"
-        f"Language: {callback_query.from_user.language_code}\n"
+        f"Telegram language: {callback_query.from_user.language_code}\n"
+        f"Chosen language: {session.locale.lang_code}\n"
         f"Callback query: {callback_query.data}"
     )
     await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
 
 
-async def _log_inline(client: BClient, inline_query: InlineQuery):
+async def _log_inline(client: BClient, inline_query: InlineQuery, session: UserSession):
     if config.TEST_MODE:
         return
 
@@ -107,7 +109,8 @@ async def _log_inline(client: BClient, inline_query: InlineQuery):
     text = (
         f"🛰 User: {display_name}\n"
         f"ID: {inline_query.from_user.id}\n"
-        f"Language: {inline_query.from_user.language_code}\n"
+        f"Telegram language: {inline_query.from_user.language_code}\n"
+        f"Chosen language: {session.locale.lang_code}\n"
         f"Inline query: {inline_query.query!r}"
     )
     await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
