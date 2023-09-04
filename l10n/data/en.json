@@ -478,6 +478,5 @@
     "valve_hqtime_inline_title": "Bellevue time",
     "valve_hqtime_inline_description": "Time in Valve HQ",
     "valve_hqtime_text": "{} Time in Bellevue (Valve HQ): {}",
-    "valve_steam_maintenance_text": "🛠️ **Steam is down for routine maintenance every Tuesday.**",
-    "$redump": true
+    "valve_steam_maintenance_text": "🛠️ **Steam is down for routine maintenance every Tuesday.**"
 }
