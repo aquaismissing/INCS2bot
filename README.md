@@ -15,10 +15,12 @@ and most of the codebase was rewritten to be more modular and perfomant.
 
 ### Any changes?
 
-Most of the bot functionality stays the same. However, here are some noteworthy changes:
+Most of the bot functionality stays the same.
+However, here are some noteworthy changes:
 - Bot now uses inline keyboards instead of reply ones
 - Most of the bot messages stay in one, reducing the clutter in messages
 - More user-friendly approach for inline queries with the help of tags
+- Personal settings (only language settings available for now)
 
 Anyway, we have some plans on adding more functionality and QoL features.
 
@@ -36,7 +38,8 @@ Anyway, we have some plans on adding more functionality and QoL features.
 ### How can I contribute?
 
 For now, we don't actually need any help with developing the bot. \
-However, you can help us translate it in different languages. Navigate to [l10n/ folder](./l10n) to see more information.
+However, you can help us translate it in different languages.
+Navigate to [l10n/ folder](./l10n) to see more information.
 
 
 [mtproto api advantages]: https://docs.pyrogram.org/topics/mtproto-vs-botapi#advantages-of-the-mtproto-api
