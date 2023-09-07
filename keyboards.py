@@ -9,7 +9,7 @@ from l10n import Locale, LocaleKeys as LK, get_available_languages
 
 
 class ExtendedIKB(InlineKeyboardButton):
-    SELECTION_INDICATOR = '🔘'
+    SELECTION_INDICATOR = '•'
 
     def __init__(self,
                  text: str,
@@ -45,7 +45,7 @@ class ExtendedIKB(InlineKeyboardButton):
             self.text = self.text_key
 
         if self.selectable and self.selected:
-            self.text = f'{self.SELECTION_INDICATOR} {self.text}'
+            self.text = f'{self.SELECTION_INDICATOR} {self.text} {self.SELECTION_INDICATOR}'
 
     def localed(self, locale: Locale):
         self.set_localed_text(locale)

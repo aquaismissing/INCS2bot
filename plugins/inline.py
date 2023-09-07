@@ -60,7 +60,7 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
         await client.register_session(user, force_lang=config.FORCE_LANG)
 
     session = client.sessions[user.id]
-    await log_inline(client, inline_query, session)
+    await log_inline(client, session, inline_query)
 
     query = inline_query.query.strip()
 

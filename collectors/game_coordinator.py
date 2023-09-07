@@ -144,8 +144,7 @@ def gv_updater():
             with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
                 cache = json.load(f)
 
-            if data.csgo_client_version != cache.get('csgo_client_version') \
-                    or data.cs2_client_version != cache.get('cs2_client_version'):
+            if data.cs2_client_version != cache.get('cs2_client_version'):
                 for key, value in data.asdict().items():
                     cache[key] = value
 

@@ -207,7 +207,7 @@ async def send_alert(key, new_value):
         return
 
     if not config.TEST_MODE:
-        chat_list = [config.INCS2CHAT]
+        chat_list = [config.INCS2CHAT, config.CSTRACKER]
     else:
         chat_list = [config.AQ]
 

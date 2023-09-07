@@ -16,22 +16,22 @@ async def log(client: BClient, text: str, no_log_in_test: bool = False, disable_
     asyncio.create_task(_log(client, text, no_log_in_test, disable_notification))
 
 
-async def log_message(client: BClient, message: Message, session: UserSession):
+async def log_message(client: BClient, session: UserSession, message: Message):
     """Sends message log to the log channel."""
 
-    asyncio.create_task(_log_message(client, message, session))
+    asyncio.create_task(_log_message(client, session, message))
 
 
-async def log_callback(client: BClient, callback_query: CallbackQuery, session: UserSession):
+async def log_callback(client: BClient, session: UserSession, callback_query: CallbackQuery):
     """Sends callback log to the log channel."""
 
-    asyncio.create_task(_log_callback(client, callback_query, session))
+    asyncio.create_task(_log_callback(client, session, callback_query))
 
 
-async def log_inline(client: BClient, inline_query: InlineQuery, session: UserSession):
+async def log_inline(client: BClient, session: UserSession, inline_query: InlineQuery):
     """Sends an inline query to the log channel."""
 
-    asyncio.create_task(_log_inline(client, inline_query, session))
+    asyncio.create_task(_log_inline(client, session, inline_query))
 
 
 async def _log(client: BClient, text: str, no_log_in_test: bool, disable_notification: bool):
@@ -47,7 +47,7 @@ async def _log(client: BClient, text: str, no_log_in_test: bool, disable_notific
     await client.send_message(config.LOGCHANNEL, text, disable_notification=disable_notification)
 
 
-async def _log_message(client: BClient, message: Message, session: UserSession):
+async def _log_message(client: BClient, session: UserSession, message: Message):
     if config.TEST_MODE:
         return
 
@@ -70,7 +70,7 @@ async def _log_message(client: BClient, message: Message, session: UserSession):
     await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
 
 
-async def _log_callback(client: BClient, callback_query: CallbackQuery, session: UserSession):
+async def _log_callback(client: BClient, session: UserSession, callback_query: CallbackQuery):
     if config.TEST_MODE:
         return
 
@@ -93,7 +93,7 @@ async def _log_callback(client: BClient, callback_query: CallbackQuery, session:
     await client.send_message(config.LOGCHANNEL, text, disable_notification=True)
 
 
-async def _log_inline(client: BClient, inline_query: InlineQuery, session: UserSession):
+async def _log_inline(client: BClient, session: UserSession, inline_query: InlineQuery):
     if config.TEST_MODE:
         return
 
