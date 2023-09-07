@@ -62,3 +62,4 @@ Here you can see translations' progress and contributors' list:
 [akimerslys]: https://github.com/akimerslys
 [Agent47Dev]: https://github.com/Agent47Dev
 [HiddenDeath]: https://github.com/HiddenDeath
+[MrJiavo]: https://github.com/MrJiavo
