@@ -393,7 +393,7 @@
     "settings_language_choose": [
         "🔖 Choose the desired language:",
         "",
-        "Your current language is {}."
+        "Your current language: {}."
     ],
     "user_gamestats_button_title": "آمار در کانتر-استرایک",
     "user_gamestats_inline_title": "آمار درون بازی شما",
