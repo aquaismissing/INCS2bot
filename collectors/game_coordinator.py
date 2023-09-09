@@ -148,8 +148,9 @@ def gv_updater():
                 for key, value in data.asdict().items():
                     cache[key] = value
 
-            with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(cache, f, indent=4)
+                with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+                    json.dump(cache, f, indent=4)
+                sys.exit()
         except Exception:
             logging.exception('Caught an exception while trying to get new version!')
             time.sleep(45)

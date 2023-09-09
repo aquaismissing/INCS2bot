@@ -1,6 +1,7 @@
 import datetime as dt
 import json
 from typing import NamedTuple
+from zoneinfo import ZoneInfo
 
 import requests
 
@@ -13,7 +14,7 @@ __all__ = ('GameVersionData',  'ExchangeRate', 'GameServersData',
 
 
 MONTHLY_UNIQUE_PLAYERS_API = "https://api.steampowered.com/ICSGOServers_730/GetMonthlyPlayerCount/v1"
-CS2_VERSION_DATA_URL = "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/game/csgo/steam.inf"
+CS2_VERSION_DATA_URL = "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/master/game/csgo/steam.inf"
 GET_KEY_PRICES_API = f"https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/?appid={config.CS_APP_ID}" \
                      f"&key={config.STEAM_API_KEY}"
 GAME_SERVERS_STATUS_API = f"https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1" \
@@ -23,13 +24,13 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko
 
 MINUTE = 60
 HOUR = 60 * MINUTE
-
+VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 
 class GameVersionData(NamedTuple):
     cs2_client_version: int
     cs2_server_version: int
     cs2_patch_version: str
-    cs2_version_timestamp: float
+    cs2_version_timestamp: str
 
     @staticmethod
     def request():
@@ -49,7 +50,7 @@ class GameVersionData(NamedTuple):
         cs2_client_version = int(options["ClientVersion"]) - 2000000
         cs2_server_version = int(options["ServerVersion"]) - 2000000
         cs2_patch_version = options["PatchVersion"]
-        cs2_version_timestamp = dt.datetime.strptime(version_datetime, "%b %d %Y %H:%M:%S").timestamp()
+        cs2_version_timestamp = dt.datetime.strptime(version_datetime, "%b %d %Y %H:%M:%S").isoformat()
 
         return GameVersionData(cs2_client_version,
                                cs2_server_version,
@@ -65,8 +66,7 @@ class GameVersionData(NamedTuple):
 
         cs2_client_version = cache_file['cs2_client_version']
         cs2_patch_version = cache_file['cs2_patch_version']
-        cs2_version_dt = (dt.datetime.fromtimestamp(cache_file['cs2_version_timestamp'], dt.UTC)
-                          + dt.timedelta(hours=8))
+        cs2_version_dt = dt.datetime.fromisoformat(cache_file['cs2_version_timestamp']).replace(tzinfo=VALVE_TIMEZONE).astimezone(ZoneInfo("UTC"))
 
         return cs2_patch_version, cs2_client_version, cs2_version_dt
 
