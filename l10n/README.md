@@ -18,7 +18,7 @@ Here you can see translations' progress and contributors' list:
 |  uz  | Uzbek        | ████████▒▒ 80%  | user gamestats, settings missing |   [@d1az1337] (telegram)   |
 |  uk  | Ukrainian    | ██████████ 100% |            fully done            | [akimerslys], [Agent47Dev] |
 |  be  | Belarusian   | ██████████ 100% |            fully done            |       [HiddenDeath]        |
-|  it  | Italian      | █████████▒ 90%  |            fully done            |         [MrJiavo]          |
+|  it  | Italian      | ██████████ 100% |            fully done            |         [MrJiavo]          |
 
 ## Contributing 
 
