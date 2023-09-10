@@ -15,7 +15,8 @@
         "еханесбург",
         "janubiy afrika",
         "yoxannesburg",
-        "آفریقا"
+        "آفریقا",
+        "sud africa"
     ],
     "dc_australia": [
         "🇦🇺",
@@ -91,7 +92,12 @@
         "buenos-ayres",
         "buenos ayres",
         "آمریکا جنوبی",
-        "برزیل"
+        "برزیل",
+        "sud america",
+        "brasile",
+        "san paolo",
+        "cile",
+        "perù"
     ],
     "dc_europe": [
         "🇪🇺",
@@ -100,7 +106,8 @@
         "еўропа",
         "yevropa",
         "європа",
-        "اروپا"
+        "اروپا",
+        "europa"
     ],
     "dc_europe_north": [
         "🇸🇪",
@@ -116,7 +123,10 @@
         "shvetsiya",
         "stokgolm",
         "شمال",
-        "استکهلم"
+        "استکهلم",
+        "nord",
+        "svezia",
+        "stoccolma"
     ],
     "dc_europe_west": [
         "🇩🇪",
@@ -138,7 +148,11 @@
         "ispaniya",
         "іспанія",
         "اسپانیا",
-        "مادرید"
+        "مادرید",
+        "ovest",
+        "germania",
+        "francoforte",
+        "spagna"
     ],
     "dc_europe_east": [
         "🇦🇹",
@@ -162,7 +176,10 @@
         "polsha",
         "varshava",
         "اتریش",
-        "لهستان"
+        "لهستان",
+        "est",
+        "polonia",
+        "varsavia"
     ],
     "dc_us": [
         "🇺🇸",
@@ -180,7 +197,8 @@
         "зша",
         "aqsh",
         "amerika qo'shma shtatlari",
-        "آمریکا"
+        "آمریکا",
+        "stati uniti d'america"
     ],
     "dc_us_north": [
         "northcentral",
@@ -218,7 +236,19 @@
         "mozes leyk",
         "чікаго",
         "کانادا",
-        "شیکاگو"
+        "شیکاگو",
+        "centro-settentrionale",
+        "centro settentrionale",
+        "nord-est",
+        "nord est",
+        "nord-ovest",
+        "nord ovest",
+        "centro-nord",
+        "centro nord",
+        "centro",
+        "nord",
+        "est",
+        "ovest"
     ],
     "dc_us_south": [
         "southeast",
@@ -247,7 +277,14 @@
         "sharqiy",
         "g'arbiy",
         "los anjeles",
-        "لس آنچلس"
+        "لس آنچلس",
+        "sud-est",
+        "sud est",
+        "sud-ovest",
+        "sud ovest",
+        "sud",
+        "est",
+        "ovest"
     ],
     "dc_asia": [
         "asia",
@@ -281,7 +318,8 @@
         "yaponiya",
         "tokio",
         "токіо",
-        "توکیو"
+        "توکیو",
+        "giappone"
     ],
     "dc_asia_china": [
         "🇨🇳",
@@ -299,7 +337,8 @@
         "shanxay",
         "tyantszin",
         "guanchjou",
-        "چین"
+        "چین",
+        "cina"
     ],
     "dc_asia_emirates": [
         "🇦🇪",
@@ -310,7 +349,8 @@
         "дубай",
         "amirliklar",
         "dubay",
-        "دوبی"
+        "دوبی",
+        "emirati"
     ],
     "dc_asia_singapore": [
         "🇸🇬",
@@ -339,14 +379,18 @@
         "сеул",
         "janubiy koreya",
         "seul",
-        "کره جنوبی"
+        "کره جنوبی",
+        "corea del sud",
+        "sud corea",
+        "seul"
     ],
     "currencies_usd": [
         "usd",
         "dollar",
         "доллар",
         "долар",
-        "دلار"
+        "دلار",
+        "dollaro"
     ],
     "currencies_gbp": [
         "gbp",
@@ -354,7 +398,8 @@
         "фунт",
         "funt",
         "sterling",
-        "پوند"
+        "پوند",
+        "sterlina"
     ],
     "currencies_eur": [
         "eur",
@@ -372,14 +417,16 @@
         "рубль",
         "рубель",
         "rubli",
-        "روبل"
+        "روبل",
+        "rublo"
     ],
     "currencies_brl": [
         "brl",
         "real",
         "реал",
         "рэал",
-        "برزیلی"
+        "برزیلی",
+        "real"
     ],
     "currencies_jpy": [
         "jpy",
@@ -394,7 +441,8 @@
         "krone",
         "крона",
         "krona",
-        "کرون"
+        "کرون",
+        "corona"
     ],
     "currencies_idr": [
         "idr",
@@ -402,7 +450,8 @@
         "рупия",
         "рупія",
         "rupiya",
-        "روپیه"
+        "روپیه",
+        "rupia"
     ],
     "currencies_myr": [
         "myr",
@@ -424,7 +473,8 @@
         "доллар",
         "долар",
         "دلار",
-        "سنگاپور"
+        "سنگاپور",
+        "dollaro"
     ],
     "currencies_thb": [
         "thb",
@@ -459,7 +509,8 @@
         "грыўна",
         "grivna",
         "гривня",
-        "هیروانا"
+        "هیروانا",
+        "grivnia"
     ],
     "currencies_mxn": [
         "mxn",
@@ -474,13 +525,15 @@
         "доллар",
         "долар",
         "دلار",
-        "کانادا"
+        "کانادا",
+        "dollaro"
     ],
     "currencies_aud": [
         "aud",
         "dollar",
         "доллар",
-        "دلار"
+        "دلار",
+        "dollaro"
     ],
     "currencies_nzd": [
         "nzd",
@@ -488,7 +541,8 @@
         "доллар",
         "долар",
         "دلار",
-        "نیوزیلند"
+        "نیوزیلند",
+        "dollaro"
     ],
     "currencies_pln": [
         "pln",
@@ -504,7 +558,8 @@
         "franc",
         "франк",
         "frank",
-        "چک"
+        "چک",
+        "franco"
     ],
     "currencies_aed": [
         "aed",
@@ -553,14 +608,17 @@
         "dollar",
         "доллар",
         "долар",
-        "دلار"
+        "دلار",
+        "nuovo dollaro",
+        "dollaro"
     ],
     "currencies_hkd": [
         "hkd",
         "dollar",
         "доллар",
         "долар",
-        "دلار"
+        "دلار",
+        "dollaro"
     ],
     "currencies_zar": [
         "zar",
@@ -574,7 +632,8 @@
         "рупия",
         "рупія",
         "rupisi",
-        "روپیه"
+        "روپیه",
+        "rupia"
     ],
     "currencies_ars": [
         "ars",
@@ -596,7 +655,9 @@
         "shekel",
         "шекель",
         "шэкель",
-        "شکل"
+        "شکل",
+        "siclo",
+        "nuovo siclo"
     ],
     "currencies_kwd": [
         "kwd",
@@ -604,7 +665,8 @@
         "динар",
         "дынар",
         "dinor",
-        "دینار"
+        "دینار",
+        "dinaro"
     ],
     "currencies_qar": [
         "qar",
