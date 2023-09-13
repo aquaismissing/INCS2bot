@@ -228,13 +228,20 @@ def get_monthly_unique_players():
     return int(response['result']['players'])
 
 
+def is_pdt(_datetime: dt.datetime):
+    return _datetime.strftime('%Z') == 'PDT'
+
+
 def drop_cap_reset_timer():
     """Get drop cap reset time"""
 
     wanted_weekday = 1
-    wanted_time = 18
+    wanted_time = 17
 
     now = dt.datetime.now(tz=VALVE_TIMEZONE)
+    if is_pdt(now):
+        wanted_time += 1
+
     days_until_wanted_weekday = (wanted_weekday - now.weekday()) % 7
 
     wanted_datetime = now + dt.timedelta(days=days_until_wanted_weekday)
