@@ -230,10 +230,10 @@ def get_monthly_unique_players():
 def drop_cap_reset_timer():
     """Get drop cap reset time"""
 
-    wanted_weekday = 2
-    wanted_time = 2
+    wanted_weekday = 1
+    wanted_time = 18
 
-    now = dt.datetime.now(tz=dt.UTC)
+    now = dt.datetime.now(tz=VALVE_TIMEZONE)
     days_left = (wanted_weekday - now.weekday() - 1) % 7
 
     wanted_date = (now + dt.timedelta(days=days_left)).replace(hour=wanted_time, minute=0, second=0, microsecond=0)
