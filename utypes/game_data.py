@@ -26,6 +26,7 @@ MINUTE = 60
 HOUR = 60 * MINUTE
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 
+
 class GameVersionData(NamedTuple):
     cs2_client_version: int
     cs2_server_version: int
@@ -234,12 +235,14 @@ def drop_cap_reset_timer():
     wanted_time = 18
 
     now = dt.datetime.now(tz=VALVE_TIMEZONE)
-    days_left = (wanted_weekday - now.weekday() - 1) % 7
+    days_until_wanted_weekday = (wanted_weekday - now.weekday()) % 7
 
-    wanted_date = (now + dt.timedelta(days=days_left)).replace(hour=wanted_time, minute=0, second=0, microsecond=0)
+    wanted_datetime = now + dt.timedelta(days=days_until_wanted_weekday)
+    wanted_datetime = wanted_datetime.replace(hour=wanted_time, minute=0, second=0, microsecond=0)
 
-    time_left = wanted_date - now
+    time_left = wanted_datetime - now
 
+    days_left = time_left.days
     hours_left = time_left.seconds // HOUR
     minutes_left = time_left.seconds % HOUR // MINUTE
     seconds_left = time_left.seconds % MINUTE
