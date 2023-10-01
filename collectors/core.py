@@ -19,7 +19,9 @@ import config
 from l10n import locale
 from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServersData,
-                    State, get_monthly_unique_players)
+                    LeaderboardStats, State, get_monthly_unique_players,
+                    LEADERBOARD_API_REGIONS)
+
 
 execution_start_dt = dt.datetime.now()
 
@@ -181,6 +183,32 @@ async def check_currency():
         logging.exception('Caught exception while gathering key price!')
         time.sleep(45)
         return await check_currency()
+
+
+@scheduler.scheduled_job('cron', hour=execution_start_dt.hour, minute=execution_start_dt.minute + 2)
+async def fetch_leaderboard():
+    # noinspection PyBroadException
+    try:
+        global_leaderboard_stats = LeaderboardStats.request_global()
+
+        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache = json.load(f)
+
+        if global_leaderboard_stats != cache.get('global_leaderboard_stats'):
+            cache['global_leaderboard_stats'] = global_leaderboard_stats
+
+        for region in LEADERBOARD_API_REGIONS:
+            regional_leaderboard_stats = LeaderboardStats.request_regional(region)
+
+            if regional_leaderboard_stats != cache.get(f'regional_leaderboard_stats_{region}'):
+                cache[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
+
+        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+            json.dump(cache, f, indent=4, ensure_ascii=False)
+    except Exception:
+        logging.exception('Caught exception fetching leaderboards!')
+        time.sleep(45)
+        return await fetch_leaderboard()
 
 
 async def update_players_peak():
