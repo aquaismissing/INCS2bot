@@ -261,6 +261,7 @@
     "game_leaderboard_world": "Dünya",
     "game_leaderboard_header_world": "Best CS2 players in the world:",
     "game_leaderboard_header_regional": "Best CS2 players in this region:",
+    "game_leaderboard_detailed_link": "Click [here]({}) to see full CS2 leaderboard and get detailed player statistics.",
     "gun_button_text": "Silah Verileri",
     "gun_select_category": "#️⃣ İgilendiğiniz kategoriyi seçin:",
     "gun_pistols": "Tabancalar",
