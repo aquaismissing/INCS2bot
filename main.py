@@ -27,8 +27,10 @@ from keyboards import ExtendedIKB, ExtendedIKM
 # noinspection PyPep8Naming
 from l10n import Locale, LocaleKeys as LK
 from utypes import (BClient, Crosshair, ExchangeRate, GameServersData,
-                    GameVersionData, GunInfo, ParsingUserStatsError, ProfileInfo,
-                    State, States, UserGameStats, UserSession, drop_cap_reset_timer)
+                    GameVersionData, GunInfo, LeaderboardStats, ParsingUserStatsError,
+                    ProfileInfo, State, States, UserGameStats,
+                    UserSession, drop_cap_reset_timer)
+
 
 GUNS_INFO = GunInfo.load()
 AVAILABLE_LANGUAGES = get_available_languages()
@@ -572,6 +574,40 @@ async def send_game_version(client: BClient, session: UserSession, callback_quer
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(session.locale),
                                            disable_web_page_preview=True)
 
+
+@bot.on_callback_request(LK.game_leaderboard_button_title)
+@log_exception_callback
+@bot.came_from(extra_features)
+@ignore_message_not_modified
+async def send_game_leaderboard(client: BClient, session: UserSession, callback_query: CallbackQuery,
+                                region: str = LK.game_leaderboard_world):
+    """Sends the CS2 leaderboard (top-10), supports both world and regional"""
+
+    keyboards.leaderboard_markup.select_button_by_key(region)
+
+    await callback_query.edit_message_text(session.locale.bot_loading,
+                                           reply_markup=keyboards.leaderboard_markup(session.locale))
+
+    region = region.split('_')[-1]
+    if region == 'world':
+        data = LeaderboardStats.cached_world_stats()
+        text = info_formatters.format_game_world_leaderboard(data, session.locale)
+    else:
+        data = LeaderboardStats.cached_regional_stats(region)
+        text = info_formatters.format_game_regional_leaderboard(data, session.locale)
+
+    await callback_query.edit_message_text(text, reply_markup=keyboards.leaderboard_markup(session.locale))
+
+    chosen_region = await client.listen_callback(callback_query.message.chat.id,
+                                                 callback_query.message.id)
+
+    await log_callback(client, session, chosen_region)
+
+    chosen_region = chosen_region.data
+
+    if chosen_region == LK.bot_back:
+        return await back(client, session, callback_query)
+    await send_game_leaderboard(client, session, callback_query, chosen_region)
 
 # cat: Guns info
 
