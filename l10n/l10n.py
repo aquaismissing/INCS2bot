@@ -218,6 +218,7 @@ class Locale(SLocale):
     game_leaderboard_world: str
     game_leaderboard_header_world: str
     game_leaderboard_header_regional: str
+    game_leaderboard_detailed_link: str
 
     # guns info
     gun_button_text: str
