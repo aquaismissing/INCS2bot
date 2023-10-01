@@ -293,6 +293,25 @@ rifles_markup = ExtendedIKM([
     [back_button]
 ])
 
+# Leaderboard
+_leaderboard_global = ExtendedIKB(LK.game_leaderboard_world)
+_leaderboard_na = ExtendedIKB(LK.regions_northamerica)
+_leaderboard_sa = ExtendedIKB(LK.regions_southamerica)
+_leaderboard_eu = ExtendedIKB(LK.regions_europe)
+_leaderboard_as = ExtendedIKB(LK.regions_asia)
+_leaderboard_au = ExtendedIKB(LK.regions_australia)
+_leaderboard_china = ExtendedIKB(LK.regions_china)
+_leaderboard_af = ExtendedIKB(LK.regions_africa)
+
+leaderboard_markup = ExtendedIKM([
+    [_leaderboard_global],
+    [_leaderboard_na, _leaderboard_sa],
+    [_leaderboard_eu, _leaderboard_as],
+    [_leaderboard_au, _leaderboard_af],
+    [_leaderboard_china],
+    [back_button]
+])
+
 # Crosshair
 _generate_crosshair = ExtendedIKB(LK.crosshair_generate, LK.crosshair_generate)
 _decode_crosshair = ExtendedIKB(LK.crosshair_decode, LK.crosshair_decode)
