@@ -98,17 +98,14 @@ class Locale(SLocale):
     dc_west: str  # West
     dc_east: str  # East
 
-    dc_africa: str  # South Africa
     dc_africa_title: str  # South Africaʼs DC
     dc_africa_inline_title: str  # African DC
     dc_africa_johannesburg: str  # Johannesburg
 
-    dc_australia: str  # Australia
     dc_australia_title: str  # Australiaʼs DC
     dc_australia_inline_title: str  # Australian DC
     dc_australia_sydney: str  # Sydney
 
-    dc_europe: str  # Europe
     dc_eu_north: str  # North
     dc_eu_west: str  # West
     dc_eu_east: str  # East
@@ -142,7 +139,6 @@ class Locale(SLocale):
     dc_us_south_west_title: str  # Southwest DC
     dc_us_south_west_los_angeles: str  # Los Angeles
 
-    dc_southamerica: str  # South America
     dc_southamerica_inline_title: str  # South American DC
     dc_brazil_title: str  # Brazilʼs DC
     dc_brazil_sao_paulo: str  # Sao Paulo
@@ -153,7 +149,6 @@ class Locale(SLocale):
     dc_argentina_title: str  # Argentinaʼs DC
     dc_argentina_buenos_aires: str  # Buenos Aires
 
-    dc_asia: str  # Asia
     dc_india: str  # India
     dc_india_title: str  # Indiaʼs DC
     dc_india_inline_title: str  # Indian DC
@@ -163,7 +158,7 @@ class Locale(SLocale):
     dc_japan_title: str  # Japanʼs DC
     dc_japan_inline_title: str  # Japanese DC
     dc_japan_tokyo: str  # Tokyo
-    dc_china: str  # China
+
     dc_china_title: str  # Chinaʼs DC
     dc_china_inline_title: str  # Chinese DC
     dc_china_shanghai: str  # Shanghai
@@ -219,6 +214,11 @@ class Locale(SLocale):
     game_dropcaptimer_inline_description: str
     game_dropcaptimer_text: str
 
+    game_leaderboard_button_title: str
+    game_leaderboard_world: str
+    game_leaderboard_header_world: str
+    game_leaderboard_header_regional: str
+
     # guns info
     gun_button_text: str
     gun_select_category: str
@@ -246,8 +246,9 @@ class Locale(SLocale):
     gun_origin_uk: str  # United Kingdom
     gun_origin_south_africa: str  # South Africa
 
-    # latest data update
+    # data
     latest_data_update: str
+    data_not_found: str
 
     # notifications (currently not used)
     notifs_build_public: str
@@ -262,6 +263,15 @@ class Locale(SLocale):
     notifs_new_map_multiple: str
     notifs_new_playerspeak: str
     notifs_new_monthlyunique: str
+
+    # regions (used across the bot)
+    regions_africa: str  # South Africa
+    regions_asia: str  # Asia
+    regions_australia: str  # Australia
+    regions_china: str  # China
+    regions_europe: str  # Europe
+    regions_northamerica: str  # North America
+    regions_southamerica: str  # South America
 
     # states (used in dc and stats)
     states_low: str
