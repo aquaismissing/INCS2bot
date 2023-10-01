@@ -261,7 +261,7 @@
     "game_leaderboard_world": "Свет",
     "game_leaderboard_header_world": "Лучшие игроки CS2 по миру:",
     "game_leaderboard_header_regional": "Лучшие игроки CS2 по этому региону:",
-    "game_leaderboard_detailed_link": "Полную таблицу лидеров, а также подробную статистику игроков можно посмотреть [тут]({})",
+    "game_leaderboard_detailed_link": "Полную таблицу лидеров, а также подробную статистику игроков можно посмотреть [тут]({}).",
     "gun_button_text": "Дадзеныя аб зброі",
     "gun_select_category": "#️⃣ Выберыце катэгорыю, якая Вас цікавіць:",
     "gun_pistols": "Пісталеты",
