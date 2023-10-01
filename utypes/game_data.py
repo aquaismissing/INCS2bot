@@ -44,8 +44,8 @@ REGIONS = {1: 'NA',
            3: 'EU',
            4: 'AS',
            5: 'AU',
-           6: 'CH?',  # currently not available
-           7: 'AF'}
+           7: 'AF',
+           9: 'CH'}
 
 
 class GameVersionData(NamedTuple):

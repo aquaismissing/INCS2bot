@@ -132,7 +132,7 @@ _currency = ExtendedIKB(LK.exchangerate_button_title)
 _valve_hq_time = ExtendedIKB(LK.valve_hqtime_button_title)
 _timer = ExtendedIKB(LK.game_dropcap_button_title)
 _game_version = ExtendedIKB(LK.game_version_button_title)
-_leaderboard = ExtendedIKB(LK.game_leaderboard_button_title)
+_leaderboard = ExtendedIKB(LK.game_leaderboard_button_title, selectable=False)
 _guns = ExtendedIKB(LK.gun_button_text)
 
 extra_markup = ExtendedIKM([

@@ -125,8 +125,8 @@ def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) 
         return text
 
     for person in data:
-        # telegram is shit that doesn't want to align text correctly
-        text += f'`{person.rank:2d}.` `{person.name:<35} {person.rating:,}` {person.region}\n'
+        name = person.name.replace('`', r"'")  # escape for formatting
+        text += f'`{person.rank:2d}.` `{name:<35} {person.rating:,}` {person.region}\n'
 
     text += f'\n{link_text}'
     return text
@@ -142,7 +142,8 @@ def format_game_regional_leaderboard(region: str, data: list[LeaderboardStats], 
         return text
 
     for person in data:
-        text += f'`{person.rank:2d}.` `{person.name:<35} {person.rating:,}`\n'
+        name = person.name.replace('`', r"'")  # escape for formatting
+        text += f'`{person.rank:2d}.` `{name:<35} {person.rating:,}`\n'
 
     text += f'\n{link_text}'
     return text
