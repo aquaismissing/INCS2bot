@@ -8,7 +8,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from l10n import Locale
 from .locale import get_refined_lang_code
-from utypes import States
+from utypes import States, LeaderboardStats
 
 
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
@@ -105,3 +105,31 @@ def format_user_game_stats(stats, locale: Locale):
     #     file.write(rendered_page)
 
     return rendered_page.format(*stats)
+
+
+def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) -> str:
+    text = f'{locale.game_leaderboard_header_world}\n\n'
+    if not data:
+        text += locale.data_not_found
+        return text
+
+    for person in data:
+        # telegram is shit that doesn't want to align text correctly
+        text += f'`{person.rank:2d}.` `{person.name:<35} {person.rating:,}` {person.region}\n'
+    return text
+
+
+def format_game_regional_leaderboard(data: list[LeaderboardStats], locale: Locale) -> str:
+    text = f'{locale.game_leaderboard_header_world}\n\n'
+    if not data:
+        text += (
+            f'{locale.data_not_found}'
+            f'\n\n'
+            f'If you wanted to check Chinese leaderboard - '
+            f'it doesn\'t exist at the moment because CS2 is not presented in China.'
+        )
+        return text
+
+    for person in data:
+        text += f'`{person.rank:2d}.` `{person.name:<35} {person.rating:,}`\n'
+    return text
