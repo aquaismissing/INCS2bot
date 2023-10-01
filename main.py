@@ -860,6 +860,8 @@ async def back(client: BClient, session: UserSession, callback_query: CallbackQu
 async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=10)
+    scheduler.add_job(log, 'interval', hours=12,
+                      args=(bot, "Report: I\'m still active!"))
 
     scheduler.start()
     try:
