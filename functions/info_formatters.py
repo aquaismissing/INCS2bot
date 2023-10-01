@@ -120,12 +120,12 @@ def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) 
 
 
 def format_game_regional_leaderboard(data: list[LeaderboardStats], locale: Locale) -> str:
-    text = f'{locale.game_leaderboard_header_world}\n\n'
+    text = f'{locale.game_leaderboard_header_regional}\n\n'
     if not data:
         text += (
             f'{locale.data_not_found}'
             f'\n\n'
-            f'If you wanted to check Chinese leaderboard - '
+            f'⚠️ If you wanted to check Chinese leaderboard - '
             f'it doesn\'t exist at the moment because CS2 is not presented in China.'
         )
         return text
