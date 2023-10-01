@@ -9,16 +9,16 @@ Then check [Contributing](#contributing) section to know how to start translatin
 
 Here you can see translations' progress and contributors' list:
 
-| Code | Language     |    Progress     |             Summary              |        Contributors        |
-|:----:|--------------|:---------------:|:--------------------------------:|:--------------------------:|
-|  gb  | English      | ██████████ 100% |             built in             |                            |
-|  ru  | Russian      | ██████████ 100% |             built in             |                            |
-|  fa  | Persian      | █████████▒ 90%  |         settings missing         |    [@A460N] (telegram)     |
-|  tr  | Turkish      | ████████▒▒ 80%  |      settings, tags missing      |   [@ITMiroN] (telegram)    |
-|  uz  | Uzbek        | ████████▒▒ 80%  | user gamestats, settings missing |   [@d1az1337] (telegram)   |
-|  uk  | Ukrainian    | ██████████ 100% |            fully done            | [akimerslys], [Agent47Dev] |
-|  be  | Belarusian   | ██████████ 100% |            fully done            |       [HiddenDeath]        |
-|  it  | Italian      | ██████████ 100% |            fully done            |         [MrJiavo]          |
+| Code | Language     |    Progress     |                    Summary                     |        Contributors        |
+|:----:|--------------|:---------------:|:----------------------------------------------:|:--------------------------:|
+|  gb  | English      | ██████████ 100% |                    built in                    |                            |
+|  ru  | Russian      | ██████████ 100% |                    built in                    |                            |
+|  fa  | Persian      | █████████▒ 80%  |         settings, leaderboard missing          |    [@A460N] (telegram)     |
+|  tr  | Turkish      | ███████▒▒▒ 70%  |      settings, leaderboard, tags missing       |   [@ITMiroN] (telegram)    |
+|  uz  | Uzbek        | ███████▒▒▒ 70%  | user game stats, settings, leaderboard missing |   [@d1az1337] (telegram)   |
+|  uk  | Ukrainian    | █████████▒ 90%  |              leaderboard missing               | [akimerslys], [Agent47Dev] |
+|  be  | Belarusian   | █████████▒ 90%  |              leaderboard missing               |       [HiddenDeath]        |
+|  it  | Italian      | █████████▒ 90%  |              leaderboard missing               |         [MrJiavo]          |
 
 ## Contributing 
 
