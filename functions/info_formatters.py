@@ -19,7 +19,7 @@ env = Environment(loader=FileSystemLoader(Path(__file__).parent.parent))
 game_stats_template = env.get_template('game_stats_template.html')
 
 
-def format_server_status(data, locale: Locale):
+def format_server_status(data, locale: Locale) -> str:
     if data is States.UNKNOWN:
         return locale.error_internal
 
@@ -45,7 +45,7 @@ def format_server_status(data, locale: Locale):
     return text
 
 
-def format_matchmaking_stats(data, locale: Locale):
+def format_matchmaking_stats(data, locale: Locale) -> str:
     if data is States.UNKNOWN:
         return locale.error_internal
 
@@ -70,20 +70,20 @@ def format_matchmaking_stats(data, locale: Locale):
     return text
 
 
-def format_game_version_info(data, locale: Locale):
+def format_game_version_info(data, locale: Locale) -> str:
     if data is States.UNKNOWN:
         return locale.error_internal
 
     lang_code = get_refined_lang_code(locale)
 
-    (*data, cs2_version_dt) = data
+    *data, cs2_version_dt = data
 
     cs2_version_dt = f'{format_datetime(cs2_version_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
 
     return locale.game_version_text.format(*data, cs2_version_dt)
 
 
-def format_valve_hq_time(locale: Locale):
+def format_valve_hq_time(locale: Locale) -> str:
     lang_code = get_refined_lang_code(locale)
 
     valve_hq_datetime = dt.datetime.now(tz=VALVE_TIMEZONE)
@@ -94,7 +94,7 @@ def format_valve_hq_time(locale: Locale):
     return locale.valve_hqtime_text.format(CLOCKS[valve_hq_datetime.hour % 12], valve_hq_dt_formatted)
 
 
-def format_user_game_stats(stats, locale: Locale):
+def format_user_game_stats(stats, locale: Locale) -> str:
     rendered_page = game_stats_template.render(**locale.to_dict())
 
     # for some reason telegraph interprets newline <li></li> as two <li></li>, one of which is empty

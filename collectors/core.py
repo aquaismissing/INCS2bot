@@ -24,6 +24,7 @@ from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
 
 
 execution_start_dt = dt.datetime.now()
+loc = locale('ru')
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(message)s",
@@ -153,9 +154,9 @@ async def unique_monthly():
             cache = json.load(f)
 
         if data != cache.get('monthly_unique_players'):
-            cache['monthly_unique_players'] = data
             await send_alert('monthly_unique_players',
                              (cache['monthly_unique_players'], data))
+            cache['monthly_unique_players'] = data
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4)
@@ -224,8 +225,6 @@ async def update_players_peak():
 
 
 async def send_alert(key, new_value):
-    loc = locale('ru')
-    
     if key == 'online_players':
         text = loc.notifs_new_playerspeak.format(new_value)
     elif key == 'monthly_unique_players':
