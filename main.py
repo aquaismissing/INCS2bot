@@ -594,7 +594,7 @@ async def send_game_leaderboard(client: BClient, session: UserSession, callback_
         text = info_formatters.format_game_world_leaderboard(data, session.locale)
     else:
         data = LeaderboardStats.cached_regional_stats(region)
-        text = info_formatters.format_game_regional_leaderboard(data, session.locale)
+        text = info_formatters.format_game_regional_leaderboard(region, data, session.locale)
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.leaderboard_markup(session.locale))
 
