@@ -189,13 +189,13 @@ async def check_currency():
 async def fetch_leaderboard():
     # noinspection PyBroadException
     try:
-        global_leaderboard_stats = LeaderboardStats.request_global()
+        world_leaderboard_stats = LeaderboardStats.request_world()
 
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
-        if global_leaderboard_stats != cache.get('global_leaderboard_stats'):
-            cache['global_leaderboard_stats'] = global_leaderboard_stats
+        if world_leaderboard_stats != cache.get('world_leaderboard_stats'):
+            cache['world_leaderboard_stats'] = world_leaderboard_stats
 
         for region in LEADERBOARD_API_REGIONS:
             regional_leaderboard_stats = LeaderboardStats.request_regional(region)

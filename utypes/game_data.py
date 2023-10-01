@@ -289,12 +289,12 @@ class LeaderboardStats(NamedTuple):
         return cls(rank, rating, name, wins, ties, losses, last_wins, timestamp, region)
 
     @staticmethod
-    def request_global():
-        global_leaderboard_data = requests.get(CS2_LEADERBOARD_API, headers=HEADERS, timeout=15).json()
-        global_leaderboard_data = global_leaderboard_data['result']['entries']
-        global_leaderboard_data = global_leaderboard_data[:10]
+    def request_world():
+        world_leaderboard_data = requests.get(CS2_LEADERBOARD_API, headers=HEADERS, timeout=15).json()
+        world_leaderboard_data = world_leaderboard_data['result']['entries']
+        world_leaderboard_data = world_leaderboard_data[:10]
 
-        return [LeaderboardStats.from_json(person).asdict() for person in global_leaderboard_data]
+        return [LeaderboardStats.from_json(person).asdict() for person in world_leaderboard_data]
 
     @staticmethod
     def request_regional(region: str):
@@ -306,12 +306,12 @@ class LeaderboardStats(NamedTuple):
         return [LeaderboardStats.from_json(person).asdict() for person in regional_leaderboard_data]
 
     @staticmethod
-    def cached_global_stats():
+    def cached_world_stats():
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
 
-        global_leaderboard_stats = cache_file['global_leaderboard_stats']
-        return [LeaderboardStats(**person) for person in global_leaderboard_stats]
+        world_leaderboard_stats = cache_file['world_leaderboard_stats']
+        return [LeaderboardStats(**person) for person in world_leaderboard_stats]
 
     @staticmethod
     def cached_regional_stats(region: str):
