@@ -65,7 +65,7 @@ class DatacenterAtlas:
             ),
         ],
         "🇿🇦",
-        LK.dc_africa,
+        LK.regions_africa,
         LK.dc_africa_title
     )
 
@@ -78,7 +78,7 @@ class DatacenterAtlas:
             ),
         ],
         "🇦🇺",
-        LK.dc_australia,
+        LK.regions_australia,
         LK.dc_australia_title
     )
 
@@ -275,7 +275,7 @@ class DatacenterAtlas:
                 l10n_key_title=LK.dc_argentina_title
             )
         ],
-        LK.dc_southamerica
+        LK.regions_southamerica
     )
 
     HONGKONG = Datacenter(
@@ -319,7 +319,7 @@ class DatacenterAtlas:
             )
         ],
         "🇨🇳",
-        LK.dc_china, 
+        LK.regions_china,
         LK.dc_china_title
     )
 

@@ -24,6 +24,8 @@ class ExtendedIKB(InlineKeyboardButton):
                  *,
                  translatable: bool = True,
                  selectable: bool = True):
+        if callback_data is None:
+            callback_data = text
 
         super().__init__(text, callback_data, url, web_app, login_url, user_id,
                          switch_inline_query, switch_inline_query_current_chat, callback_game)
@@ -80,7 +82,7 @@ class ExtendedIKM(InlineKeyboardMarkup):
 
 
 # Back button
-back_button = ExtendedIKB(LK.bot_back, LK.bot_back, selectable=False)
+back_button = ExtendedIKB(LK.bot_back, selectable=False)
 
 # Channel link for inline messages
 inline_button_channel_link = ExtendedIKB(LK.bot_author_text, url=LK.bot_author_link)
@@ -88,10 +90,10 @@ inline_button_channel_link = ExtendedIKB(LK.bot_author_text, url=LK.bot_author_l
 markup_inline_button = ExtendedIKM([[inline_button_channel_link]])
 
 # Default
-_server_stats = ExtendedIKB(LK.bot_servers_stats, LK.bot_servers_stats)
-_profile_info = ExtendedIKB(LK.bot_profile_info, LK.bot_profile_info)
-_extra_features = ExtendedIKB(LK.bot_extras, LK.bot_extras)
-_settings = ExtendedIKB(LK.bot_settings, LK.bot_settings)
+_server_stats = ExtendedIKB(LK.bot_servers_stats)
+_profile_info = ExtendedIKB(LK.bot_profile_info)
+_extra_features = ExtendedIKB(LK.bot_extras)
+_settings = ExtendedIKB(LK.bot_settings)
 
 main_markup = ExtendedIKM([
     [_server_stats],
@@ -101,9 +103,9 @@ main_markup = ExtendedIKM([
 ])
 
 # Server Statistics
-_server_status = ExtendedIKB(LK.game_status_button_title, LK.game_status_button_title)
-_matchmaking = ExtendedIKB(LK.stats_matchmaking_button_title, LK.stats_matchmaking_button_title)
-_dc = ExtendedIKB(LK.dc_status_title, LK.dc_status_title)
+_server_status = ExtendedIKB(LK.game_status_button_title)
+_matchmaking = ExtendedIKB(LK.stats_matchmaking_button_title)
+_dc = ExtendedIKB(LK.dc_status_title)
 
 ss_markup = ExtendedIKM([
     [_server_status],
@@ -114,8 +116,8 @@ ss_markup = ExtendedIKM([
 
 
 # Profile Information
-_profile_info = ExtendedIKB(LK.user_profileinfo_title, LK.user_profileinfo_title)
-_cs_stats = ExtendedIKB(LK.user_gamestats_button_title, LK.user_gamestats_button_title)
+_profile_info = ExtendedIKB(LK.user_profileinfo_title)
+_cs_stats = ExtendedIKB(LK.user_gamestats_button_title)
 
 profile_markup = ExtendedIKM([
     [_profile_info],
@@ -125,23 +127,24 @@ profile_markup = ExtendedIKM([
 
 # Extra Features
 
-_crosshair = ExtendedIKB(LK.crosshair, LK.crosshair)
-_currency = ExtendedIKB(LK.exchangerate_button_title, LK.exchangerate_button_title)
-_valve_hq_time = ExtendedIKB(LK.valve_hqtime_button_title, LK.valve_hqtime_button_title)
-_timer = ExtendedIKB(LK.game_dropcap_button_title, LK.game_dropcap_button_title)
-_game_version = ExtendedIKB(LK.game_version_button_title, LK.game_version_button_title)
-_guns = ExtendedIKB(LK.gun_button_text, LK.gun_button_text)
+_crosshair = ExtendedIKB(LK.crosshair)
+_currency = ExtendedIKB(LK.exchangerate_button_title)
+_valve_hq_time = ExtendedIKB(LK.valve_hqtime_button_title)
+_timer = ExtendedIKB(LK.game_dropcap_button_title)
+_game_version = ExtendedIKB(LK.game_version_button_title)
+_leaderboard = ExtendedIKB(LK.game_leaderboard_button_title)
+_guns = ExtendedIKB(LK.gun_button_text)
 
 extra_markup = ExtendedIKM([
     [_crosshair, _currency, _game_version],
     [_valve_hq_time, _timer],
-    [_guns],
+    [_leaderboard, _guns],
     [back_button]
 ])
 
 # Settings
 
-_language = ExtendedIKB(LK.settings_language_button_title, LK.settings_language_button_title)
+_language = ExtendedIKB(LK.settings_language_button_title)
 settings_markup = ExtendedIKM([
     [_language],
     [back_button]
@@ -149,12 +152,12 @@ settings_markup = ExtendedIKM([
 
 # DC
 
-_europe = ExtendedIKB(LK.dc_europe, LK.dc_europe)
-_asia = ExtendedIKB(LK.dc_asia, LK.dc_asia)
-_africa = ExtendedIKB(LK.dc_africa, LK.dc_africa)
-_south_america = ExtendedIKB(LK.dc_southamerica, LK.dc_southamerica)
-_australia = ExtendedIKB(LK.dc_australia, LK.dc_australia)
-_us = ExtendedIKB(LK.dc_us, LK.dc_us)
+_europe = ExtendedIKB(LK.regions_europe)
+_asia = ExtendedIKB(LK.regions_asia)
+_africa = ExtendedIKB(LK.regions_africa)
+_south_america = ExtendedIKB(LK.regions_southamerica)
+_australia = ExtendedIKB(LK.regions_australia)
+_us = ExtendedIKB(LK.dc_us)
 
 dc_markup = ExtendedIKM([
     [_asia, _australia, _europe],
@@ -164,13 +167,13 @@ dc_markup = ExtendedIKM([
 
 # DC Asia
 
-_india = ExtendedIKB(LK.dc_india, LK.dc_india)
-_emirates = ExtendedIKB(LK.dc_emirates, LK.dc_emirates)
-_china = ExtendedIKB(LK.dc_china, LK.dc_china)
-_singapore = ExtendedIKB(LK.dc_singapore, LK.dc_singapore)
-_hongkong = ExtendedIKB(LK.dc_hongkong, LK.dc_hongkong)
-_japan = ExtendedIKB(LK.dc_japan, LK.dc_japan)
-_south_korea = ExtendedIKB(LK.dc_southkorea, LK.dc_southkorea)
+_india = ExtendedIKB(LK.dc_india)
+_emirates = ExtendedIKB(LK.dc_emirates)
+_china = ExtendedIKB(LK.regions_china)
+_singapore = ExtendedIKB(LK.dc_singapore)
+_hongkong = ExtendedIKB(LK.dc_hongkong)
+_japan = ExtendedIKB(LK.dc_japan)
+_south_korea = ExtendedIKB(LK.dc_southkorea)
 
 dc_asia_markup = ExtendedIKM([
     [_china, _emirates, _hongkong],
@@ -202,10 +205,10 @@ dc_us_markup = ExtendedIKM([
 
 # Guns
 
-_pistols = ExtendedIKB(LK.gun_pistols, LK.gun_pistols)
-_heavy = ExtendedIKB(LK.gun_heavy, LK.gun_heavy)
-_smgs = ExtendedIKB(LK.gun_smgs, LK.gun_smgs)
-_rifles = ExtendedIKB(LK.gun_rifles, LK.gun_rifles)
+_pistols = ExtendedIKB(LK.gun_pistols)
+_heavy = ExtendedIKB(LK.gun_heavy)
+_smgs = ExtendedIKB(LK.gun_smgs)
+_rifles = ExtendedIKB(LK.gun_rifles)
 
 guns_markup = ExtendedIKM([
     [_pistols, _heavy],
