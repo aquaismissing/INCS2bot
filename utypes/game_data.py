@@ -7,24 +7,45 @@ import requests
 
 import config
 from .states import State, States
+from .protobufs import ScoreLeaderboardData
+
+__all__ = ('GameVersionData',  'ExchangeRate', 'GameServersData', 'LeaderboardStats',
+           'get_monthly_unique_players', 'drop_cap_reset_timer', 'LEADERBOARD_API_REGIONS')
 
 
-__all__ = ('GameVersionData',  'ExchangeRate', 'GameServersData',
-           'get_monthly_unique_players', 'drop_cap_reset_timer')
+MONTHLY_UNIQUE_PLAYERS_API = 'https://api.steampowered.com/ICSGOServers_730/GetMonthlyPlayerCount/v1'
+CS2_VERSION_DATA_URL = 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/master/game/csgo/steam.inf'
+GET_KEY_PRICES_API = f'https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/' \
+                     f'?appid={config.CS_APP_ID}&key={config.STEAM_API_KEY}'
+GAME_SERVERS_STATUS_API = f'https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1' \
+                          f'?key={config.STEAM_API_KEY}'
+CS2_LEADERBOARD_API = 'https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1/' \
+                      '?lbname=official_leaderboard_premier_season1'
 
-
-MONTHLY_UNIQUE_PLAYERS_API = "https://api.steampowered.com/ICSGOServers_730/GetMonthlyPlayerCount/v1"
-CS2_VERSION_DATA_URL = "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/master/game/csgo/steam.inf"
-GET_KEY_PRICES_API = f"https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/?appid={config.CS_APP_ID}" \
-                     f"&key={config.STEAM_API_KEY}"
-GAME_SERVERS_STATUS_API = f"https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1" \
-                          f"?key={config.STEAM_API_KEY}"
+LEADERBOARD_API_REGIONS = ('northamerica', 'southamerica', 'europe', 'asia', 'australia', 'china', 'africa')
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"}
 
 MINUTE = 60
 HOUR = 60 * MINUTE
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
+
+
+SLD = ScoreLeaderboardData()
+MAPS = {1: 'ancient',
+        2: 'nuke',
+        3: 'overpass',
+        4: 'vertigo',
+        5: 'mirage',
+        6: 'inferno',
+        7: 'anubis'}
+REGIONS = {1: 'NA',
+           2: 'SA',
+           3: 'EU',
+           4: 'AS',
+           5: 'AU',
+           6: 'CH?',  # currently not available
+           7: 'AF'}
 
 
 class GameVersionData(NamedTuple):
@@ -35,7 +56,6 @@ class GameVersionData(NamedTuple):
 
     @staticmethod
     def request():
-        # noinspection PyArgumentList
         options = {}
 
         # cs2
@@ -67,7 +87,8 @@ class GameVersionData(NamedTuple):
 
         cs2_client_version = cache_file['cs2_client_version']
         cs2_patch_version = cache_file['cs2_patch_version']
-        cs2_version_dt = dt.datetime.fromisoformat(cache_file['cs2_version_timestamp']).replace(tzinfo=VALVE_TIMEZONE).astimezone(ZoneInfo("UTC"))
+        cs2_version_dt = dt.datetime.fromisoformat(cache_file['cs2_version_timestamp']) \
+            .replace(tzinfo=VALVE_TIMEZONE).astimezone(ZoneInfo("UTC"))
 
         return cs2_patch_version, cs2_client_version, cs2_version_dt
 
@@ -218,6 +239,87 @@ class GameServersData(NamedTuple):
             return States.UNKNOWN
 
         return dt.datetime.fromtimestamp(cache_file["api_timestamp"], dt.UTC)
+
+    def asdict(self):
+        return self._asdict()
+
+
+class LeaderboardStats(NamedTuple):
+    rank: int
+    rating: int
+    name: str
+    wins: int
+    ties: int
+    losses: int
+    last_wins: dict[str, int]
+    timestamp: int
+    region: str
+
+    @classmethod
+    def from_json(cls, data):
+        rank = data['rank']
+        rating = data['score'] >> 15
+        name = data['name']
+
+        detail_data = data['detailData']
+        detail_data = detail_data[2:].rstrip('0')
+        detail_data = SLD.parse(bytes.fromhex(detail_data))
+
+        wins = 0
+        ties = 0
+        losses = 0
+        last_wins = {map_name: 0 for map_name in MAPS.values()}
+        timestamp = 0
+        region = 0
+        for entry in detail_data.matchentries:
+            if entry.tag == 16:
+                wins = entry.val
+            elif entry.tag == 17:
+                ties = entry.val
+            elif entry.tag == 18:
+                losses = entry.val
+            elif entry.tag == 19:
+                for map_id, map_name in MAPS.items():
+                    last_wins[map_name] = ((entry.val << (4 * map_id)) & 0xF0000000) >> 4*7
+            elif entry.tag == 20:
+                timestamp = entry.val
+            elif entry.tag == 21:
+                region = REGIONS.get(entry.val, 'unknown')
+
+        return cls(rank, rating, name, wins, ties, losses, last_wins, timestamp, region)
+
+    @staticmethod
+    def request_global():
+        global_leaderboard_data = requests.get(CS2_LEADERBOARD_API, headers=HEADERS, timeout=15).json()
+        global_leaderboard_data = global_leaderboard_data['result']['entries']
+        global_leaderboard_data = global_leaderboard_data[:10]
+
+        return [LeaderboardStats.from_json(person).asdict() for person in global_leaderboard_data]
+
+    @staticmethod
+    def request_regional(region: str):
+        api_link = CS2_LEADERBOARD_API + f'_{region}'
+        regional_leaderboard_data = requests.get(api_link, headers=HEADERS, timeout=15).json()
+        regional_leaderboard_data = regional_leaderboard_data['result']['entries']
+        regional_leaderboard_data = regional_leaderboard_data[:10]
+
+        return [LeaderboardStats.from_json(person).asdict() for person in regional_leaderboard_data]
+
+    @staticmethod
+    def cached_global_stats():
+        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache_file = json.load(f)
+
+        global_leaderboard_stats = cache_file['global_leaderboard_stats']
+        return [LeaderboardStats(**person) for person in global_leaderboard_stats]
+
+    @staticmethod
+    def cached_regional_stats(region: str):
+        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache_file = json.load(f)
+
+        regional_leaderboard_stats = cache_file[f'regional_leaderboard_stats_{region}']
+        return [LeaderboardStats(**person) for person in regional_leaderboard_stats]
 
     def asdict(self):
         return self._asdict()
