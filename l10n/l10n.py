@@ -117,6 +117,8 @@ class Locale(SLocale):
     dc_germany_frankfurt: str  # Frankfurt
     dc_spain_title: str  # Spainʼs DC
     dc_spain_madrid: str  # Madrid
+    dc_netherlands_title: str  # Netherlandsʼ DC
+    dc_netherlands_amsterdam: str  # Amsterdam
     dc_eu_east_inline_title: str  # East European DC
     dc_austria_title: str  # Austriaʼs DC
     dc_austria_vienna: str  # Vienna
@@ -132,7 +134,8 @@ class Locale(SLocale):
     dc_us_north_east_title: str  # Northeast DC
     dc_us_north_east_sterling: str  # Sterling
     dc_us_north_west_title: str  # Northwest DC
-    dc_us_north_west_moses_lake: str  # Moses Lake
+    dc_us_north_west_new_york: str  # New York
+    dc_us_north_west_seattle: str  # Seattle
     dc_us_south_inline_title: str  # Southern USA DC
     dc_us_south_east_title: str  # Southeast DC
     dc_us_south_east_atlanta: str  # Atlanta
