@@ -124,6 +124,17 @@ class DatacenterAtlas:
                 ],
                 symbol="🇪🇸",
                 l10n_key_title=LK.dc_spain_title
+            ),
+            DatacenterRegion(
+                "netherlands",
+                [
+                    Datacenter(
+                        "amsterdam",
+                        l10n_key_title=LK.dc_netherlands_amsterdam
+                    ),
+                ],
+                symbol="🇳🇱",
+                l10n_key_title=LK.dc_netherlands_title
             )
         ],
         LK.dc_west
@@ -187,8 +198,12 @@ class DatacenterAtlas:
                 "northwest",
                 [
                     Datacenter(
-                        "moses_lake",
-                        l10n_key_title=LK.dc_us_north_west_moses_lake
+                        "new_york",
+                        l10n_key_title=LK.dc_us_north_west_new_york
+                    ),
+                    Datacenter(
+                        "seattle",
+                        l10n_key_title=LK.dc_us_north_west_seattle
                     ),
                 ],
                 symbol="🇺🇸",

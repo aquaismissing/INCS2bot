@@ -23,6 +23,37 @@ from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
                     LEADERBOARD_API_REGIONS)
 
 
+DATACENTER_API_FIELDS = {
+    ('south_africa', 'johannesburg'): 'South Africa',
+    ('australia', 'sydney'): 'Australia',
+    ('eu_north', 'sweden', 'stockholm'): 'EU Sweden',
+    ('eu_west', 'germany', 'frankfurt'): 'EU Germany',
+    ('eu_west', 'spain', 'madrid'): 'EU Spain',
+    ('eu_west', 'netherlands', 'amsterdam'): 'EU Holland',
+    ('eu_east', 'austria', 'vienna'): 'EU Austria',
+    ('eu_east', 'poland', 'warsaw'): 'EU Poland',
+    ('us_north', 'northcentral', 'chicago'): 'US Chicago',
+    ('us_north', 'northeast', 'sterling'): 'US Virginia',
+    ('us_north', 'northwest', 'new_york'): 'US NewYork',
+    ('us_north', 'northwest', 'seattle'): 'US Seattle',
+    ('us_south', 'southwest', 'los_angeles'): 'US California',
+    ('us_south', 'southeast', 'atlanta'): 'US Atlanta',
+    ('south_america', 'brazil', 'sao_paulo'): 'Brazil',
+    ('south_america', 'chile', 'santiago'): 'Chile',
+    ('south_america', 'peru', 'lima'): 'Peru',
+    ('south_america', 'argentina', 'buenos_aires'): 'Argentina',
+    'hongkong': 'Hong Kong',
+    ('india', 'mumbai'): 'India',
+    ('india', 'chennai'): 'India East',
+    ('china', 'shanghai'): 'China Shanghai',
+    ('china', 'tianjin'): 'China Tianjin',
+    ('china', 'guangzhou'): 'China Guangzhou',
+    ('south_korea', 'seoul'): 'South Korea',
+    'singapore': 'Singapore',
+    ('emirates', 'dubai'): 'Emirates',
+    ('japan', 'tokyo'): 'Japan',
+}
+
 execution_start_dt = dt.datetime.now()
 loc = locale('ru')
 
@@ -38,68 +69,46 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
              no_updates=True)
 
 
+def remap_dc(info: dict, dc: Datacenter):
+    api_info_field = DATACENTER_API_FIELDS[dc.id]
+    return info[api_info_field]
+
+
+def remap_dc_region(info: dict, region: DatacenterRegion):
+    result = {}
+    for dc in region.datacenters:
+        api_info_field = DATACENTER_API_FIELDS[region.id, dc.id]
+        result[dc.id] = info[api_info_field]
+
+    return result
+
+
+def remap_dc_group(info: dict, group: DatacenterGroup):
+    result = {}
+    for region in group.regions:
+        result[region.id] = {}
+        for dc in region.datacenters:
+            api_info_field = DATACENTER_API_FIELDS[group.id, region.id, dc.id]
+            result[region.id][dc.id] = info[api_info_field]
+
+    return result
+
+
 # noinspection PyTypeChecker
-def remap_dc_info(info: dict):
+def remap_datacenters_info(info: dict):
     dcs = DatacenterAtlas.available_dcs()
     
     remapped_info = {}
     for _obj in dcs:
-        if isinstance(_obj, Datacenter):
-            remapped_info[_obj.id] = {'capacity': 'unknown', 'load': 'unknown'}
+        match _obj:
+            case Datacenter(id=_id):
+                remapped_info[_id] = remap_dc(info, _obj)
 
-        if isinstance(_obj, DatacenterRegion):
-            remapped_info[_obj.id] = {}
-            for dc in _obj.datacenters:
-                remapped_info[_obj.id][dc.id] = {'capacity': 'unknown', 'load': 'unknown'}
-        
-        if isinstance(_obj, DatacenterGroup):
-            remapped_info[_obj.id] = {}
-            for region in _obj.regions:
-                remapped_info[_obj.id][region.id] = {}
-                for dc in region.datacenters:
-                    remapped_info[_obj.id][region.id][dc.id] = {'capacity': 'unknown', 'load': 'unknown'}
+            case DatacenterRegion(id=_id):
+                remapped_info[_id] = remap_dc_region(info, _obj)
 
-    # ремапим вручную, потому что писать ещё костыли не хочется
-    remapped_info['south_africa']['johannesburg'] = info['South Africa']
-
-    remapped_info['australia']['sydney'] = info['Australia']
-
-    remapped_info['eu_north']['sweden']['stockholm'] = info['EU North']
-
-    remapped_info['eu_west']['germany']['frankfurt'] = info['EU West']
-    remapped_info['eu_west']['spain']['madrid'] = info['Spain']
-
-    remapped_info['eu_east']['austria']['vienna'] = info['EU East']
-    remapped_info['eu_east']['poland']['warsaw'] = info['Poland']
-
-    remapped_info['us_north']['northcentral']['chicago'] = info['US Northcentral']
-    remapped_info['us_north']['northeast']['sterling'] = info['US Northeast']
-    remapped_info['us_north']['northwest']['moses_lake'] = info['US Northwest']
-
-    remapped_info['us_south']['southwest']['los_angeles'] = info['US Southeast']
-    remapped_info['us_south']['southeast']['atlanta'] = info['US Southwest']
-
-    remapped_info['south_america']['brazil']['sao_paulo'] = info['Brazil']
-    remapped_info['south_america']['chile']['santiago'] = info['Chile']
-    remapped_info['south_america']['peru']['lima'] = info['Peru']
-    remapped_info['south_america']['argentina']['buenos_aires'] = info['Argentina']
-
-    remapped_info['hongkong'] = info['Hong Kong']
-
-    remapped_info['india']['mumbai'] = info['India']
-    remapped_info['india']['chennai'] = info['India East']
-
-    remapped_info['china']['shanghai'] = info['China Shanghai']
-    remapped_info['china']['tianjin'] = info['China Tianjin']
-    remapped_info['china']['guangzhou'] = info['China Guangzhou']
-
-    remapped_info['south_korea']['seoul'] = info['South Korea']
-
-    remapped_info['singapore'] = info['Singapore']
-
-    remapped_info['emirates']['dubai'] = info['Emirates']
-
-    remapped_info['japan']['tokyo'] = info['Japan']
+            case DatacenterGroup(id=_id):
+                remapped_info[_id] = remap_dc_group(info, _obj)
 
     return remapped_info
 
@@ -120,7 +129,7 @@ async def update_cache_info():
                 value = value.literal
             cache[key] = value
 
-        cache['datacenters'] = remap_dc_info(overall_data.datacenters)
+        cache['datacenters'] = remap_datacenters_info(overall_data.datacenters)
 
         if cache['online_players'] > cache.get('player_alltime_peak', 0):
             if scheduler.get_job('players_peak') is None:
