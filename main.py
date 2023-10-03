@@ -8,6 +8,7 @@ import traceback
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_datetime
+from csxhair import Crosshair
 from pyrogram import filters, idle
 from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
@@ -26,7 +27,7 @@ import keyboards
 from keyboards import ExtendedIKB, ExtendedIKM
 # noinspection PyPep8Naming
 from l10n import Locale, LocaleKeys as LK
-from utypes import (BClient, Crosshair, ExchangeRate, GameServersData,
+from utypes import (BClient, ExchangeRate, GameServersData,
                     GameVersionData, GunInfo, LeaderboardStats, ParsingUserStatsError,
                     ProfileInfo, State, States, UserGameStats,
                     UserSession, drop_cap_reset_timer)
@@ -518,7 +519,7 @@ async def decode_crosshair(client: BClient, session: UserSession,
         await decode_input.delete()
         return await decode_crosshair(client, session, callback_query, last_error=session.locale.crosshair_decode_error)
 
-    text = session.locale.crosshair_decode_result.format('; '.join(_crosshair.commands))
+    text = session.locale.crosshair_decode_result.format('; '.join(_crosshair.cs2_commands))
 
     await decode_input.reply(text)
     await callback_query.message.reply(session.locale.bot_choose_func,
