@@ -32,9 +32,12 @@ class Tags(NamedTuple):
     dc_southamerica: list  # South America
 
     dc_europe: list  # Europe
-    dc_europe_north: list  # North
-    dc_europe_west: list  # West
-    dc_europe_east: list  # East
+    dc_europe_austria: list  # Austria
+    dc_europe_germany: list  # Germany
+    dc_europe_netherlands: list  # Netherlands
+    dc_europe_poland: list  # Poland
+    dc_europe_spain: list  # Spain
+    dc_europe_sweden: list  # Sweden
 
     dc_us: list  # USA
     dc_us_north: list  # North

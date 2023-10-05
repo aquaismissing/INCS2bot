@@ -95,8 +95,6 @@ class Locale(SLocale):
 
     dc_north: str  # North
     dc_south: str  # South
-    dc_west: str  # West
-    dc_east: str  # East
 
     dc_africa_title: str  # South Africaʼs DC
     dc_africa_inline_title: str  # African DC
@@ -106,24 +104,30 @@ class Locale(SLocale):
     dc_australia_inline_title: str  # Australian DC
     dc_australia_sydney: str  # Sydney
 
-    dc_eu_north: str  # North
-    dc_eu_west: str  # West
-    dc_eu_east: str  # East
-    dc_eu_north_inline_title: str  # North European DC
-    dc_sweden_title: str  # Swedenʼs DC
-    dc_sweden_stockholm: str  # Stockholm
-    dc_eu_west_inline_title: str  # West European DC
-    dc_germany_title: str  # Germanyʼs DC
-    dc_germany_frankfurt: str  # Frankfurt
-    dc_spain_title: str  # Spainʼs DC
-    dc_spain_madrid: str  # Madrid
-    dc_netherlands_title: str  # Netherlandsʼ DC
-    dc_netherlands_amsterdam: str  # Amsterdam
-    dc_eu_east_inline_title: str  # East European DC
+    dc_austria: str  # Austria
     dc_austria_title: str  # Austriaʼs DC
+    dc_austria_inline_title: str  # Austrian DC
     dc_austria_vienna: str  # Vienna
+    dc_germany: str  # Germany
+    dc_germany_title: str  # Germanyʼs DC
+    dc_germany_inline_title: str  # Deutsch DC
+    dc_germany_frankfurt: str  # Frankfurt
+    dc_netherlands: str  # Netherlands
+    dc_netherlands_title: str  # Netherlandsʼ DC
+    dc_netherlands_inline_title: str  # Dutch DC
+    dc_netherlands_amsterdam: str  # Amsterdam
+    dc_poland: str  # Poland
     dc_poland_title: str  # Polandʼs DC
+    dc_poland_inline_title: str  # Polish DC
     dc_poland_warsaw: str  # Warsaw
+    dc_sweden: str  # Sweden
+    dc_sweden_title: str  # Swedenʼs DC
+    dc_sweden_inline_title: str  # Swedish DC
+    dc_sweden_stockholm: str  # Stockholm
+    dc_spain: str  # Spain
+    dc_spain_title: str  # Spainʼs DC
+    dc_spain_inline_title: str  # Spanish DC
+    dc_spain_madrid: str  # Madrid
 
     dc_us: str  # USA
     dc_us_north: str  # North

@@ -82,91 +82,82 @@ class DatacenterAtlas:
         LK.dc_australia_title
     )
 
-    EU_NORTH = DatacenterGroup(
-        "eu_north",
+    AUSTRIA = DatacenterRegion(
+        "austria",
         [
-            DatacenterRegion(
-                "sweden",
-                [
-                    Datacenter(
-                        "stockholm",
-                        l10n_key_title=LK.dc_sweden_stockholm
-                    ),
-                ],
-                symbol="🇸🇪",
-                l10n_key_title=LK.dc_sweden_title
+            Datacenter(
+                "vienna",
+                l10n_key_title=LK.dc_austria_vienna
             ),
         ],
-        LK.dc_north
+        "🇦🇹",
+        LK.dc_austria,
+        LK.dc_austria_title
     )
 
-    EU_WEST = DatacenterGroup(
-        "eu_west",
+    GERMANY = DatacenterRegion(
+        "germany",
         [
-            DatacenterRegion(
-                "germany",
-                [
-                    Datacenter(
-                        "frankfurt",
-                        l10n_key_title=LK.dc_germany_frankfurt
-                    ),
-                ],
-                symbol="🇩🇪",
-                l10n_key_title=LK.dc_germany_title
+            Datacenter(
+                "frankfurt",
+                l10n_key_title=LK.dc_germany_frankfurt
             ),
-            DatacenterRegion(
-                "spain",
-                [
-                    Datacenter(
-                        "madrid",
-                        l10n_key_title=LK.dc_spain_madrid
-                    ),
-                ],
-                symbol="🇪🇸",
-                l10n_key_title=LK.dc_spain_title
-            ),
-            DatacenterRegion(
-                "netherlands",
-                [
-                    Datacenter(
-                        "amsterdam",
-                        l10n_key_title=LK.dc_netherlands_amsterdam
-                    ),
-                ],
-                symbol="🇳🇱",
-                l10n_key_title=LK.dc_netherlands_title
-            )
         ],
-        LK.dc_west
+        "🇩🇪",
+        LK.dc_germany,
+        LK.dc_germany_title
     )
 
-    EU_EAST = DatacenterGroup(
-        "eu_east",
+    NETHERLANDS = DatacenterRegion(
+        "netherlands",
         [
-            DatacenterRegion(
-                "austria",
-                [
-                    Datacenter(
-                        "vienna",
-                        l10n_key_title=LK.dc_austria_vienna
-                    ),
-                ],
-                symbol="🇦🇹",
-                l10n_key_title=LK.dc_austria_title
+            Datacenter(
+                "amsterdam",
+                l10n_key_title=LK.dc_netherlands_amsterdam
             ),
-            DatacenterRegion(
-                "poland",
-                [
-                    Datacenter(
-                        "warsaw",
-                        l10n_key_title=LK.dc_poland_warsaw
-                    ),
-                ],
-                symbol="🇵🇱",
-                l10n_key_title=LK.dc_poland_title
-            )
         ],
-        LK.dc_east
+        "🇳🇱",
+        LK.dc_netherlands,
+        LK.dc_netherlands_title
+    )
+
+    POLAND = DatacenterRegion(
+        "poland",
+        [
+            Datacenter(
+                "warsaw",
+                l10n_key_title=LK.dc_poland_warsaw
+            ),
+        ],
+        "🇵🇱",
+        LK.dc_poland,
+        LK.dc_poland_title
+    )
+
+    SPAIN = DatacenterRegion(
+        "spain",
+        [
+            Datacenter(
+                "madrid",
+                l10n_key_title=LK.dc_spain_madrid
+            ),
+        ],
+        "🇪🇸",
+        LK.dc_spain,
+        LK.dc_spain_title
+    )
+
+    SWEDEN = DatacenterRegion(
+        "sweden",
+        [
+            Datacenter(
+                "stockholm",
+                l10n_key_title=LK.dc_sweden_stockholm
+            ),
+        ],
+        "🇸🇪",
+        LK.dc_sweden,
+        LK.dc_sweden_title
     )
 
     US_NORTH = DatacenterGroup(

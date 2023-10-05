@@ -167,29 +167,33 @@ dc_markup = ExtendedIKM([
 
 # DC Asia
 
-_india = ExtendedIKB(LK.dc_india)
-_emirates = ExtendedIKB(LK.dc_emirates)
 _china = ExtendedIKB(LK.regions_china)
-_singapore = ExtendedIKB(LK.dc_singapore)
+_emirates = ExtendedIKB(LK.dc_emirates)
 _hongkong = ExtendedIKB(LK.dc_hongkong)
+_india = ExtendedIKB(LK.dc_india)
 _japan = ExtendedIKB(LK.dc_japan)
+_singapore = ExtendedIKB(LK.dc_singapore)
 _south_korea = ExtendedIKB(LK.dc_southkorea)
 
 dc_asia_markup = ExtendedIKM([
     [_china, _emirates, _hongkong],
-    [_south_korea, _india],
-    [_japan, _singapore],
+    [_india, _japan],
+    [_singapore, _south_korea],
     [back_button]
 ])
 
 # DC Europe
 
-_eu_west = ExtendedIKB(LK.dc_west, LK.dc_eu_west)
-_eu_east = ExtendedIKB(LK.dc_east, LK.dc_eu_east)
-_eu_north = ExtendedIKB(LK.dc_north, LK.dc_eu_north)
+_austria = ExtendedIKB(LK.dc_austria)
+_germany = ExtendedIKB(LK.dc_germany)
+_netherlands = ExtendedIKB(LK.dc_netherlands)
+_poland = ExtendedIKB(LK.dc_poland)
+_spain = ExtendedIKB(LK.dc_spain)
+_sweden = ExtendedIKB(LK.dc_sweden)
 
 dc_eu_markup = ExtendedIKM([
-    [_eu_east, _eu_north, _eu_west],
+    [_austria, _germany, _netherlands],
+    [_poland, _spain, _sweden],
     [back_button]
 ])
 

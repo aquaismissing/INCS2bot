@@ -61,16 +61,28 @@ def australia(locale: Locale):
     return _format_dc_data(DatacenterAtlas.AUSTRALIA, locale)
 
 
-def eu_north(locale: Locale):
-    return _format_dc_data(DatacenterAtlas.EU_NORTH, locale)
+def austria(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.AUSTRIA, locale)
 
 
-def eu_west(locale: Locale):
-    return _format_dc_data(DatacenterAtlas.EU_WEST, locale)
+def germany(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.GERMANY, locale)
 
 
-def eu_east(locale: Locale):
-    return _format_dc_data(DatacenterAtlas.EU_EAST, locale)
+def netherlands(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.NETHERLANDS, locale)
+
+
+def poland(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.POLAND, locale)
+
+
+def spain(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.SPAIN, locale)
+
+
+def sweden(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.SWEDEN, locale)
 
 
 def us_north(locale: Locale):
