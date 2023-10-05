@@ -45,7 +45,8 @@ bot = BClient(config.BOT_NAME,
               api_id=config.API_ID,
               api_hash=config.API_HASH,
               bot_token=config.BOT_TOKEN,
-              plugins={'root': 'plugins'})
+              plugins={'root': 'plugins'},
+              workdir=config.SESS_FOLDER)
 
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 

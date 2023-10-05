@@ -66,7 +66,8 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,
              bot_token=config.BOT_TOKEN,
-             no_updates=True)
+             no_updates=True,
+             workdir=config.SESS_FOLDER)
 
 
 def remap_dc(info: dict, dc: Datacenter):

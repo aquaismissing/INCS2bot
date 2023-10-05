@@ -13,24 +13,7 @@ __pycache__/
 /config.py
 
 # bot sessions
-INCS2bot.session
-INCS2bot.session-journal
-INCS2bot_core.session
-INCS2bot_core.session-journal
-INCS2bot_gc.session
-INCS2bot_gc.session-journal
-INCS2bot_wm.session
-INCS2bot_wm.session-journal
-
-# experimental bot sessions
-INCS2bot_experimental.session
-INCS2bot_experimental.session-journal
-INCS2bot_experimental_core.session
-INCS2bot_experimental_core.session-journal
-INCS2bot_experimental_gc.session
-INCS2bot_experimental_gc.session-journal
-INCS2bot_experimental_wm.session
-INCS2bot_experimental_wm.session-journal
+/sessions/
 
 # misc
 init.sh
