@@ -205,10 +205,22 @@ async def inline_datacenters(_, session: UserSession, inline_query: InlineQuery)
                                'https://telegra.ph/file/12628c8193b48302722e8.jpg',
                                datacenter_handlers.africa,
                                TAGS.dc_africa),
-        DatacenterInlineResult(session.locale.dc_southamerica_inline_title,
-                               'https://telegra.ph/file/60f8226ea5d72815bef57.jpg',
-                               datacenter_handlers.south_america,
-                               TAGS.dc_southamerica)
+        DatacenterInlineResult(session.locale.dc_brazil_inline_title,
+                               'https://telegra.ph/file/71264c82d0f7f6b8cb848.png',
+                               datacenter_handlers.brazil,
+                               TAGS.dc_southamerica_brazil),
+        DatacenterInlineResult(session.locale.dc_peru_inline_title,
+                               'https://telegra.ph/file/df707dd2664bdfcaef66f.png',
+                               datacenter_handlers.peru,
+                               TAGS.dc_southamerica_peru),
+        DatacenterInlineResult(session.locale.dc_chile_inline_title,
+                               'https://telegra.ph/file/85f0997f445ddf5f2e56a.png',
+                               datacenter_handlers.chile,
+                               TAGS.dc_southamerica_chile),
+        DatacenterInlineResult(session.locale.dc_argentina_inline_title,
+                               'https://telegra.ph/file/3a2333e7effcc377e3848.png',
+                               datacenter_handlers.argentina,
+                               TAGS.dc_southamerica_argentina)
     ]
     dcs.sort(key=lambda x: x.title)
 

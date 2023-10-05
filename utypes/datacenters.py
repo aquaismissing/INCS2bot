@@ -233,55 +233,56 @@ class DatacenterAtlas:
         LK.dc_south
     )
 
-    SOUTH_AMERICA = DatacenterGroup(
-        "south_america",
+    ARGENTINA = DatacenterRegion(
+        "argentina",
         [
-            DatacenterRegion(
-                "brazil",
-                [
-                    Datacenter(
-                        "sao_paulo",
-                        l10n_key_title=LK.dc_brazil_sao_paulo
-                    ),
-                ],
-                symbol="🇧🇷",
-                l10n_key_title=LK.dc_brazil_title
+            Datacenter(
+                "buenos_aires",
+                l10n_key_title=LK.dc_argentina_buenos_aires
             ),
-            DatacenterRegion(
-                "chile",
-                [
-                    Datacenter(
-                        "santiago",
-                        l10n_key_title=LK.dc_chile_santiago
-                    ),
-                ],
-                symbol="🇨🇱",
-                l10n_key_title=LK.dc_chile_title
-            ),
-            DatacenterRegion(
-                "peru",
-                [
-                    Datacenter(
-                        "lima",
-                        l10n_key_title=LK.dc_peru_lima
-                    ),
-                ],
-                symbol="🇵🇪",
-                l10n_key_title=LK.dc_peru_title
-            ),
-            DatacenterRegion(
-                "argentina",
-                [
-                    Datacenter(
-                        "buenos_aires",
-                        l10n_key_title=LK.dc_argentina_buenos_aires
-                    ),
-                ],
-                symbol="🇦🇷",
-                l10n_key_title=LK.dc_argentina_title
-            )
         ],
-        LK.regions_southamerica
+        "🇦🇷",
+        LK.dc_argentina,
+        LK.dc_argentina_title
+    )
+
+    BRAZIL = DatacenterRegion(
+        "brazil",
+        [
+            Datacenter(
+                "sao_paulo",
+                l10n_key_title=LK.dc_brazil_sao_paulo
+            ),
+        ],
+        "🇧🇷",
+        LK.dc_brazil,
+        LK.dc_brazil_title
+    )
+
+    CHILE = DatacenterRegion(
+        "chile",
+        [
+            Datacenter(
+                "santiago",
+                l10n_key_title=LK.dc_chile_santiago
+            ),
+        ],
+        "🇨🇱",
+        LK.dc_chile,
+        LK.dc_chile_title
+    )
+
+    PERU = DatacenterRegion(
+        "peru",
+        [
+            Datacenter(
+                "lima",
+                l10n_key_title=LK.dc_peru_lima
+            ),
+        ],
+        "🇵🇪",
+        LK.dc_peru,
+        LK.dc_peru_title
     )
 
     HONGKONG = Datacenter(

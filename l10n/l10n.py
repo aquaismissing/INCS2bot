@@ -146,15 +146,22 @@ class Locale(SLocale):
     dc_us_south_west_title: str  # Southwest DC
     dc_us_south_west_los_angeles: str  # Los Angeles
 
-    dc_southamerica_inline_title: str  # South American DC
-    dc_brazil_title: str  # Brazilʼs DC
-    dc_brazil_sao_paulo: str  # Sao Paulo
-    dc_chile_title: str  # Chileʼs DC
-    dc_chile_santiago: str  # Santiago
-    dc_peru_title: str  # Peruʼs DC
-    dc_peru_lima: str  # Lima
+    dc_argentina: str  # Argentina
     dc_argentina_title: str  # Argentinaʼs DC
+    dc_argentina_inline_title: str  # Argentinian DC
     dc_argentina_buenos_aires: str  # Buenos Aires
+    dc_brazil: str  # Brazil
+    dc_brazil_title: str  # Brazilʼs DC
+    dc_brazil_inline_title: str  # Brazilian DC
+    dc_brazil_sao_paulo: str  # Sao Paulo
+    dc_chile: str  # Chile
+    dc_chile_title: str  # Chileʼs DC
+    dc_chile_inline_title: str  # Chilean DC
+    dc_chile_santiago: str  # Santiago
+    dc_peru: str  # Peru
+    dc_peru_title: str  # Peruʼs DC
+    dc_peru_inline_title: str  # Peruvian DC
+    dc_peru_lima: str  # Lima
 
     dc_india: str  # India
     dc_india_title: str  # Indiaʼs DC

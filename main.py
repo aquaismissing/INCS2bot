@@ -187,30 +187,6 @@ async def datacenters(_, session: UserSession, callback_query: CallbackQuery):
                                            reply_markup=keyboards.dc_markup(session.locale))
 
 
-@bot.on_callback_request(LK.regions_asia)
-@bot.came_from(datacenters, 2)
-@ignore_message_not_modified
-async def dc_asia(_, session: UserSession, callback_query: CallbackQuery):
-    await callback_query.edit_message_text(session.locale.dc_status_specify_country,
-                                           reply_markup=keyboards.dc_asia_markup(session.locale))
-
-
-@bot.on_callback_request(LK.regions_europe)
-@bot.came_from(datacenters)
-@ignore_message_not_modified
-async def dc_europe(_, session: UserSession, callback_query: CallbackQuery):
-    await callback_query.edit_message_text(session.locale.dc_status_specify_country,
-                                           reply_markup=keyboards.dc_eu_markup(session.locale))
-
-
-@bot.on_callback_request(LK.dc_us)
-@bot.came_from(datacenters)
-@ignore_message_not_modified
-async def dc_us(_, session: UserSession, callback_query: CallbackQuery):
-    await callback_query.edit_message_text(session.locale.dc_status_specify_region,
-                                           reply_markup=keyboards.dc_us_markup(session.locale))
-
-
 @bot.on_callback_request(LK.regions_africa)
 @bot.came_from(server_stats)
 async def send_dc_africa(client: BClient, session: UserSession, callback_query: CallbackQuery):
@@ -221,6 +197,14 @@ async def send_dc_africa(client: BClient, session: UserSession, callback_query: 
 @bot.came_from(server_stats)
 async def send_dc_australia(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.australia, keyboards.dc_markup)
+
+
+@bot.on_callback_request(LK.regions_europe)
+@bot.came_from(datacenters)
+@ignore_message_not_modified
+async def dc_europe(_, session: UserSession, callback_query: CallbackQuery):
+    await callback_query.edit_message_text(session.locale.dc_status_specify_country,
+                                           reply_markup=keyboards.dc_eu_markup(session.locale))
 
 
 @bot.on_callback_request(LK.dc_austria)
@@ -259,6 +243,14 @@ async def send_dc_sweden(client: BClient, session: UserSession, callback_query: 
     await send_dc_state(client, session, callback_query, datacenter_handlers.sweden, keyboards.dc_eu_markup)
 
 
+@bot.on_callback_request(LK.dc_us)
+@bot.came_from(datacenters)
+@ignore_message_not_modified
+async def dc_us(_, session: UserSession, callback_query: CallbackQuery):
+    await callback_query.edit_message_text(session.locale.dc_status_specify_region,
+                                           reply_markup=keyboards.dc_us_markup(session.locale))
+
+
 @bot.on_callback_request(LK.dc_us_north)
 @bot.came_from(datacenters)
 async def send_dc_us_north(client: BClient, session: UserSession, callback_query: CallbackQuery):
@@ -272,9 +264,43 @@ async def send_dc_us_south(client: BClient, session: UserSession, callback_query
 
 
 @bot.on_callback_request(LK.regions_southamerica)
-@bot.came_from(server_stats)
-async def send_dc_south_america(client: BClient, session: UserSession, callback_query: CallbackQuery):
-    await send_dc_state(client, session, callback_query, datacenter_handlers.south_america, keyboards.dc_markup)
+@bot.came_from(datacenters)
+@ignore_message_not_modified
+async def send_dc_south_america(_, session: UserSession, callback_query: CallbackQuery):
+    await callback_query.edit_message_text(session.locale.dc_status_specify_country,
+                                           reply_markup=keyboards.dc_southamerica_markup(session.locale))
+
+
+@bot.on_callback_request(LK.dc_argentina)
+@bot.came_from(datacenters)
+async def send_dc_argentina(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_dc_state(client, session, callback_query, datacenter_handlers.argentina, keyboards.dc_southamerica_markup)
+
+
+@bot.on_callback_request(LK.dc_brazil)
+@bot.came_from(datacenters)
+async def send_dc_brazil(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_dc_state(client, session, callback_query, datacenter_handlers.brazil, keyboards.dc_southamerica_markup)
+
+
+@bot.on_callback_request(LK.dc_chile)
+@bot.came_from(datacenters)
+async def send_dc_chile(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_dc_state(client, session, callback_query, datacenter_handlers.chile, keyboards.dc_southamerica_markup)
+
+
+@bot.on_callback_request(LK.dc_peru)
+@bot.came_from(datacenters)
+async def send_dc_peru(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_dc_state(client, session, callback_query, datacenter_handlers.peru, keyboards.dc_southamerica_markup)
+
+
+@bot.on_callback_request(LK.regions_asia)
+@bot.came_from(datacenters, 2)
+@ignore_message_not_modified
+async def dc_asia(_, session: UserSession, callback_query: CallbackQuery):
+    await callback_query.edit_message_text(session.locale.dc_status_specify_country,
+                                           reply_markup=keyboards.dc_asia_markup(session.locale))
 
 
 @bot.on_callback_request(LK.dc_india)

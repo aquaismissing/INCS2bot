@@ -29,7 +29,12 @@ class Tags(NamedTuple):
 
     dc_africa: list  # South Africa
     dc_australia: list  # Australia
+
     dc_southamerica: list  # South America
+    dc_southamerica_argentina: list  # Argentina
+    dc_southamerica_brazil: list  # Brazil
+    dc_southamerica_chile: list  # Chile
+    dc_southamerica_peru: list  # Peru
 
     dc_europe: list  # Europe
     dc_europe_austria: list  # Austria

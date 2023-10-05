@@ -93,8 +93,20 @@ def us_south(locale: Locale):
     return _format_dc_data(DatacenterAtlas.US_SOUTH, locale)
 
 
-def south_america(locale: Locale):
-    return _format_dc_data(DatacenterAtlas.SOUTH_AMERICA, locale)
+def argentina(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.ARGENTINA, locale)
+
+
+def brazil(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.BRAZIL, locale)
+
+
+def chile(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.CHILE, locale)
+
+
+def peru(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.PERU, locale)
 
 
 def india(locale: Locale):

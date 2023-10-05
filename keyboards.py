@@ -207,6 +207,19 @@ dc_us_markup = ExtendedIKM([
     [back_button]
 ])
 
+# DC South America
+
+_argentina = ExtendedIKB(LK.dc_argentina)
+_brazil = ExtendedIKB(LK.dc_brazil)
+_chile = ExtendedIKB(LK.dc_chile)
+_peru = ExtendedIKB(LK.dc_peru)
+
+dc_southamerica_markup = ExtendedIKM([
+    [_argentina, _brazil],
+    [_chile, _peru],
+    [back_button]
+])
+
 # Guns
 
 _pistols = ExtendedIKB(LK.gun_pistols)
@@ -344,5 +357,5 @@ _language_buttons.append([back_button])
 language_settings_markup = ExtendedIKM(_language_buttons)
 
 
-all_selectable_markups = (ss_markup, extra_markup, dc_markup, dc_asia_markup, dc_eu_markup, dc_us_markup,
+all_selectable_markups = (ss_markup, extra_markup, dc_markup, dc_asia_markup, dc_eu_markup, dc_us_markup, dc_southamerica_markup,
                           pistols_markup, heavy_markup, smgs_markup, rifles_markup, language_settings_markup)
