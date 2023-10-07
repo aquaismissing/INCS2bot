@@ -910,22 +910,17 @@ async def on_disconnect():
 
 async def main():
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(log,
-                      next_run_time=dt.datetime.now() + dt.timedelta(seconds=5),
-                      args=(bot, "Starting the bot..."),
-                      coalesce=True)
-    scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=10)
+    scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=30)
     scheduler.add_job(log, 'interval', hours=8,
                       args=(bot, "Report: I\'m still active!"))
 
     scheduler.start()
     try:
         await db_session.init(config.USER_DB_FILE_PATH)
-        # await bot.start()
-        # await log(bot, 'Bot started.')
-        #
-        # await idle()
-        await bot.run()
+        await bot.start()
+        await log(bot, 'Bot started.')
+
+        await idle()
     except Exception as e:
         logging.exception('The bot got terminated because of exception!')
         await log(bot, f'Bot got terminated because of exception!\n'
