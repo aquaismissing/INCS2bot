@@ -3,13 +3,12 @@ import datetime as dt
 import json
 from typing import Callable
 import logging
-import sys
 import traceback
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_datetime
 from csxhair import Crosshair
-from pyrogram import filters, idle
+from pyrogram import filters
 from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, Message
@@ -275,7 +274,8 @@ async def send_dc_south_america(_, session: UserSession, callback_query: Callbac
 @bot.on_callback_request(LK.dc_argentina)
 @bot.came_from(datacenters)
 async def send_dc_argentina(client: BClient, session: UserSession, callback_query: CallbackQuery):
-    await send_dc_state(client, session, callback_query, datacenter_handlers.argentina, keyboards.dc_southamerica_markup)
+    await send_dc_state(client, session, callback_query,
+                        datacenter_handlers.argentina, keyboards.dc_southamerica_markup)
 
 
 @bot.on_callback_request(LK.dc_brazil)
@@ -903,19 +903,29 @@ async def back(client: BClient, session: UserSession, callback_query: CallbackQu
     await client.go_back(session, callback_query)
 
 
+@bot.on_disconnect()
+async def on_disconnect():
+    logging.warning('Got disconnected from Telegram servers.')  # guess we don't actually need this but who knows?
+
+
 async def main():
     scheduler = AsyncIOScheduler()
+    scheduler.add_job(log,
+                      next_run_time=dt.datetime.now() + dt.timedelta(seconds=5),
+                      args=(bot, "Starting the bot..."),
+                      coalesce=True)
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=10)
-    scheduler.add_job(log, 'interval', hours=12,
+    scheduler.add_job(log, 'interval', hours=8,
                       args=(bot, "Report: I\'m still active!"))
 
     scheduler.start()
     try:
         await db_session.init(config.USER_DB_FILE_PATH)
-        await bot.start()
-        await log(bot, 'Bot started.')
-
-        await idle()
+        # await bot.start()
+        # await log(bot, 'Bot started.')
+        #
+        # await idle()
+        await bot.run()
     except Exception as e:
         logging.exception('The bot got terminated because of exception!')
         await log(bot, f'Bot got terminated because of exception!\n'
@@ -926,7 +936,6 @@ async def main():
         await log(bot, 'Bot is shutting down...')
         await bot.dump_sessions()
         await bot.stop()
-        sys.exit()
 
 
 if __name__ == '__main__':
