@@ -8,7 +8,7 @@ import traceback
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_datetime
 from csxhair import Crosshair
-from pyrogram import filters
+from pyrogram import filters, idle
 from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, Message
@@ -904,7 +904,7 @@ async def back(client: BClient, session: UserSession, callback_query: CallbackQu
 
 
 @bot.on_disconnect()
-async def on_disconnect():
+async def on_disconnect(_):
     logging.warning('Got disconnected from Telegram servers.')  # guess we don't actually need this but who knows?
 
 
@@ -930,7 +930,7 @@ async def main():
         logging.info('Shutting down the bot...')
         await log(bot, 'Bot is shutting down...')
         await bot.dump_sessions()
-        await bot.stop()
+        await bot.stop(block=False)
 
 
 if __name__ == '__main__':
