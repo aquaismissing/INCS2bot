@@ -65,6 +65,10 @@ def austria(locale: Locale):
     return _format_dc_data(DatacenterAtlas.AUSTRIA, locale)
 
 
+def finland(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.FINLAND, locale)
+
+
 def germany(locale: Locale):
     return _format_dc_data(DatacenterAtlas.GERMANY, locale)
 

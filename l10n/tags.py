@@ -38,6 +38,7 @@ class Tags(NamedTuple):
 
     dc_europe: list  # Europe
     dc_europe_austria: list  # Austria
+    dc_europe_finland: list  # Finland
     dc_europe_germany: list  # Germany
     dc_europe_netherlands: list  # Netherlands
     dc_europe_poland: list  # Poland

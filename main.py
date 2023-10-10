@@ -213,6 +213,12 @@ async def send_dc_austria(client: BClient, session: UserSession, callback_query:
     await send_dc_state(client, session, callback_query, datacenter_handlers.austria, keyboards.dc_eu_markup)
 
 
+@bot.on_callback_request(LK.dc_finland)
+@bot.came_from(datacenters)
+async def send_dc_finland(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_dc_state(client, session, callback_query, datacenter_handlers.finland, keyboards.dc_eu_markup)
+
+
 @bot.on_callback_request(LK.dc_germany)
 @bot.came_from(datacenters)
 async def send_dc_germany(client: BClient, session: UserSession, callback_query: CallbackQuery):

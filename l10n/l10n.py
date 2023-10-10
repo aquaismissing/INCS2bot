@@ -108,6 +108,10 @@ class Locale(SLocale):
     dc_austria_title: str  # Austriaʼs DC
     dc_austria_inline_title: str  # Austrian DC
     dc_austria_vienna: str  # Vienna
+    dc_finland: str  # Finland
+    dc_finland_title: str  # Finlandʼs DC
+    dc_finland_inline_title: str  # Finnish DC
+    dc_finland_helsinki: str  # Helsinki
     dc_germany: str  # Germany
     dc_germany_title: str  # Germanyʼs DC
     dc_germany_inline_title: str  # Deutsch DC
@@ -178,6 +182,7 @@ class Locale(SLocale):
     dc_china_shanghai: str  # Shanghai
     dc_china_tianjin: str  # Tianjin
     dc_china_guangzhou: str  # Guangzhou
+    dc_china_chengdu: str  # Chengdu
     dc_emirates: str  # Emirates
     dc_emirates_title: str  # Emiratesʼ DC
     dc_emirates_inline_title: str  # Emirati DC

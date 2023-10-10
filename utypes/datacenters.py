@@ -95,6 +95,19 @@ class DatacenterAtlas:
         LK.dc_austria_title
     )
 
+    FINLAND = DatacenterRegion(
+        "finland",
+        [
+            Datacenter(
+                "helsinki",
+                l10n_key_title=LK.dc_finland_helsinki
+            ),
+        ],
+        "🇫🇮",
+        LK.dc_finland,
+        LK.dc_finland_title
+    )
+
     GERMANY = DatacenterRegion(
         "germany",
         [
@@ -323,6 +336,10 @@ class DatacenterAtlas:
             Datacenter(
                 "guangzhou",
                 l10n_key_title=LK.dc_china_guangzhou
+            ),
+            Datacenter(
+                "chengdu",
+                l10n_key_title=LK.dc_china_chengdu
             )
         ],
         "🇨🇳",
