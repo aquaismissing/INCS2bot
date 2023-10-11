@@ -8,7 +8,7 @@ import traceback
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_datetime
 from csxhair import Crosshair
-from pyrogram import filters, idle
+from pyrogram import filters, idle, raw
 from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, Message
@@ -909,14 +909,17 @@ async def back(client: BClient, session: UserSession, callback_query: CallbackQu
     await client.go_back(session, callback_query)
 
 
-@bot.on_disconnect()
-async def on_disconnect(_):
-    logging.warning('Got disconnected from Telegram servers.')  # guess we don't actually need this but who knows?
+async def wake_up(client: BClient):
+    # just to be safe
+    if dt.datetime.now() - client.last_update_time > dt.timedelta(seconds=client.UPDATES_WATCHDOG_INTERVAL):
+        await client.invoke(raw.functions.updates.GetState())
 
 
 async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=30)
+    scheduler.add_job(wake_up, 'interval', seconds=bot.UPDATES_WATCHDOG_INTERVAL,
+                      args=(bot,))
     scheduler.add_job(log, 'interval', hours=8,
                       args=(bot, "Report: I\'m still active!"))
 
@@ -936,7 +939,7 @@ async def main():
         logging.info('Shutting down the bot...')
         await log(bot, 'Bot is shutting down...')
         await bot.dump_sessions()
-        await bot.stop(block=False)
+        await bot.stop()
 
 
 if __name__ == '__main__':
