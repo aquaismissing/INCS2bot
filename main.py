@@ -924,11 +924,11 @@ async def main():
                       args=(bot, "Report: I\'m still active!"))
 
     scheduler.start()
+
     try:
         await db_session.init(config.USER_DB_FILE_PATH)
         await bot.start()
         await log(bot, 'Bot started.')
-
         await idle()
     except Exception as e:
         logging.exception('The bot got terminated because of exception!')

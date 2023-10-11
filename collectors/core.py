@@ -225,6 +225,7 @@ async def fetch_leaderboard():
 
 
 async def update_players_peak():
+    # noinspection PyBroadException
     try:
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
