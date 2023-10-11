@@ -24,7 +24,7 @@ class ExtendedIKB(InlineKeyboardButton):
                  *,
                  translatable: bool = True,
                  selectable: bool = True):
-        if callback_data is None:
+        if callback_data is None and url is None:
             callback_data = text
 
         super().__init__(text, callback_data, url, web_app, login_url, user_id,
