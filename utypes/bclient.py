@@ -155,7 +155,8 @@ class BClient(Client):
 
     async def get_func_by_command(self, session: UserSession, message: Message):
         try:
-            func, args, kwargs = self._available_commands[message.text]
+            text = message.text.split('@', 2)[0]  # removing mention from command
+            func, args, kwargs = self._available_commands[text]
         except KeyError:
             if '_' not in self._available_commands:
                 return
