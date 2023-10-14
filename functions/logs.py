@@ -1,7 +1,7 @@
 import asyncio
 import datetime as dt
 
-from pyrogram.types import CallbackQuery, InlineQuery, Message
+from pyrogram.types import CallbackQuery, InlineQuery, Message, ReplyKeyboardMarkup
 
 import config
 from utypes import BClient, UserSession
@@ -10,10 +10,11 @@ from utypes import BClient, UserSession
 __all__ = ('log', 'log_message', 'log_callback', 'log_inline')
 
 
-async def log(client: BClient, text: str, no_log_in_test: bool = False, disable_notification: bool = True):
+async def log(client: BClient, text: str, *, no_log_in_test: bool = False, disable_notification: bool = True,
+              reply_markup: ReplyKeyboardMarkup = None):
     """Sends log to the log channel."""
 
-    asyncio.create_task(_log(client, text, no_log_in_test, disable_notification))
+    asyncio.create_task(_log(client, text, no_log_in_test, disable_notification, reply_markup))
 
 
 async def log_message(client: BClient, session: UserSession, message: Message):
@@ -34,7 +35,8 @@ async def log_inline(client: BClient, session: UserSession, inline_query: Inline
     asyncio.create_task(_log_inline(client, session, inline_query))
 
 
-async def _log(client: BClient, text: str, no_log_in_test: bool, disable_notification: bool):
+async def _log(client: BClient, text: str, no_log_in_test: bool, disable_notification: bool,
+               reply_markup: ReplyKeyboardMarkup):
     if no_log_in_test and config.TEST_MODE:
         return
 
@@ -44,7 +46,8 @@ async def _log(client: BClient, text: str, no_log_in_test: bool, disable_notific
         await asyncio.sleep(seconds)
     client.latest_log_dt = dt.datetime.now()
 
-    await client.send_message(config.LOGCHANNEL, text, disable_notification=disable_notification)
+    await client.send_message(config.LOGCHANNEL, text, disable_notification=disable_notification,
+                              reply_markup=reply_markup)
 
 
 async def _log_message(client: BClient, session: UserSession, message: Message):

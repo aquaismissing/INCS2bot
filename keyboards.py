@@ -25,6 +25,8 @@ class ExtendedIKB(InlineKeyboardButton):
                  translatable: bool = True,
                  selectable: bool = True):
         if callback_data is None and url is None:
+            if callback_data == 'log_ping':
+                print('suka')
             callback_data = text
 
         super().__init__(text, callback_data, url, web_app, login_url, user_id,
@@ -88,6 +90,11 @@ back_button = ExtendedIKB(LK.bot_back, selectable=False)
 inline_button_channel_link = ExtendedIKB(LK.bot_author_text, url=LK.bot_author_link)
 
 markup_inline_button = ExtendedIKM([[inline_button_channel_link]])
+
+# Ping button for specific log
+log_ping_button = ExtendedIKB('Ping', 'log_ping')
+
+log_ping_markup = ExtendedIKM([[log_ping_button]])
 
 # Default
 _server_stats = ExtendedIKB(LK.bot_servers_stats)

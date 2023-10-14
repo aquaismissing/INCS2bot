@@ -102,6 +102,15 @@ async def any_command(client: BClient, message: Message):
 
 @bot.on_callback_query()
 async def sync_user_data_callback(client: BClient, callback_query: CallbackQuery):
+    if callback_query.message.chat.id == config.LOGCHANNEL:
+        user = callback_query.from_user
+
+        if user.id not in client.sessions:
+            await client.register_session(user, force_lang=config.FORCE_LANG)
+
+        session = client.sessions[user.id]
+        return await client.get_func_by_callback(session, callback_query)
+
     if callback_query.message.chat.type != ChatType.PRIVATE:
         return
 
@@ -909,6 +918,12 @@ async def back(client: BClient, session: UserSession, callback_query: CallbackQu
     await client.go_back(session, callback_query)
 
 
+# only for logging channel
+@bot.on_callback_request('log_ping')
+async def log_ping(_, __, callback_query: CallbackQuery):
+    await callback_query.answer('Yes, I AM working!')
+
+
 async def wake_up(client: BClient):
     # just to be safe
     if dt.datetime.now() - client.last_update_time > dt.timedelta(seconds=client.UPDATES_WATCHDOG_INTERVAL):
@@ -921,7 +936,8 @@ async def main():
     scheduler.add_job(wake_up, 'interval', seconds=bot.UPDATES_WATCHDOG_INTERVAL,
                       args=(bot,))
     scheduler.add_job(log, 'interval', hours=8,
-                      args=(bot, "Report: I\'m still active!"))
+                      args=(bot, "Report: I\'m still active!"),
+                      kwargs={'reply_markup': keyboards.log_ping_markup})
 
     scheduler.start()
 
@@ -939,7 +955,7 @@ async def main():
         logging.info('Shutting down the bot...')
         await log(bot, 'Bot is shutting down...')
         await bot.dump_sessions()
-        await bot.stop()
+        await bot.stop(block=False)
 
 
 if __name__ == '__main__':
