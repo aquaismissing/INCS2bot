@@ -2,9 +2,6 @@
 
 ###### Made with ❤️ by [@INCS2](https://t.me/INCS2)
 
-Note: **this bot doesn't grant you access to CS2 Limited Test**,
-the real purpose is to monitor and display game servers status and other useful information.
-
 ---
 
 ### Isn't it just CS:GO Beta Bot but rebranded?
@@ -15,14 +12,14 @@ and most of the codebase was rewritten to be more modular and perfomant.
 
 ### Any changes?
 
-Most of the bot functionality stays the same.
-However, here are some noteworthy changes:
+Here are some noteworthy changes:
 - Bot now uses inline keyboards instead of reply ones
 - Most of the bot messages stay in one, reducing the clutter in messages
 - More user-friendly approach for inline queries with the help of tags
 - Personal settings (only language settings available for now)
+- Translated on **8** different languages, thanks to our beloved community
 
-Anyway, we have some plans on adding more functionality and QoL features.
+We also have plans on adding more functionality and QoL features.
 
 ### Internal changes?
  
@@ -34,6 +31,7 @@ Anyway, we have some plans on adding more functionality and QoL features.
 - Extended Inline Keyboard Markups (**ExtendedIKM**s), 
   made to integrate extra functionality into regular **IKM**s (e.g. localization, selection indicators)
 - Use of decorators to support transitions between menus and clean up the codebase
+- Using sqlite instead of csv for database!
 
 ### How can I contribute?
 
