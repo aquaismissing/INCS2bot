@@ -27,9 +27,10 @@ from keyboards import ExtendedIKB, ExtendedIKM
 # noinspection PyPep8Naming
 from l10n import Locale, LocaleKeys as LK
 from utypes import (BClient, ExchangeRate, GameServersData,
-                    GameVersionData, GunInfo, LeaderboardStats, ParsingUserStatsError,
+                    GameVersionData, GunInfo, LeaderboardStats,
                     ProfileInfo, State, States, UserGameStats,
                     UserSession, drop_cap_reset_timer)
+from utypes.profiles import ErrorCode, ParseUserStatsError  # to clearly indicate relation
 
 
 GUNS_INFO = GunInfo.load()
@@ -413,7 +414,7 @@ async def user_profile_info(client: BClient, session: UserSession,
 
     try:
         info = ProfileInfo.get(steam_url.text)
-    except ParsingUserStatsError as e:
+    except ParseUserStatsError as e:
         await steam_url.delete()
         error_msg = await user_info_handle_error(client, session, steam_url, e)
         return await user_profile_info(client, session, callback_query, last_error=error_msg)
@@ -483,7 +484,7 @@ async def user_game_stats(client: BClient, session: UserSession, callback_query:
 
     try:
         user_stats = UserGameStats.get(steam_url.text)
-    except ParsingUserStatsError as e:
+    except ParseUserStatsError as e:
         await steam_url.delete()
         error_msg = await user_info_handle_error(client, session, steam_url, e)
         return await user_game_stats(client, session, callback_query, last_error=error_msg)
@@ -513,15 +514,15 @@ async def user_game_stats(client: BClient, session: UserSession, callback_query:
                                        reply_markup=keyboards.profile_markup(session.locale))
 
 
-async def user_info_handle_error(_, session: UserSession, user_input: Message, exc: ParsingUserStatsError):
+async def user_info_handle_error(_, session: UserSession, user_input: Message, exc: ParseUserStatsError):
     if exc.is_unknown:
         await user_input.delete()
         raise exc
 
     error_msg = session.locale.user_invalidrequest_error
-    if exc.value == ParsingUserStatsError.INVALID_LINK:
+    if exc.code == ErrorCode.INVALID_LINK:
         error_msg = session.locale.user_invalidlink_error
-    elif exc.value == ParsingUserStatsError.PROFILE_IS_PRIVATE:
+    elif exc.code == ErrorCode.PROFILE_IS_PRIVATE:
         error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
                     session.locale.user_privateprofile_error
 

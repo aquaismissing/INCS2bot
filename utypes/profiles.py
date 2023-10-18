@@ -1,4 +1,5 @@
 from dataclasses import astuple, dataclass
+from enum import StrEnum
 import logging
 import re
 from typing import NamedTuple
@@ -11,7 +12,9 @@ import requests
 import config
 
 
-__all__ = ('ParsingUserStatsError', 'ProfileInfo', 'UserGameStats')
+__all__ = ('ErrorCode', 'ParseUserStatsError', 'ProfileInfo', 'UserGameStats')
+
+STEAM_PROFILE_LINK_PATTERN = re.compile(r'(?:https?://)?steamcommunity\.com/(?:profiles|id)/[a-zA-Z0-9]+(/?)\w')
 
 
 api = WebAPI(key=config.STEAM_API_KEY)
@@ -28,21 +31,23 @@ def to_percentage(x: int | float, /, round_to: int = 2):
     return round(x * 100, round_to if round_to else None)
 
 
-class ParsingUserStatsError(Exception):
+class ErrorCode(StrEnum):
     INVALID_REQUEST = 'INVALID_REQUEST'
     INVALID_LINK = 'INVALID_LINK'
     PROFILE_IS_PRIVATE = 'PROFILE_IS_PRIVATE'
     UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 
-    def __init__(self, value):
-        self.value = value
+
+class ParseUserStatsError(Exception):
+    def __init__(self, code: ErrorCode):
+        self.code = code
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(value={self.value!r})'
+        return f'{self.__class__.__name__}(code={self.code!r})'
 
     @property
     def is_unknown(self):
-        return self.value == self.UNKNOWN_ERROR
+        return self.code == ErrorCode.UNKNOWN_ERROR
 
 
 class UserGameStats(NamedTuple):
@@ -217,11 +222,12 @@ class UserGameStats(NamedTuple):
         best_map_rounds = stats[f'total_rounds_map_{"_".join(best_map)}']
         stats['best_map_win_percentage'] = to_percentage(best_map_wins / best_map_rounds)
 
-        stats['taser_accuracy'] = to_percentage(stats.get('total_kills_taser', 0) / stats.get(f'total_shots_taser', 1))
+        stats['taser_accuracy'] = to_percentage(stats.get('total_kills_taser', 0) / stats.get('total_shots_taser', 1))
 
         for weapon in weapons:
             stats[f'{weapon}_accuracy'] = (
-                to_percentage(stats.get(f'total_hits_{weapon}', 0) / stats.get(f'total_shots_{weapon}', 1)))
+                to_percentage(stats.get(f'total_hits_{weapon}', 0) / stats.get(f'total_shots_{weapon}', 1))
+            )
 
         stats = {k: v for k, v in stats.items() if k in cls._fields}
         for field in cls._fields:
@@ -237,23 +243,19 @@ class UserGameStats(NamedTuple):
 
             response = api.ISteamUserStats.GetUserStatsForGame(appid=730, steamid=steam64)
             if not response:
-                raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
+                raise ParseUserStatsError(ErrorCode.PROFILE_IS_PRIVATE)
 
             stats_dict = {stat['name']: stat['value'] for stat in response['playerstats']['stats']}
             stats_dict['steamid'] = steam64
 
             return cls.from_dict(stats_dict)
-        except ParsingUserStatsError as e:
-            raise e
         except requests.exceptions.HTTPError as e:
             status_code = e.response.status_code
 
             if status_code == 400:
-                raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
+                raise ParseUserStatsError(ErrorCode.INVALID_REQUEST)
             if status_code == 403:
-                raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
-            raise e
-        except Exception as e:
+                raise ParseUserStatsError(ErrorCode.PROFILE_IS_PRIVATE)
             raise e
 
 
@@ -275,49 +277,56 @@ class ProfileInfo:
     days_since_last_ban: int
     community_ban: bool
     trade_ban: bool
-    
+
+    @staticmethod
+    def _extract_faceit_data(data: dict):
+        faceit_lvl = faceit_elo = faceit_url = faceit_ban = None
+
+        if data:
+            faceit_result = [user for user in data for game in user['games'] if game['name'] == 'cs2']
+
+            if faceit_result:
+                user = faceit_result[0]
+                elo_api_link = f'https://api.faceit.com/users/v1/users/{user["id"]}'
+                elo_api_response = requests.get(elo_api_link, timeout=15).json()
+
+                if elo_api_response.get('payload'):
+                    elo_data = elo_api_response['payload']['games']['cs2']
+
+                    faceit_elo = elo_data.get('faceit_elo', 0)
+                    faceit_lvl = elo_data.get('skill_level', 0)
+            else:
+                user = data[0]
+
+            faceit_url = f'https://faceit.com/en/players/{user["nickname"]}'
+            faceit_ban = ('banned' in user.get('status', ''))
+
+        return faceit_elo, faceit_lvl, faceit_url, faceit_ban
+
     @classmethod
     def get(cls, data):
         try:
             steam64 = parse_steamid64(data)
+            steam_id = SteamID(steam64)
 
             bans = api.ISteamUser.GetPlayerBans(steamids=steam64)
-            user_data = api.ISteamUser.GetPlayerSummaries(steamids=steam64)["response"]["players"][0]
+            user_data = api.ISteamUser.GetPlayerSummaries(steamids=steam64)['response']['players'][0]
             vanity = user_data['profileurl']
 
             if not (bans and vanity):
-                raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
+                raise ParseUserStatsError(ErrorCode.PROFILE_IS_PRIVATE)
 
             account_created = user_data.get('timecreated')
 
-            faceit_api = f'https://api.faceit.com/search/v2/players?query={steam64}'
-
-            vanity_url = vanity.split("/")[-2]
+            vanity_url = vanity.split('/')[-2]
             if vanity_url == str(steam64):
                 vanity_url = None
 
-            steam_id = SteamID(steam64)
-
-            faceit_url = faceit_ban = faceit_elo = faceit_lvl = None
-            faceit_response = requests.get(faceit_api, timeout=15).json()['payload']['results']
-            if faceit_response:
-                faceit_result = [user for user in faceit_response for game in user['games'] if game['name'] == 'csgo']
-                if faceit_result:
-                    user = faceit_result[0]
-                    faceit_url = f'https://faceit.com/en/players/{user["nickname"]}'
-                    elo_api = requests.get(f'https://api.faceit.com/users/v1/users/{user["id"]}', 
-                                           timeout=15).json()['payload']['games']['csgo']
-
-                    faceit_elo = elo_api.get('faceit_elo', 0)
-                    faceit_lvl = elo_api.get('skill_level', 0)
-                else:
-                    user = faceit_response[0]
-                    faceit_url = f'https://faceit.com/en/players/{user["nickname"]}'
-
-                faceit_ban = ('banned' in user.get('status', ''))
+            faceit_api_link = f'https://api.faceit.com/search/v2/players?query={steam64}'
+            faceit_api_response = requests.get(faceit_api_link, timeout=15).json()['payload']['results']
+            faceit_elo, faceit_lvl, faceit_url, faceit_ban = cls._extract_faceit_data(faceit_api_response)
 
             bans_data = bans['players'][0]
-
             vac_bans = bans_data['NumberOfVACBans']
             game_bans = bans_data['NumberOfGameBans']
 
@@ -348,11 +357,9 @@ class ProfileInfo:
             status_code = e.response.status_code
 
             if status_code == 400:
-                raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
+                raise ParseUserStatsError(ErrorCode.INVALID_REQUEST)
             if status_code == 403:
-                raise ParsingUserStatsError(ParsingUserStatsError.PROFILE_IS_PRIVATE)
-            raise e
-        except Exception as e:
+                raise ParseUserStatsError(ErrorCode.PROFILE_IS_PRIVATE)
             raise e
 
     def to_tuple(self):
@@ -361,14 +368,13 @@ class ProfileInfo:
 
 def parse_steamid64(data: str):
     data = data.strip()
-    steam_profile_link_pattern = re.compile(r'(?:https?://)?steamcommunity\.com/(?:profiles|id)/[a-zA-Z0-9]+(/?)\w')
 
-    if steam_profile_link_pattern.match(data):
+    if STEAM_PROFILE_LINK_PATTERN.match(data):
         if not data.startswith('http'):
             data = 'https://' + data
 
         if steamid.from_url(data) is None:
-            raise ParsingUserStatsError(ParsingUserStatsError.INVALID_LINK)
+            raise ParseUserStatsError(ErrorCode.INVALID_LINK)
 
         return steamid.from_url(data)
 
@@ -377,6 +383,6 @@ def parse_steamid64(data: str):
 
     resolve_vanity = api.ISteamUser.ResolveVanityURL(vanityurl=data, url_type=1)['response']
     if resolve_vanity['success'] != 1:
-        raise ParsingUserStatsError(ParsingUserStatsError.INVALID_REQUEST)
+        raise ParseUserStatsError(ErrorCode.INVALID_REQUEST)
 
     return resolve_vanity['steamid']
