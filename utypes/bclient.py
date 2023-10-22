@@ -250,15 +250,17 @@ class BClient(Client):
                                              timeout)
 
     async def ask_message_silently(self, callback_query: CallbackQuery,
-                                   text: str, *args, reply_markup: ExtendedIKM = None, **kwargs) -> Message:
+                                   text: str, *args,
+                                   reply_markup: ExtendedIKM = None, timeout: int = None, **kwargs) -> Message:
         """Asks for a message in the same message."""
 
         await callback_query.edit_message_text(text, *args, reply_markup=reply_markup, **kwargs)
-        return await self.listen_message(callback_query.message.chat.id)
+        return await self.listen_message(callback_query.message.chat.id, timeout=timeout)
 
     async def ask_callback_silently(self, callback_query: CallbackQuery,
-                                    text: str, *args, reply_markup: ExtendedIKM = None, **kwargs) -> CallbackQuery:
+                                    text: str, *args,
+                                    reply_markup: ExtendedIKM = None, timeout: int = None, **kwargs) -> CallbackQuery:
         """Asks for a callback query in the same message."""
 
         await callback_query.edit_message_text(text, *args, reply_markup=reply_markup, **kwargs)
-        return await self.listen_callback(callback_query.message.chat.id, callback_query.message.id)
+        return await self.listen_callback(callback_query.message.chat.id, callback_query.message.id, timeout=timeout)

@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.exceptions import TimeoutError
 import datetime as dt
 import json
 from typing import Callable
@@ -401,7 +402,10 @@ async def user_profile_info(client: BClient, session: UserSession,
     text = session.locale.steam_url_example if last_error is None else last_error
     text += '\n\n' + session.locale.bot_use_cancel
 
-    steam_url = await client.ask_message_silently(callback_query, text)
+    try:
+        steam_url = await client.ask_message_silently(callback_query, text, timeout=300)
+    except TimeoutError:
+        return await main_menu(client, session, callback_query, session_timeout=True)
 
     await log_message(client, session, steam_url)
 
@@ -471,11 +475,14 @@ async def user_game_stats(client: BClient, session: UserSession, callback_query:
     text = session.locale.steam_url_example if last_error is None else last_error
     text += '\n\n' + session.locale.bot_use_cancel
 
-    steam_url = await client.ask_message_silently(callback_query, text)
+    try:
+        steam_url = await client.ask_message_silently(callback_query, text, timeout=300)
+    except TimeoutError:
+        return await main_menu(client, session, callback_query, session_timeout=True)
 
     await log_message(client, session, steam_url)
 
-    if steam_url.text == "/cancel":
+    if steam_url.text == '/cancel':
         await steam_url.delete()
         return await profile_info(client, session, callback_query)
 
@@ -565,11 +572,14 @@ async def decode_crosshair(client: BClient, session: UserSession,
     text = session.locale.crosshair_decode_example if last_error is None else last_error
     text += '\n\n' + session.locale.bot_use_cancel
 
-    decode_input = await client.ask_message_silently(callback_query, text)
+    try:
+        decode_input = await client.ask_message_silently(callback_query, text)
+    except TimeoutError:
+        return await main_menu(client, session, callback_query, session_timeout=True)
 
     await log_message(client, session, decode_input)
 
-    if decode_input.text == "/cancel":
+    if decode_input.text == '/cancel':
         await decode_input.delete()
         return await crosshair(client, session, callback_query)
 
@@ -660,8 +670,11 @@ async def send_game_leaderboard(client: BClient, session: UserSession, callback_
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.leaderboard_markup(session.locale))
 
-    chosen_region = await client.listen_callback(callback_query.message.chat.id,
-                                                 callback_query.message.id)
+    try:
+        chosen_region = await client.listen_callback(callback_query.message.chat.id,
+                                                     callback_query.message.id, timeout=300)
+    except TimeoutError:
+        return await main_menu(client, session, callback_query, session_timeout=True)
 
     await log_callback(client, session, chosen_region)
 
@@ -684,13 +697,17 @@ async def guns(_, session: UserSession, callback_query: CallbackQuery):
 @bot.on_callback_request(LK.gun_pistols)
 @bot.came_from(guns, 4)
 async def pistols(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
-    if loop:
-        chosen_gun = await client.listen_callback(callback_query.message.chat.id,
-                                                  callback_query.message.id)
-    else:
-        chosen_gun = await client.ask_callback_silently(callback_query,
-                                                        session.locale.gun_select_pistol,
-                                                        reply_markup=keyboards.pistols_markup(session.locale))
+    try:
+        if loop:
+            chosen_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                      callback_query.message.id, timeout=300)
+        else:
+            chosen_gun = await client.ask_callback_silently(callback_query,
+                                                            session.locale.gun_select_pistol,
+                                                            reply_markup=keyboards.pistols_markup(session.locale),
+                                                            timeout=300)
+    except TimeoutError:
+        return await main_menu(client, session, callback_query, session_timeout=True)
 
     await log_callback(client, session, chosen_gun)
 
@@ -708,13 +725,17 @@ async def pistols(client: BClient, session: UserSession, callback_query: Callbac
 @bot.on_callback_request(LK.gun_heavy)
 @bot.came_from(guns)
 async def heavy(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
-    if loop:
-        chosen_gun = await client.listen_callback(callback_query.message.chat.id,
-                                                  callback_query.message.id)
-    else:
-        chosen_gun = await client.ask_callback_silently(callback_query,
-                                                        session.locale.gun_select_heavy,
-                                                        reply_markup=keyboards.heavy_markup(session.locale))
+    try:
+        if loop:
+            chosen_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                      callback_query.message.id, timeout=300)
+        else:
+            chosen_gun = await client.ask_callback_silently(callback_query,
+                                                            session.locale.gun_select_heavy,
+                                                            reply_markup=keyboards.heavy_markup(session.locale),
+                                                            timeout=300)
+    except TimeoutError:
+        return await main_menu(client, session, callback_query, session_timeout=True)
 
     await log_callback(client, session, chosen_gun)
 
@@ -732,13 +753,17 @@ async def heavy(client: BClient, session: UserSession, callback_query: CallbackQ
 @bot.on_callback_request(LK.gun_smgs)
 @bot.came_from(guns)
 async def smgs(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
-    if loop:
-        chosen_gun = await client.listen_callback(callback_query.message.chat.id,
-                                                  callback_query.message.id)
-    else:
-        chosen_gun = await client.ask_callback_silently(callback_query,
-                                                        session.locale.gun_select_smg,
-                                                        reply_markup=keyboards.smgs_markup(session.locale))
+    try:
+        if loop:
+            chosen_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                      callback_query.message.id, timeout=300)
+        else:
+            chosen_gun = await client.ask_callback_silently(callback_query,
+                                                            session.locale.gun_select_smg,
+                                                            reply_markup=keyboards.smgs_markup(session.locale),
+                                                            timeout=300)
+    except TimeoutError:
+        return await main_menu(client, session, callback_query, session_timeout=True)
 
     await log_callback(client, session, chosen_gun)
 
@@ -755,13 +780,17 @@ async def smgs(client: BClient, session: UserSession, callback_query: CallbackQu
 @bot.on_callback_request(LK.gun_rifles)
 @bot.came_from(guns)
 async def rifles(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
-    if loop:
-        chosen_gun = await client.listen_callback(callback_query.message.chat.id,
-                                                  callback_query.message.id)
-    else:
-        chosen_gun = await client.ask_callback_silently(callback_query,
-                                                        session.locale.gun_select_rifle,
-                                                        reply_markup=keyboards.rifles_markup(session.locale))
+    try:
+        if loop:
+            chosen_gun = await client.listen_callback(callback_query.message.chat.id,
+                                                      callback_query.message.id, timeout=300)
+        else:
+            chosen_gun = await client.ask_callback_silently(callback_query,
+                                                            session.locale.gun_select_rifle,
+                                                            reply_markup=keyboards.rifles_markup(session.locale),
+                                                            timeout=300)
+    except TimeoutError:
+        return await main_menu(client, session, callback_query, session_timeout=True)
 
     await log_callback(client, session, chosen_gun)
 
@@ -811,11 +840,15 @@ async def settings(_, session: UserSession, callback_query: CallbackQuery):
 async def language(client: BClient, session: UserSession, callback_query: CallbackQuery):
     keyboards.language_settings_markup.select_button_by_key(session.locale.lang_code)
 
-    chosen_lang = await client.ask_callback_silently(
-        callback_query,
-        session.locale.settings_language_choose.format(AVAILABLE_LANGUAGES.get(session.locale.lang_code)),
-        reply_markup=keyboards.language_settings_markup(session.locale)
-    )
+    try:
+        chosen_lang = await client.ask_callback_silently(
+            callback_query,
+            session.locale.settings_language_choose.format(AVAILABLE_LANGUAGES.get(session.locale.lang_code)),
+            reply_markup=keyboards.language_settings_markup(session.locale),
+            timeout=300
+        )
+    except TimeoutError:
+        return await main_menu(client, session, callback_query, session_timeout=True)
 
     await log_callback(client, session, chosen_lang)
 
@@ -851,7 +884,10 @@ async def leave_feedback(client: BClient, session: UserSession, message: Message
 
     text = session.locale.bot_feedback_text + '\n\n' + session.locale.bot_use_cancel
 
-    feedback = await client.ask_message(message.chat.id, text)
+    try:
+        feedback = await client.ask_message(message.chat.id, text)
+    except TimeoutError:
+        return await client.send_message(message.chat.id, 'Timed out.')  # todo: добавить строку локализации
 
     if feedback.text == '/cancel':
         await feedback.delete()
