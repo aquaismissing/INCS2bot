@@ -14,6 +14,7 @@ from sqlalchemy.future import select
 from db import db_session
 from db.users import User as DBUser
 from keyboards import ExtendedIKM
+from .invdict import InvDict
 
 
 __all__ = ('BClient', 'UserSession')
@@ -76,6 +77,7 @@ class BClient(Client):
     Custom pyrogram.Client class to add custom properties and methods and stop PyCharm annoy me.
     """
     LOGS_TIMEOUT = dt.timedelta(seconds=4)  # define how often logs should be sent
+    WILDCARD = '_'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,7 +87,7 @@ class BClient(Client):
         self._available_commands: dict[str, callable] = {}
         self._available_functions: dict[str, callable] = {}
 
-        self._came_from_functions: dict[int, callable] = {}
+        self._came_from_functions: InvDict[int, callable] = InvDict()
         self.sessions_timeout = dt.timedelta(hours=1)
         self.latest_log_dt = dt.datetime.now()  # todo: implement logs functions in BClient?
 
@@ -146,9 +148,18 @@ class BClient(Client):
 
         return decorator
 
-    def on_callback_request(self, query: str, *args, **kwargs):
+    def on_callback_request(self, query: str, *args, came_from: callable = None, **kwargs):
         def decorator(func):
-            self._available_functions[query] = (func, args, kwargs)
+            if came_from is None:
+                self._available_functions[query] = (func, args, kwargs)
+                return func
+
+            func = self.came_from(came_from)(func)
+
+            came_from_id = self.get_came_from_id(came_from)
+            if self._available_functions.get(query):
+                self._available_functions[query][came_from_id] = (func, args, kwargs)
+            self._available_functions[query] = {came_from_id: (func, args, kwargs)}
             return func
 
         return decorator
@@ -160,17 +171,24 @@ class BClient(Client):
         except KeyError:
             if '_' not in self._available_commands:
                 return
-            func, args, kwargs = self._available_commands['_']
+            func, args, kwargs = self._available_commands[self.WILDCARD]
         return await func(self, session, message, *args, **kwargs)
 
     async def get_func_by_callback(self, session: UserSession, callback_query: CallbackQuery):
         try:
-            func, args, kwargs = self._available_functions[callback_query.data]
+            possible_functions = self._available_functions[callback_query.data]
+            if isinstance(possible_functions, tuple):
+                func, args, kwargs = possible_functions
+            else:
+                func, args, kwargs = possible_functions[session.came_from_id]
         except KeyError:
-            if '_' not in self._available_functions:
+            if self.WILDCARD not in self._available_functions:
                 return
-            func, args, kwargs = self._available_functions['_']
+            func, args, kwargs = self._available_functions[self.WILDCARD]
         return await func(self, session, callback_query, *args, **kwargs)
+
+    def get_came_from_id(self, f: callable):
+        return self._came_from_functions.inv[f]
 
     def came_from(self, f: callable, _id: int = None):
         """
@@ -184,7 +202,7 @@ class BClient(Client):
         def decorator(func: callable):
             @wraps(func)
             async def inner(_, session: UserSession, callback_query: CallbackQuery, *args, **kwargs):
-                session.came_from_id = [k for k, v in self._came_from_functions.items() if v is f][0]
+                session.came_from_id = self.get_came_from_id(func)
                 await func(self, session, callback_query, *args, **kwargs)
 
             return inner
@@ -193,9 +211,9 @@ class BClient(Client):
 
     async def go_back(self, session: UserSession, callback_query: CallbackQuery):
         if session.came_from_id is None:
-            if '_' not in self._available_functions:
+            if self.WILDCARD not in self._available_functions:
                 return
-            func, args, kwargs = self._available_functions['_']
+            func, args, kwargs = self._available_functions[self.WILDCARD]
             return await func(self, session, callback_query, *args, **kwargs)
 
         came_from = self._came_from_functions[session.came_from_id]

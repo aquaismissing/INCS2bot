@@ -146,15 +146,14 @@ async def main_menu(_, session: UserSession,
 # cat: Server stats
 
 
-@bot.on_callback_request(LK.bot_servers_stats)
-@bot.came_from(main_menu, 0)
+@bot.on_callback_request(LK.bot_servers_stats, came_from=main_menu)  # id expected to be 0
 @ignore_message_not_modified
 async def server_stats(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.bot_choose_cmd,
                                            reply_markup=keyboards.ss_markup(session.locale))
 
 
-@bot.on_callback_request(LK.game_status_button_title)
+@bot.on_callback_request(LK.game_status_button_title, came_from=main_menu)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_server_status(client: BClient, session: UserSession, callback_query: CallbackQuery):
@@ -170,7 +169,7 @@ async def send_server_status(client: BClient, session: UserSession, callback_que
     await callback_query.edit_message_text(text, reply_markup=keyboards.ss_markup(session.locale))
 
 
-@bot.on_callback_request(LK.stats_matchmaking_button_title)
+@bot.on_callback_request(LK.stats_matchmaking_button_title, came_from=main_menu)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_matchmaking_stats(client: BClient, session: UserSession, callback_query: CallbackQuery):
@@ -189,175 +188,148 @@ async def send_matchmaking_stats(client: BClient, session: UserSession, callback
 # cat: Datacenters
 
 
-@bot.on_callback_request(LK.dc_status_title)
-@bot.came_from(server_stats, 1)
+@bot.on_callback_request(LK.dc_status_title, came_from=server_stats)  # id expected to be 1
 @ignore_message_not_modified
 async def datacenters(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.dc_status_choose_region,
                                            reply_markup=keyboards.dc_markup(session.locale))
 
 
-@bot.on_callback_request(LK.regions_africa)
-@bot.came_from(server_stats)
+@bot.on_callback_request(LK.regions_africa, came_from=server_stats)
 async def send_dc_africa(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.africa, keyboards.dc_markup)
 
 
-@bot.on_callback_request(LK.regions_australia)
-@bot.came_from(server_stats)
+@bot.on_callback_request(LK.regions_australia, came_from=server_stats)
 async def send_dc_australia(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.australia, keyboards.dc_markup)
 
 
-@bot.on_callback_request(LK.regions_europe)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.regions_europe, came_from=datacenters)  # id expected to be 2
 @ignore_message_not_modified
 async def dc_europe(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.dc_status_specify_country,
                                            reply_markup=keyboards.dc_eu_markup(session.locale))
 
 
-@bot.on_callback_request(LK.dc_austria)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_austria, came_from=datacenters)
 async def send_dc_austria(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.austria, keyboards.dc_eu_markup)
 
 
-@bot.on_callback_request(LK.dc_finland)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_finland, came_from=datacenters)
 async def send_dc_finland(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.finland, keyboards.dc_eu_markup)
 
 
-@bot.on_callback_request(LK.dc_germany)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_germany, came_from=datacenters)
 async def send_dc_germany(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.germany, keyboards.dc_eu_markup)
 
 
-@bot.on_callback_request(LK.dc_netherlands)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_netherlands, came_from=datacenters)
 async def send_dc_netherlands(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.netherlands, keyboards.dc_eu_markup)
 
 
-@bot.on_callback_request(LK.dc_poland)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_poland, came_from=datacenters)
 async def send_dc_poland(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.poland, keyboards.dc_eu_markup)
 
 
-@bot.on_callback_request(LK.dc_spain)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_spain, came_from=datacenters)
 async def send_dc_spain(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.spain, keyboards.dc_eu_markup)
 
 
-@bot.on_callback_request(LK.dc_sweden)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_sweden, came_from=datacenters)
 async def send_dc_sweden(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.sweden, keyboards.dc_eu_markup)
 
 
-@bot.on_callback_request(LK.dc_us)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_us, came_from=datacenters)
 @ignore_message_not_modified
 async def dc_us(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.dc_status_specify_region,
                                            reply_markup=keyboards.dc_us_markup(session.locale))
 
 
-@bot.on_callback_request(LK.dc_us_north)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_us_north, came_from=datacenters)
 async def send_dc_us_north(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.us_north, keyboards.dc_us_markup)
 
 
-@bot.on_callback_request(LK.dc_us_south)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_us_south, came_from=datacenters)
 async def send_dc_us_south(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.us_south, keyboards.dc_us_markup)
 
 
-@bot.on_callback_request(LK.regions_southamerica)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.regions_southamerica, came_from=datacenters)
 @ignore_message_not_modified
 async def send_dc_south_america(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.dc_status_specify_country,
                                            reply_markup=keyboards.dc_southamerica_markup(session.locale))
 
 
-@bot.on_callback_request(LK.dc_argentina)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_argentina, came_from=datacenters)
 async def send_dc_argentina(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query,
                         datacenter_handlers.argentina, keyboards.dc_southamerica_markup)
 
 
-@bot.on_callback_request(LK.dc_brazil)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_brazil, came_from=datacenters)
 async def send_dc_brazil(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.brazil, keyboards.dc_southamerica_markup)
 
 
-@bot.on_callback_request(LK.dc_chile)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_chile, came_from=datacenters)
 async def send_dc_chile(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.chile, keyboards.dc_southamerica_markup)
 
 
-@bot.on_callback_request(LK.dc_peru)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_peru, came_from=datacenters)
 async def send_dc_peru(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.peru, keyboards.dc_southamerica_markup)
 
 
-@bot.on_callback_request(LK.regions_asia)
-@bot.came_from(datacenters, 2)
+@bot.on_callback_request(LK.regions_asia, came_from=datacenters)
 @ignore_message_not_modified
 async def dc_asia(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.dc_status_specify_country,
                                            reply_markup=keyboards.dc_asia_markup(session.locale))
 
 
-@bot.on_callback_request(LK.dc_india)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_india, came_from=datacenters)
 async def send_dc_india(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.india, keyboards.dc_asia_markup)
 
 
-@bot.on_callback_request(LK.dc_japan)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_japan, came_from=datacenters)
 async def send_dc_japan(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.japan, keyboards.dc_asia_markup)
 
 
-@bot.on_callback_request(LK.regions_china)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.regions_china, came_from=datacenters)
 async def send_dc_china(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.china, keyboards.dc_asia_markup)
 
 
-@bot.on_callback_request(LK.dc_emirates)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_emirates, came_from=datacenters)
 async def send_dc_emirates(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.emirates, keyboards.dc_asia_markup)
 
 
-@bot.on_callback_request(LK.dc_singapore)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_singapore, came_from=datacenters)
 async def send_dc_singapore(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.singapore, keyboards.dc_asia_markup)
 
 
-@bot.on_callback_request(LK.dc_hongkong)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_hongkong, came_from=datacenters)
 async def send_dc_hongkong(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.hongkong, keyboards.dc_asia_markup)
 
 
-@bot.on_callback_request(LK.dc_southkorea)
-@bot.came_from(datacenters)
+@bot.on_callback_request(LK.dc_southkorea, came_from=datacenters)
 async def send_dc_south_korea(client: BClient, session: UserSession, callback_query: CallbackQuery):
     await send_dc_state(client, session, callback_query, datacenter_handlers.south_korea, keyboards.dc_asia_markup)
 
@@ -378,8 +350,7 @@ async def send_dc_state(client: BClient, session: UserSession, callback_query: C
 # cat: Profile info
 
 
-@bot.on_callback_request(LK.bot_profile_info)
-@bot.came_from(main_menu)
+@bot.on_callback_request(LK.bot_profile_info, came_from=datacenters)
 @ignore_message_not_modified
 async def profile_info(client: BClient, session: UserSession, callback_query: CallbackQuery):
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
@@ -392,9 +363,8 @@ async def profile_info(client: BClient, session: UserSession, callback_query: Ca
                                            reply_markup=keyboards.profile_markup(session.locale))
 
 
-@bot.on_callback_request(LK.user_profileinfo_title)
+@bot.on_callback_request(LK.user_profileinfo_title, came_from=main_menu)
 @log_exception_callback
-@bot.came_from(main_menu)
 @ignore_blocking
 async def user_profile_info(client: BClient, session: UserSession,
                             callback_query: CallbackQuery, last_error: str = None):
@@ -462,9 +432,8 @@ async def user_profile_info(client: BClient, session: UserSession,
                                        reply_markup=keyboards.profile_markup(session.locale))
 
 
-@bot.on_callback_request(LK.user_gamestats_button_title)
+@bot.on_callback_request(LK.user_gamestats_button_title, came_from=main_menu)
 @log_exception_callback
-@bot.came_from(main_menu)
 @ignore_blocking
 @ignore_message_not_modified
 async def user_game_stats(client: BClient, session: UserSession, callback_query: CallbackQuery, last_error: str = None):
@@ -532,33 +501,29 @@ async def user_info_handle_error(_, session: UserSession, user_input: Message, e
 # cat: Extra features
 
 
-@bot.on_callback_request(LK.bot_extras)
-@bot.came_from(main_menu)
+@bot.on_callback_request(LK.bot_extras, came_from=main_menu)
 @ignore_message_not_modified
 async def extra_features(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.bot_choose_cmd,
                                            reply_markup=keyboards.extra_markup(session.locale))
 
 
-@bot.on_callback_request(LK.crosshair)
-@bot.came_from(extra_features, 3)
+@bot.on_callback_request(LK.crosshair, came_from=extra_features)  # id expected to be 3
 @ignore_message_not_modified
 async def crosshair(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.bot_choose_func,
                                            reply_markup=keyboards.crosshair_markup(session.locale))
 
 
-@bot.on_callback_request(LK.crosshair_generate)
-@bot.came_from(extra_features)
+@bot.on_callback_request(LK.crosshair_generate, came_from=extra_features)
 @ignore_message_not_modified
 async def generate_crosshair(_, session: UserSession, callback_query: CallbackQuery):  # todo: finally make this shit
     await callback_query.edit_message_text(session.locale.error_wip,
                                            reply_markup=keyboards.crosshair_markup(session.locale))
 
 
-@bot.on_callback_request(LK.crosshair_decode)
+@bot.on_callback_request(LK.crosshair_decode, came_from=extra_features)
 @log_exception_callback
-@bot.came_from(extra_features)
 @ignore_message_not_modified
 async def decode_crosshair(client: BClient, session: UserSession,
                            callback_query: CallbackQuery, last_error: str = None):
@@ -587,9 +552,8 @@ async def decode_crosshair(client: BClient, session: UserSession,
                                        reply_markup=keyboards.crosshair_markup(session.locale))
 
 
-@bot.on_callback_request(LK.exchangerate_button_title)
+@bot.on_callback_request(LK.exchangerate_button_title, came_from=main_menu)
 @log_exception_callback
-@bot.came_from(main_menu)
 @ignore_message_not_modified
 async def send_exchange_rate(_, session: UserSession, callback_query: CallbackQuery):
     prices = ExchangeRate.cached_data()
@@ -598,7 +562,7 @@ async def send_exchange_rate(_, session: UserSession, callback_query: CallbackQu
                                            reply_markup=keyboards.extra_markup(session.locale))
 
 
-@bot.on_callback_request(LK.valve_hqtime_button_title)
+@bot.on_callback_request(LK.valve_hqtime_button_title, came_from=main_menu)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_valve_hq_time(_, session: UserSession, callback_query: CallbackQuery):
@@ -609,7 +573,7 @@ async def send_valve_hq_time(_, session: UserSession, callback_query: CallbackQu
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(session.locale))
 
 
-@bot.on_callback_request(LK.game_dropcap_button_title)
+@bot.on_callback_request(LK.game_dropcap_button_title, came_from=main_menu)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_dropcap_timer(_, session: UserSession, callback_query: CallbackQuery):
@@ -620,7 +584,7 @@ async def send_dropcap_timer(_, session: UserSession, callback_query: CallbackQu
     await callback_query.edit_message_text(text, reply_markup=keyboards.extra_markup(session.locale))
 
 
-@bot.on_callback_request(LK.game_version_button_title)
+@bot.on_callback_request(LK.game_version_button_title, came_from=main_menu)
 @log_exception_callback
 @ignore_message_not_modified
 async def send_game_version(client: BClient, session: UserSession, callback_query: CallbackQuery):
@@ -637,11 +601,60 @@ async def send_game_version(client: BClient, session: UserSession, callback_quer
                                            disable_web_page_preview=True)
 
 
-@bot.on_callback_request(LK.game_leaderboard_button_title)
+@bot.on_callback_request(LK.game_leaderboard_button_title, came_from=extra_features)
 @log_exception_callback
-@bot.came_from(extra_features)
 @ignore_message_not_modified
-async def send_game_leaderboard(client: BClient, session: UserSession, callback_query: CallbackQuery,
+async def game_leaderboard(_, session: UserSession, callback_query: CallbackQuery):
+    world_data = LeaderboardStats.cached_world_stats()
+    text = info_formatters.format_game_world_leaderboard(world_data, session.locale)
+
+    await callback_query.edit_message_text(text, reply_markup=keyboards.leaderboard_markup(session.locale))
+
+
+@bot.on_callback_request(LK.game_leaderboard_world, came_from=extra_features)
+async def game_leaderboard_world(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_game_leaderboard(client, session, callback_query, LK.game_leaderboard_world)
+
+
+@bot.on_callback_request(LK.regions_africa, came_from=extra_features)  # todo: check current menu, not previous one? because this looks confusing and may cause bugs
+async def game_leaderboard_africa(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_game_leaderboard(client, session, callback_query, LK.regions_africa)
+
+
+@bot.on_callback_request(LK.regions_asia, came_from=extra_features)
+async def game_leaderboard_asia(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_game_leaderboard(client, session, callback_query, LK.regions_asia)
+
+
+@bot.on_callback_request(LK.regions_australia, came_from=extra_features)
+async def game_leaderboard_australia(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_game_leaderboard(client, session, callback_query, LK.regions_australia)
+
+
+@bot.on_callback_request(LK.regions_china, came_from=extra_features)
+async def game_leaderboard_china(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_game_leaderboard(client, session, callback_query, LK.regions_china)
+
+
+@bot.on_callback_request(LK.regions_europe, came_from=extra_features)
+async def game_leaderboard_europe(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_game_leaderboard(client, session, callback_query, LK.regions_europe)
+
+
+@bot.on_callback_request(LK.regions_northamerica, came_from=extra_features)
+async def game_leaderboard_northamerica(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_game_leaderboard(client, session, callback_query, LK.regions_northamerica)
+
+
+@bot.on_callback_request(LK.regions_southamerica, came_from=extra_features)
+async def game_leaderboard_southamerica(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_game_leaderboard(client, session, callback_query, LK.regions_southamerica)
+
+
+@bot.on_callback_request(LK.game_leaderboard_button_title, came_from=extra_features)
+@log_exception_callback
+@ignore_message_not_modified
+async def send_game_leaderboard(_, session: UserSession, callback_query: CallbackQuery,
                                 region: str = LK.game_leaderboard_world):
     """Sends the CS2 leaderboard (top-10), supports both world and regional"""
 
@@ -660,29 +673,17 @@ async def send_game_leaderboard(client: BClient, session: UserSession, callback_
 
     await callback_query.edit_message_text(text, reply_markup=keyboards.leaderboard_markup(session.locale))
 
-    chosen_region = await client.listen_callback(callback_query.message.chat.id,
-                                                 callback_query.message.id)
-
-    await log_callback(client, session, chosen_region)
-
-    chosen_region = chosen_region.data
-
-    if chosen_region == LK.bot_back:
-        return await back(client, session, callback_query)
-    await send_game_leaderboard(client, session, callback_query, chosen_region)
 
 # cat: Guns info
 
 
-@bot.on_callback_request(LK.gun_button_text)
-@bot.came_from(extra_features)
+@bot.on_callback_request(LK.gun_button_text, came_from=extra_features)
 async def guns(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.gun_select_category,
                                            reply_markup=keyboards.guns_markup(session.locale))
 
 
-@bot.on_callback_request(LK.gun_pistols)
-@bot.came_from(guns, 4)
+@bot.on_callback_request(LK.gun_pistols, came_from=guns)  # id expected to be 4
 async def pistols(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
         chosen_gun = await client.listen_callback(callback_query.message.chat.id,
@@ -705,8 +706,7 @@ async def pistols(client: BClient, session: UserSession, callback_query: Callbac
     return await unknown_request(client, session, callback_query, keyboards.pistols_markup)
 
 
-@bot.on_callback_request(LK.gun_heavy)
-@bot.came_from(guns)
+@bot.on_callback_request(LK.gun_heavy, came_from=guns)
 async def heavy(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
         chosen_gun = await client.listen_callback(callback_query.message.chat.id,
@@ -729,8 +729,7 @@ async def heavy(client: BClient, session: UserSession, callback_query: CallbackQ
     return await unknown_request(client, session, callback_query, keyboards.heavy_markup)
 
 
-@bot.on_callback_request(LK.gun_smgs)
-@bot.came_from(guns)
+@bot.on_callback_request(LK.gun_smgs, came_from=guns)
 async def smgs(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
         chosen_gun = await client.listen_callback(callback_query.message.chat.id,
@@ -752,8 +751,7 @@ async def smgs(client: BClient, session: UserSession, callback_query: CallbackQu
     return await unknown_request(client, session, callback_query, keyboards.smgs_markup)
 
 
-@bot.on_callback_request(LK.gun_rifles)
-@bot.came_from(guns)
+@bot.on_callback_request(LK.gun_rifles, came_from=guns)
 async def rifles(client: BClient, session: UserSession, callback_query: CallbackQuery, loop: bool = False):
     if loop:
         chosen_gun = await client.listen_callback(callback_query.message.chat.id,
@@ -797,16 +795,14 @@ async def send_gun_info(client: BClient, session: UserSession, callback_query: C
 # cat: Settings
 
 
-@bot.on_callback_request(LK.bot_settings)
-@bot.came_from(main_menu)
+@bot.on_callback_request(LK.bot_settings, came_from=main_menu)
 @ignore_message_not_modified
 async def settings(_, session: UserSession, callback_query: CallbackQuery):
     await callback_query.edit_message_text(session.locale.bot_choose_setting,
                                            reply_markup=keyboards.settings_markup(session.locale))
 
 
-@bot.on_callback_request(LK.settings_language_button_title)
-@bot.came_from(settings, 5)
+@bot.on_callback_request(LK.settings_language_button_title, settings)  # id expected to be 5
 @ignore_message_not_modified
 async def language(client: BClient, session: UserSession, callback_query: CallbackQuery):
     keyboards.language_settings_markup.select_button_by_key(session.locale.lang_code)
