@@ -99,7 +99,7 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
             await msg.delete()
             return
 
-        return await reply_to.reply(text, entities=entities, quote=should_reply, disable_web_page_preview=False)
+        return await reply_to.reply(text, entities=entities, quote=should_reply, disable_web_page_preview=True)
 
     caption = message.caption.removeprefix('/echo').strip()
     entities = correct_message_entity(message.entities, message.caption, caption)
