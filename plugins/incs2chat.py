@@ -82,8 +82,6 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
     if message.from_user.id not in admins:
         return
 
-    print(message)
-
     if message.reply_to_message:
         reply_to = message.reply_to_message
         should_reply = True
@@ -101,7 +99,7 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
             await msg.delete()
             return
 
-        return await reply_to.reply(text, entities=entities, quote=should_reply)
+        return await reply_to.reply(text, entities=entities, quote=should_reply, disable_web_page_preview=False)
 
     caption = message.caption.removeprefix('/echo').strip()
     entities = correct_message_entity(message.entities, message.caption, caption)
