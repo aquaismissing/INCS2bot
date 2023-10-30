@@ -7,6 +7,9 @@ from pyrogram.types import (CallbackGame,
 from l10n import Locale
 
 
+__all__ = ('ExtendedIKB', 'ExtendedIKM')
+
+
 class ExtendedIKB(InlineKeyboardButton):
     SELECTION_INDICATOR = '•'
 

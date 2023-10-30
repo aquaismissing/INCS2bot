@@ -1,7 +1,7 @@
 # noinspection PyPep8Naming
 from l10n import LocaleKeys as LK, get_available_languages
 
-from utypes import ExtendedIKB, ExtendedIKM
+from bottypes import ExtendedIKB, ExtendedIKM
 
 
 # Back button

@@ -7,12 +7,13 @@ from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessa
 
 # noinspection PyUnresolvedReferences
 import env
+from bottypes import BotClient, UserSession
 import config
 from functions import datacenter_handlers, info_formatters
 import keyboards
 from l10n import dump_tags
-from utypes import (BClient, DatacenterInlineResult, ExchangeRate,
-                    GameServersData, GameVersionData, UserSession,
+from utypes import (DatacenterInlineResult, ExchangeRate,
+                    GameServersData, GameVersionData,
                     drop_cap_reset_timer)
 
 
@@ -22,7 +23,7 @@ TAGS = dump_tags()
 def log_exception_inline(func):
     """Decorator to catch and log exceptions in bot inline functions."""
 
-    async def inner(client: BClient, session: UserSession, inline_query: InlineQuery, *args, **kwargs):
+    async def inner(client: BotClient, session: UserSession, inline_query: InlineQuery, *args, **kwargs):
         # noinspection PyBroadException
         try:
             await func(client, session, inline_query, *args, **kwargs)
@@ -53,8 +54,8 @@ def get_triggered_tags(query: str):
                 yield tag
 
 
-@BClient.on_inline_query()
-async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
+@BotClient.on_inline_query()
+async def sync_user_data_inline(client: BotClient, inline_query: InlineQuery):
     user = inline_query.from_user
     if user.id not in client.sessions:
         await client.register_session(user, force_lang=config.FORCE_LANG)

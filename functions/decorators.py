@@ -4,7 +4,7 @@ from pyrogram import Client
 from pyrogram.errors import MessageNotModified
 from pyrogram.types import CallbackQuery
 
-from utypes import UserSession
+from bottypes import UserSession
 
 
 def ignore_message_not_modified(func):
