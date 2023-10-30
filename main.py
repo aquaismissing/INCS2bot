@@ -750,6 +750,7 @@ async def rifles_process(client: BClient, session: UserSession, callback_query: 
 async def send_gun_info(client: BClient, session: UserSession, callback_query: CallbackQuery, _from: callable,
                         gun_info: GunInfo, reply_markup: ExtendedIKM):
     """Send archived data about guns"""
+
     try:
         gun_info_dict = gun_info.as_dict()
         gun_info_dict['origin'] = session.locale.get(gun_info.origin)
@@ -776,7 +777,7 @@ async def settings(_, session: UserSession, callback_query: CallbackQuery):
                                            reply_markup=keyboards.settings_markup(session.locale))
 
 
-@bot.funcmenu(LK.settings_language_button_title, came_from=settings, ignore_message_not_modified=True)
+@bot.navmenu(LK.settings_language_button_title, came_from=settings, ignore_message_not_modified=True)
 async def language(client: BClient, session: UserSession, callback_query: CallbackQuery):
     keyboards.language_settings_markup.select_button_by_key(session.locale.lang_code)
 
@@ -786,12 +787,18 @@ async def language(client: BClient, session: UserSession, callback_query: Callba
         reply_markup=keyboards.language_settings_markup(session.locale)
     )
 
-    await client.log_callback(session, chosen_lang)
+    return await language_process(client, session, chosen_lang)
 
-    chosen_lang = chosen_lang.data
+
+@bot.callback_process(of=language)
+async def language_process(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await client.log_callback(session, callback_query)
+
+    chosen_lang = callback_query.data
     if chosen_lang == LK.bot_back:
         return await client.go_back(session, callback_query)
-    session.update_lang(chosen_lang)
+    if chosen_lang in AVAILABLE_LANGUAGES:
+        session.update_lang(chosen_lang)
     return await language(client, session, callback_query)
 
 
