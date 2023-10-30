@@ -8,7 +8,7 @@ from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessa
 # noinspection PyUnresolvedReferences
 import env
 import config
-from functions import datacenter_handlers, log_inline, info_formatters
+from functions import datacenter_handlers, info_formatters
 import keyboards
 from l10n import dump_tags
 from utypes import (BClient, DatacenterInlineResult, ExchangeRate,
@@ -28,10 +28,10 @@ def log_exception_inline(func):
             await func(client, session, inline_query, *args, **kwargs)
         except Exception:
             logging.exception('Caught exception!')
-            await client.send_message(config.LOGCHANNEL, f'❗️ {traceback.format_exc()}\n'
-                                                         f'\n'
-                                                         f'↩️ inline_query',
-                                      disable_notification=True, parse_mode=ParseMode.DISABLED)
+            await client.log(f'❗️ {traceback.format_exc()}\n'
+                             f'\n'
+                             f'↩️ inline_query',
+                             disable_notification=True, parse_mode=ParseMode.DISABLED)
 
     return inner
 
@@ -60,9 +60,11 @@ async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
         await client.register_session(user, force_lang=config.FORCE_LANG)
 
     session = client.sessions[user.id]
-    await log_inline(client, session, inline_query)
+    await client.log_inline(session, inline_query)
 
     query = inline_query.query.strip()
+
+    client.rstats.inline_queries_handled += 1
 
     # if-chain because it's a plugin
     if is_user_stats_page(inline_query):

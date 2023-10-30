@@ -9,7 +9,8 @@ class User(SqlAlchemyBase, SerializerMixin):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     userid = sqlalchemy.Column(sqlalchemy.Integer, unique=True)
-    came_from_id = sqlalchemy.Column(sqlalchemy.Integer)
+    current_menu_id = sqlalchemy.Column(sqlalchemy.String)
+    previous_menu_id = sqlalchemy.Column(sqlalchemy.String)
     language = sqlalchemy.Column(sqlalchemy.String)
 
     def __repr__(self):

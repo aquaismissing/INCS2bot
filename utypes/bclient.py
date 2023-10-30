@@ -1,34 +1,42 @@
+from __future__ import annotations
+
+import asyncio
+from dataclasses import dataclass, fields
 import datetime as dt
-from functools import wraps
 import logging
+from typing import Type
 
 from pyrogram import Client
 from pyrogram.enums import ParseMode
-from pyrogram.types import (CallbackQuery, Message, MessageEntity,
-                            InlineKeyboardMarkup, ReplyKeyboardMarkup,
+from pyrogram.errors import MessageNotModified, UserIsBlocked
+from pyrogram.types import (CallbackQuery, InlineQuery, Message,
+                            MessageEntity, InlineKeyboardMarkup,
+                            ReplyKeyboardMarkup,
                             ReplyKeyboardRemove, ForceReply, User)
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 from sqlalchemy.future import select
 
+import config
 from db import db_session
 from db.users import User as DBUser
-from keyboards import ExtendedIKM
-from .invdict import InvDict
+from .extended_ik import ExtendedIKM
+from .menu import Menu, NavMenu, FuncMenu
 
 
 __all__ = ('BClient', 'UserSession')
 
 
 class UserSession:
-    __slots__ = ('dbuser_id', 'timestamp', 'came_from_id', 'lang_code', 'locale')
+    __slots__ = ('dbuser_id', 'timestamp', 'current_menu_id', 'previous_menu_id', 'lang_code', 'locale')
 
     def __init__(self, dbuser: DBUser, *, force_lang: str = None):
         from functions import locale
 
         self.dbuser_id = dbuser.id
         self.timestamp = dt.datetime.now().timestamp()
-        self.came_from_id = dbuser.came_from_id
+        self.current_menu_id = dbuser.current_menu_id
+        self.previous_menu_id = dbuser.previous_menu_id
         self.lang_code = force_lang or dbuser.language
         self.locale = locale(self.lang_code)
 
@@ -38,10 +46,11 @@ class UserSession:
             query = select(DBUser).where(DBUser.id == self.dbuser_id)
             # noinspection PyUnresolvedReferences
             dbuser = (await db_sess.execute(query)).scalar()
-            dbuser.came_from_id = self.came_from_id
+            dbuser.current_menu_id = self.current_menu_id
+            dbuser.previous_menu_id = self.previous_menu_id
             dbuser.language = self.lang_code
 
-            logging.info(f'UserSession synced with db! {dbuser.came_from_id=}, {dbuser.language=}')
+            logging.info(f'UserSession synced with db! {dbuser.language=}')
             await db_sess.commit()
 
     def update_lang(self, lang_code: str):
@@ -64,7 +73,8 @@ class UserSessions(dict[int, UserSession]):
                 query = select(DBUser).where(DBUser.id == session.dbuser_id)
                 # noinspection PyUnresolvedReferences
                 dbuser = (await db_sess.execute(query)).scalar()
-                dbuser.came_from_id = session.came_from_id
+                dbuser.current_menu_id = session.current_menu_id
+                dbuser.previous_menu_id = session.previous_menu_id
                 dbuser.language = session.lang_code
 
             logging.info(f'UserSessions synced with db! {len(self)} sessions were synced.')
@@ -72,24 +82,47 @@ class UserSessions(dict[int, UserSession]):
             await db_sess.commit()
 
 
+@dataclass(slots=True)
+class RegularStats:
+    callback_queries_handled: int = 0
+    inline_queries_handled: int = 0
+    unique_users_served: int = 0
+    exceptions_caught: int = 0
+
+    def clear(self):
+        for field in fields(self):
+            setattr(self, field.name, 0)
+
+
 class BClient(Client):
     """
     Custom pyrogram.Client class to add custom properties and methods and stop PyCharm annoy me.
     """
+
     LOGS_TIMEOUT = dt.timedelta(seconds=4)  # define how often logs should be sent
     WILDCARD = '_'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, log_channel: int, back_callback: str, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.log_channel = log_channel
+        self.back_callback = back_callback
+
         self._sessions: UserSessions = UserSessions()
-
-        self._available_commands: dict[str, callable] = {}
-        self._available_functions: dict[str, callable] = {}
-
-        self._came_from_functions: InvDict[int, callable] = InvDict()
         self.sessions_timeout = dt.timedelta(hours=1)
-        self.latest_log_dt = dt.datetime.now()  # todo: implement logs functions in BClient?
+
+        self._available_commands: dict[str, tuple | dict] = {}
+        self._available_menus: dict[str, Menu | dict[str, Menu]] = {}
+
+        self._menu_ids: dict[str, Menu] = {}
+
+        self.latest_log_dt = dt.datetime.now()
+
+        self._func_at_exception: callable = None
+
+        self.startup_dt = None
+
+        self.rstats = RegularStats()
 
     @property
     def sessions(self) -> UserSessions:
@@ -103,7 +136,14 @@ class BClient(Client):
     def can_log_after_time(self) -> dt.timedelta:
         return self.LOGS_TIMEOUT - (dt.datetime.now() - self.latest_log_dt)
 
+    async def start(self):
+        await super().start()
+        self.startup_dt = dt.datetime.now(dt.UTC)
+
     async def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
+        if user.id in self.sessions:
+            return self._sessions[user.id]
+
         logging.info(f'Registering session with user {user.id=}, {user.username=}, {user.language_code=}')
 
         async with db_session.create_session() as db_sess:
@@ -121,6 +161,8 @@ class BClient(Client):
                 logging.info(f'Got existing record in db. {dbuser=}')
 
         self._sessions[user.id] = UserSession(dbuser, force_lang=force_lang)
+        self.rstats.unique_users_served = len(self._sessions)
+
         return self._sessions[user.id]
 
     async def clear_timeout_sessions(self):
@@ -141,25 +183,94 @@ class BClient(Client):
     def clear_sessions(self):
         self._sessions.clear()
 
-    def on_command(self, command: str, *args, **kwargs):
+    def on_callback_exception(self,):
         def decorator(func):
-            self._available_commands['/' + command] = (func, args, kwargs)
+            self._func_at_exception = func
             return func
 
         return decorator
 
-    def on_callback_request(self, query: str, *args, came_from: callable = None, **kwargs):
+    def on_command(self, command: str, *args, **kwargs):
         def decorator(func):
+            self._available_commands[command] = (func, args, kwargs)
+            return func
+
+        return decorator
+
+    def _menu_factory(self,
+                      _type: Type[Menu],
+                      query: str,
+                      *args,
+                      _id: str,
+                      came_from: Menu,  # menu where we clicked on button
+                      ignore_message_not_modified: bool,
+                      **kwargs):
+        def decorator(func: callable | Menu):
+            nonlocal _id
+
+            if isinstance(func, Menu):
+                menu = _type(func.id, func.func, *args,
+                             came_from_menu_id=func.came_from_menu_id,
+                             ignore_message_not_modified=func.ignore_message_not_modified,
+                             **kwargs)
+            else:
+                if _id is None:
+                    _id = func.__qualname__
+
+                menu = _type(_id, func, *args, ignore_message_not_modified=ignore_message_not_modified, **kwargs)
+                if came_from is not None:
+                    menu.came_from_menu_id = came_from.id
+
+            self.register_menu(menu)
+
             if came_from is None:
-                self._available_functions[query] = (func, args, kwargs)
-                return func
+                self._available_menus[query] = menu
+                return menu
 
-            func = self.came_from(came_from)(func)
+            if self._available_menus.get(query):
+                self._available_menus[query][came_from.id] = menu
+            else:
+                self._available_menus[query] = {came_from.id: menu}
+            return menu
 
-            came_from_id = self.get_came_from_id(came_from)
-            if self._available_functions.get(query):
-                self._available_functions[query][came_from_id] = (func, args, kwargs)
-            self._available_functions[query] = {came_from_id: (func, args, kwargs)}
+        return decorator
+
+    def navmenu(self,
+                query: str,
+                *args,
+                _id: str = None,
+                came_from: callable | Menu = None,
+                ignore_message_not_modified: bool = False,
+                **kwargs):
+        return self._menu_factory(NavMenu,
+                                  query,
+                                  *args,
+                                  _id=_id,
+                                  came_from=came_from,
+                                  ignore_message_not_modified=ignore_message_not_modified,
+                                  **kwargs)
+
+    def funcmenu(self,
+                 query: str,
+                 *args,
+                 _id: str = None,
+                 came_from: callable | Menu = None,
+                 ignore_message_not_modified: bool = False,
+                 **kwargs):
+        return self._menu_factory(FuncMenu,
+                                  query,
+                                  *args,
+                                  _id=_id,
+                                  came_from=came_from,
+                                  ignore_message_not_modified=ignore_message_not_modified,
+                                  **kwargs)
+
+    def callback_process(self, of: callable | NavMenu):
+        def decorator(func: callable):
+            if not isinstance(of, NavMenu):
+                raise TypeError('process can be set only to navmenu u doofus')
+
+            of.callback_process = func
             return func
 
         return decorator
@@ -167,57 +278,90 @@ class BClient(Client):
     async def get_func_by_command(self, session: UserSession, message: Message):
         try:
             text = message.text.split('@', 2)[0]  # removing mention from command
+            text = text.lstrip('/')
             func, args, kwargs = self._available_commands[text]
         except KeyError:
-            if '_' not in self._available_commands:
+            if self.WILDCARD not in self._available_commands:
                 return
             func, args, kwargs = self._available_commands[self.WILDCARD]
         return await func(self, session, message, *args, **kwargs)
 
     async def get_func_by_callback(self, session: UserSession, callback_query: CallbackQuery):
+        if callback_query.data == self.back_callback:
+            return await self.go_back(session, callback_query)
+
         try:
-            possible_functions = self._available_functions[callback_query.data]
-            if isinstance(possible_functions, tuple):
-                func, args, kwargs = possible_functions
+            possible_menus = self._available_menus[callback_query.data]
+            if isinstance(possible_menus, Menu):
+                menu = possible_menus
             else:
-                func, args, kwargs = possible_functions[session.came_from_id]
+                menu = possible_menus[session.current_menu_id]
         except KeyError:
-            if self.WILDCARD not in self._available_functions:
+            current_menu = self.get_menu(session.current_menu_id)
+            if current_menu.has_callback_process():
+                return await current_menu.callback_process(self, session, callback_query)
+
+            if self.WILDCARD not in self._available_menus:
                 return
-            func, args, kwargs = self._available_functions[self.WILDCARD]
-        return await func(self, session, callback_query, *args, **kwargs)
+            menu = self._available_menus[self.WILDCARD]
 
-    def get_came_from_id(self, f: callable):
-        return self._came_from_functions.inv[f]
+        self.rstats.callback_queries_handled += 1
 
-    def came_from(self, f: callable, _id: int = None):
+        try:
+            return await self.go_to_menu(session, callback_query, menu)
+        except MessageNotModified:
+            if not menu.ignore_message_not_modified:
+                raise
+        except UserIsBlocked:
+            pass
+        except Exception as e:
+            self.rstats.exceptions_caught += 1
+            self._func_at_exception(self, session, callback_query, e)
+
+    def register_menu(self, menu: Menu):
+        if menu not in self._menu_ids.values():
+            self._menu_ids[menu.id] = menu
+
+    def get_menu(self, _id: str):
+        return self._menu_ids.get(_id)
+
+    async def go_to_menu(self, session: UserSession, callback_query: CallbackQuery, menu: Menu):
         """
-        Decorator to track from what functions we came from. Accepts explicit id as arg.
+        Sends user to a specific menu.
+
+        Note:
+            This method implies that we can go to this menu from the current one.
+            If that isn't the case - use ``BClient.jump_to_menu(session, callback_query, menu)``.
         """
 
-        if f not in self._came_from_functions.values():
-            i = _id or len(self._came_from_functions)  # getting id for new function
-            self._came_from_functions[i] = f
+        if isinstance(menu, NavMenu):
+            session.previous_menu_id = session.current_menu_id
+            session.current_menu_id = menu.id
 
-        def decorator(func: callable):
-            @wraps(func)
-            async def inner(_, session: UserSession, callback_query: CallbackQuery, *args, **kwargs):
-                session.came_from_id = self.get_came_from_id(func)
-                await func(self, session, callback_query, *args, **kwargs)
+        return await menu(self, session, callback_query)
 
-            return inner
+    async def jump_to_menu(self, session: UserSession, callback_query: CallbackQuery, menu: Menu):
+        """Sends user to a specific menu."""
 
-        return decorator
+        if isinstance(menu, NavMenu):
+            session.previous_menu_id = menu.came_from_menu_id
+            session.current_menu_id = menu.id
+
+        return await menu(self, session, callback_query)
 
     async def go_back(self, session: UserSession, callback_query: CallbackQuery):
-        if session.came_from_id is None:
-            if self.WILDCARD not in self._available_functions:
+        if session.previous_menu_id is None:
+            if self.WILDCARD not in self._available_menus:
                 return
-            func, args, kwargs = self._available_functions[self.WILDCARD]
-            return await func(self, session, callback_query, *args, **kwargs)
+            func = self._available_menus[self.WILDCARD]
+            return await func(self, session, callback_query)
 
-        came_from = self._came_from_functions[session.came_from_id]
-        await came_from(self, session, callback_query)
+        previous_menu = self._menu_ids[session.previous_menu_id]
+
+        session.current_menu_id = session.previous_menu_id
+        session.previous_menu_id = previous_menu.came_from_menu_id
+
+        return await previous_menu(self, session, callback_query)
 
     # noinspection PyUnresolvedReferences
     async def listen_message(self,
@@ -280,3 +424,98 @@ class BClient(Client):
 
         await callback_query.edit_message_text(text, *args, reply_markup=reply_markup, **kwargs)
         return await self.listen_callback(callback_query.message.chat.id, callback_query.message.id)
+
+    async def log(self, text: str, *, disable_notification: bool = True,
+                  reply_markup: ReplyKeyboardMarkup = None, parse_mode: ParseMode = None):
+        """Sends log to the log channel."""
+
+        asyncio.create_task(self._log(text, disable_notification, reply_markup, parse_mode))
+
+    async def log_message(self, session: UserSession, message: Message):
+        """Sends message log to the log channel."""
+
+        asyncio.create_task(self._log_message(session, message))
+
+    async def log_callback(self, session: UserSession, callback_query: CallbackQuery):
+        """Sends callback log to the log channel."""
+
+        asyncio.create_task(self._log_callback(session, callback_query))
+
+    async def log_inline(self, session: UserSession, inline_query: InlineQuery):
+        """Sends an inline query to the log channel."""
+
+        asyncio.create_task(self._log_inline(session, inline_query))
+
+    async def _log(self, text: str,
+                   disable_notification: bool, reply_markup: ReplyKeyboardMarkup, parse_mode: ParseMode):
+        if not self.can_log:
+            self.latest_log_dt = dt.datetime.now()                # to ensure that we won't get two logs
+            await asyncio.sleep(self.can_log_after_time.seconds)  # at the same time and fail order
+        self.latest_log_dt = dt.datetime.now()
+
+        await self.send_message(self.log_channel, text, disable_notification=disable_notification,
+                                reply_markup=reply_markup, parse_mode=parse_mode)
+
+    async def _log_message(self, session: UserSession, message: Message):
+        if config.TEST_MODE:
+            return
+
+        if not self.can_log:
+            self.latest_log_dt = dt.datetime.now()                # to ensure that we won't get two logs
+            await asyncio.sleep(self.can_log_after_time.seconds)  # at the same time and fail order
+        self.latest_log_dt = dt.datetime.now()
+
+        username = message.from_user.username
+        display_name = f'@{username}' if username is not None else f'{message.from_user.mention} (username hidden)'
+
+        text = (
+            f"✍️ User: {display_name}\n"
+            f"ID: {message.from_user.id}\n"
+            f"Telegram language: {message.from_user.language_code}\n"
+            f"Chosen language: {session.locale.lang_code}\n"
+            f"Private message: {message.text!r}"
+        )
+        await self.send_message(self.log_channel, text, disable_notification=True)
+
+    async def _log_callback(self, session: UserSession, callback_query: CallbackQuery):
+        if config.TEST_MODE:
+            return
+
+        if not self.can_log:
+            self.latest_log_dt = dt.datetime.now()                # to ensure that we won't get two logs
+            await asyncio.sleep(self.can_log_after_time.seconds)  # at the same time and fail order
+        self.latest_log_dt = dt.datetime.now()
+
+        username = callback_query.from_user.username
+        display_name = f'@{username}' if username is not None \
+            else f'{callback_query.from_user.mention} (username hidden)'
+
+        text = (
+            f"🔀 User: {display_name}\n"
+            f"ID: {callback_query.from_user.id}\n"
+            f"Telegram language: {callback_query.from_user.language_code}\n"
+            f"Chosen language: {session.locale.lang_code}\n"
+            f"Callback query: {callback_query.data}"
+        )
+        await self.send_message(self.log_channel, text, disable_notification=True)
+
+    async def _log_inline(self, session: UserSession, inline_query: InlineQuery):
+        if config.TEST_MODE:
+            return
+
+        if not self.can_log:
+            self.latest_log_dt = dt.datetime.now()                # to ensure that we won't get two logs
+            await asyncio.sleep(self.can_log_after_time.seconds)  # at the same time and fail order
+        self.latest_log_dt = dt.datetime.now()
+
+        username = inline_query.from_user.username
+        display_name = f'@{username}' if username is not None else f'{inline_query.from_user.mention} (username hidden)'
+
+        text = (
+            f"🛰 User: {display_name}\n"
+            f"ID: {inline_query.from_user.id}\n"
+            f"Telegram language: {inline_query.from_user.language_code}\n"
+            f"Chosen language: {session.locale.lang_code}\n"
+            f"Inline query: {inline_query.query!r}"
+        )
+        await self.send_message(self.log_channel, text, disable_notification=True)
