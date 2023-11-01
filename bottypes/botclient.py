@@ -22,76 +22,10 @@ from db import db_session
 from db.users import User as DBUser
 from .extended_ik import ExtendedIKM
 from .menu import Menu, NavMenu, FuncMenu
+from .sessions import UserSession, UserSessions
+from .stats import BotRegularStats
 
-
-__all__ = ('BotClient', 'UserSession')
-
-
-class UserSession:
-    __slots__ = ('dbuser_id', 'timestamp', 'current_menu_id', 'previous_menu_id', 'lang_code', 'locale')
-
-    def __init__(self, dbuser: DBUser, *, force_lang: str = None):
-        from functions import locale
-
-        self.dbuser_id = dbuser.id
-        self.timestamp = dt.datetime.now().timestamp()
-        self.current_menu_id = dbuser.current_menu_id
-        self.previous_menu_id = dbuser.previous_menu_id
-        self.lang_code = force_lang or dbuser.language
-        self.locale = locale(self.lang_code)
-
-    async def sync_with_db(self):
-        async with db_session.create_session() as db_sess:
-            # noinspection PyTypeChecker
-            query = select(DBUser).where(DBUser.id == self.dbuser_id)
-            # noinspection PyUnresolvedReferences
-            dbuser = (await db_sess.execute(query)).scalar()
-            dbuser.current_menu_id = self.current_menu_id
-            dbuser.previous_menu_id = self.previous_menu_id
-            dbuser.language = self.lang_code
-
-            logging.info(f'UserSession synced with db! {dbuser.language=}')
-            await db_sess.commit()
-
-    def update_lang(self, lang_code: str):
-        from functions import locale
-
-        self.lang_code = lang_code
-        self.locale = locale(self.lang_code)
-
-
-class UserSessions(dict[int, UserSession]):
-    def __getitem__(self, key):
-        item = super().__getitem__(key)
-        item.timestamp = dt.datetime.now().timestamp()
-        return item
-
-    async def sync_with_db(self):
-        async with db_session.create_session() as db_sess:
-            for session in self.values():
-                # noinspection PyTypeChecker
-                query = select(DBUser).where(DBUser.id == session.dbuser_id)
-                # noinspection PyUnresolvedReferences
-                dbuser = (await db_sess.execute(query)).scalar()
-                dbuser.current_menu_id = session.current_menu_id
-                dbuser.previous_menu_id = session.previous_menu_id
-                dbuser.language = session.lang_code
-
-            logging.info(f'UserSessions synced with db! {len(self)} sessions were synced.')
-            # noinspection PyUnresolvedReferences
-            await db_sess.commit()
-
-
-@dataclass(slots=True)
-class RegularStats:
-    callback_queries_handled: int = 0
-    inline_queries_handled: int = 0
-    unique_users_served: int = 0
-    exceptions_caught: int = 0
-
-    def clear(self):
-        for field in fields(self):
-            setattr(self, field.name, 0)
+__all__ = ('BotClient',)
 
 
 class BotClient(Client):
@@ -100,6 +34,7 @@ class BotClient(Client):
     """
 
     LOGS_TIMEOUT = dt.timedelta(seconds=4)  # define how often logs should be sent
+
     WILDCARD = '_'
 
     def __init__(self, *args, log_channel: int, back_callback: str, **kwargs):
@@ -122,7 +57,7 @@ class BotClient(Client):
 
         self.startup_dt = None
 
-        self.rstats = RegularStats()
+        self.rstats = BotRegularStats()
 
     @property
     def sessions(self) -> UserSessions:
@@ -141,44 +76,18 @@ class BotClient(Client):
         self.startup_dt = dt.datetime.now(dt.UTC)
 
     async def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
-        if user.id in self.sessions:
-            return self._sessions[user.id]
-
-        logging.info(f'Registering session with user {user.id=}, {user.username=}, {user.language_code=}')
-
-        async with db_session.create_session() as db_sess:
-            query = select(DBUser).where(DBUser.userid == user.id)
-            # noinspection PyUnresolvedReferences
-            dbuser = (await db_sess.execute(query)).scalar()
-            if dbuser is None:
-                dbuser = DBUser(userid=user.id,
-                                language=user.language_code)
-                db_sess.add(dbuser)
-                # noinspection PyUnresolvedReferences
-                await db_sess.commit()
-                logging.info(f'New record in db! {dbuser=}')
-            else:
-                logging.info(f'Got existing record in db. {dbuser=}')
-
-        self._sessions[user.id] = UserSession(dbuser, force_lang=force_lang)
+        session = await self._sessions.register_session(user, force_lang=force_lang)
         self.rstats.unique_users_served = len(self._sessions)
-
-        return self._sessions[user.id]
-
-    async def clear_timeout_sessions(self):
-        """Clear all sessions that exceed given timeout."""
-
-        now = dt.datetime.now()
-
-        for _id in self._sessions:
-            session_time = dt.datetime.fromtimestamp(self._sessions[_id].timestamp)
-            if (now - session_time) > self.sessions_timeout:
-                await self._sessions[_id].sync_with_db()
-                del self._sessions[_id]
+        return session
 
     async def dump_sessions(self):
         await self.clear_timeout_sessions()
         await self._sessions.sync_with_db()
+
+    async def clear_timeout_sessions(self):
+        """Clear all sessions that exceed given timeout."""
+
+        return self._sessions.clear_timeout_sessions()
 
     def clear_sessions(self):
         self._sessions.clear()
