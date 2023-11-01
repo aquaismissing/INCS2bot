@@ -46,8 +46,8 @@ bot = BotClient(config.BOT_NAME,
                 plugins={'root': 'plugins'},
                 test_mode=config.TEST_MODE,
                 workdir=config.SESS_FOLDER,
-                log_channel=config.LOGCHANNEL,
-                back_callback=LK.bot_back,)
+                log_channel_id=config.LOGCHANNEL,
+                navigate_back_callback=LK.bot_back,)
 
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
@@ -105,8 +105,8 @@ async def sync_user_data_callback(client: BotClient, callback_query: CallbackQue
 
     session = client.sessions[user.id]
 
-    if callback_query.message.chat.id == client.log_channel:
-        return await client.get_func_by_callback(session, callback_query)
+    if callback_query.message.chat.id == client.log_channel_id:
+        return await client.get_menu_by_callback(session, callback_query)
 
     await client.log_callback(session, callback_query)
 
@@ -114,7 +114,7 @@ async def sync_user_data_callback(client: BotClient, callback_query: CallbackQue
     for markup in keyboards.all_selectable_markups:
         markup.select_button_by_key(callback_query.data)
 
-    return await client.get_func_by_callback(session, callback_query)
+    return await client.get_menu_by_callback(session, callback_query)
 
 
 @bot.navmenu('main', ignore_message_not_modified=True)
@@ -406,7 +406,8 @@ async def user_profile_info(client: BotClient, session: UserSession,
 
 
 @bot.funcmenu(LK.user_gamestats_button_title, came_from=profile_info, ignore_message_not_modified=True)
-async def user_game_stats(client: BotClient, session: UserSession, callback_query: CallbackQuery, last_error: str = None):
+async def user_game_stats(client: BotClient, session: UserSession, callback_query: CallbackQuery,
+                          last_error: str = None):
     text = session.locale.steam_url_example if last_error is None else last_error
     text += '\n\n' + session.locale.bot_use_cancel
 
