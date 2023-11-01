@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass, fields
 import datetime as dt
-import logging
 from typing import Type
 
 from pyrogram import Client
@@ -15,11 +13,7 @@ from pyrogram.types import (CallbackQuery, InlineQuery, Message,
                             ReplyKeyboardRemove, ForceReply, User)
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
-from sqlalchemy.future import select
 
-import config
-from db import db_session
-from db.users import User as DBUser
 from .extended_ik import ExtendedIKM
 from .menu import Menu, NavMenu, FuncMenu
 from .sessions import UserSession, UserSessions
@@ -37,22 +31,23 @@ class BotClient(Client):
 
     WILDCARD = '_'
 
-    def __init__(self, *args, log_channel: int, back_callback: str, **kwargs):
+    def __init__(self, *args, log_channel_id: int, navigate_back_callback: str, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.log_channel = log_channel
-        self.back_callback = back_callback
+        self.log_channel_id = log_channel_id
+        self.navigate_back_callback = navigate_back_callback
 
         self._sessions: UserSessions = UserSessions()
-        self.sessions_timeout = dt.timedelta(hours=1)
 
-        self._available_commands: dict[str, tuple | dict] = {}
-        self._available_menus: dict[str, Menu | dict[str, Menu]] = {}
+        self._commands: dict[str, tuple | dict] = {}
 
-        self._menu_ids: dict[str, Menu] = {}
+        # menus
+        self._menus: dict[str, Menu] = {}
+        self._menu_routes: dict[str, Menu | dict[str, Menu]] = {}
 
         self.latest_log_dt = dt.datetime.now()
 
+        # injects
         self._func_at_exception: callable = None
 
         self.startup_dt = None
@@ -64,11 +59,11 @@ class BotClient(Client):
         return self._sessions
 
     @property
-    def can_log(self) -> bool:
+    def can_log_now(self) -> bool:
         return (dt.datetime.now() - self.latest_log_dt) >= self.LOGS_TIMEOUT
 
     @property
-    def can_log_after_time(self) -> dt.timedelta:
+    def time_for_next_log(self) -> dt.timedelta:
         return self.LOGS_TIMEOUT - (dt.datetime.now() - self.latest_log_dt)
 
     async def start(self):
@@ -92,7 +87,7 @@ class BotClient(Client):
     def clear_sessions(self):
         self._sessions.clear()
 
-    def on_callback_exception(self,):
+    def on_callback_exception(self):
         def decorator(func):
             self._func_at_exception = func
             return func
@@ -101,7 +96,7 @@ class BotClient(Client):
 
     def on_command(self, command: str, *args, **kwargs):
         def decorator(func):
-            self._available_commands[command] = (func, args, kwargs)
+            self._commands[command] = (func, args, kwargs)
             return func
 
         return decorator
@@ -130,16 +125,17 @@ class BotClient(Client):
                 if came_from is not None:
                     menu.came_from_menu_id = came_from.id
 
-            self.register_menu(menu)
+            if menu not in self._menus.values():
+                self.register_menu(menu)
 
             if came_from is None:
-                self._available_menus[query] = menu
+                self._menu_routes[query] = menu
                 return menu
 
-            if self._available_menus.get(query):
-                self._available_menus[query][came_from.id] = menu
+            if self._menu_routes.get(query):
+                self._menu_routes[query][came_from.id] = menu
             else:
-                self._available_menus[query] = {came_from.id: menu}
+                self._menu_routes[query] = {came_from.id: menu}
             return menu
 
         return decorator
@@ -174,7 +170,8 @@ class BotClient(Client):
                                   ignore_message_not_modified=ignore_message_not_modified,
                                   **kwargs)
 
-    def callback_process(self, of: callable | NavMenu):
+    @staticmethod
+    def callback_process(of: callable | NavMenu):
         def decorator(func: callable):
             if not isinstance(of, NavMenu):
                 raise TypeError('process can be set only to navmenu u doofus')
@@ -184,23 +181,30 @@ class BotClient(Client):
 
         return decorator
 
+    def get_wildcard_command(self):
+        return self._commands.get(self.WILDCARD)
+
     async def get_func_by_command(self, session: UserSession, message: Message):
         try:
             text = message.text.split('@', 2)[0]  # removing mention from command
             text = text.lstrip('/')
-            func, args, kwargs = self._available_commands[text]
+            func, args, kwargs = self._commands[text]
         except KeyError:
-            if self.WILDCARD not in self._available_commands:
+            if self.WILDCARD not in self._commands:
                 return
-            func, args, kwargs = self._available_commands[self.WILDCARD]
+            func, args, kwargs = self.get_wildcard_command()
         return await func(self, session, message, *args, **kwargs)
 
-    async def get_func_by_callback(self, session: UserSession, callback_query: CallbackQuery):
-        if callback_query.data == self.back_callback:
+    def get_wildcard_menu(self):
+        return self._menu_routes.get(self.WILDCARD)
+
+    async def get_menu_by_callback(self, session: UserSession, callback_query: CallbackQuery):
+        if callback_query.data == self.navigate_back_callback:
             return await self.go_back(session, callback_query)
 
+        is_wildcard_menu = False
         try:
-            possible_menus = self._available_menus[callback_query.data]
+            possible_menus = self._menu_routes[callback_query.data]
             if isinstance(possible_menus, Menu):
                 menu = possible_menus
             else:
@@ -210,13 +214,16 @@ class BotClient(Client):
             if current_menu.has_callback_process():
                 return await current_menu.callback_process(self, session, callback_query)
 
-            if self.WILDCARD not in self._available_menus:
+            if self.WILDCARD not in self._menu_routes:
                 return
-            menu = self._available_menus[self.WILDCARD]
+            menu = self.get_wildcard_menu()
+            is_wildcard_menu = True
 
         self.rstats.callback_queries_handled += 1
 
         try:
+            if is_wildcard_menu:
+                return await self.jump_to_menu(session, callback_query, menu)
             return await self.go_to_menu(session, callback_query, menu)
         except MessageNotModified:
             if not menu.ignore_message_not_modified:
@@ -228,26 +235,24 @@ class BotClient(Client):
             self._func_at_exception(self, session, callback_query, e)
 
     def register_menu(self, menu: Menu):
-        if menu not in self._menu_ids.values():
-            self._menu_ids[menu.id] = menu
+        if menu not in self._menus.values():
+            self._menus[menu.id] = menu
 
     def get_menu(self, _id: str):
-        return self._menu_ids.get(_id)
+        return self._menus.get(_id)
 
     async def go_to_menu(self, session: UserSession, callback_query: CallbackQuery, menu: Menu):
         """
-        Sends user to a specific menu.
+        Sends user to a specific menu if we can access that menu from the current one.
 
         Note:
-            This method implies that we can go to this menu from the current one.
-            If that isn't the case - use ``BotClient.jump_to_menu(session, callback_query, menu)``.
+            You can use ``BotClient.jump_to_menu(session, callback_query, menu)`` to avoid access check.
         """
 
-        if isinstance(menu, NavMenu):
-            session.previous_menu_id = session.current_menu_id
-            session.current_menu_id = menu.id
+        if not menu.can_come_from(session.current_menu_id):
+            raise AttributeError(f'Can\'t access {menu} from {self.get_menu(session.current_menu_id)}')
 
-        return await menu(self, session, callback_query)
+        return await self.jump_to_menu(session, callback_query, menu)
 
     async def jump_to_menu(self, session: UserSession, callback_query: CallbackQuery, menu: Menu):
         """Sends user to a specific menu."""
@@ -260,17 +265,13 @@ class BotClient(Client):
 
     async def go_back(self, session: UserSession, callback_query: CallbackQuery):
         if session.previous_menu_id is None:
-            if self.WILDCARD not in self._available_menus:
+            if self.WILDCARD not in self._menu_routes:
                 return
-            func = self._available_menus[self.WILDCARD]
+            func = self.get_wildcard_menu()
             return await func(self, session, callback_query)
 
-        previous_menu = self._menu_ids[session.previous_menu_id]
-
-        session.current_menu_id = session.previous_menu_id
-        session.previous_menu_id = previous_menu.came_from_menu_id
-
-        return await previous_menu(self, session, callback_query)
+        previous_menu = self._menus[session.previous_menu_id]
+        return await self.jump_to_menu(session, callback_query, previous_menu)
 
     # noinspection PyUnresolvedReferences
     async def listen_message(self,
@@ -338,93 +339,106 @@ class BotClient(Client):
                   reply_markup: ReplyKeyboardMarkup = None, parse_mode: ParseMode = None):
         """Sends log to the log channel."""
 
+        if self.test_mode:
+            return
+
         asyncio.create_task(self._log(text, disable_notification, reply_markup, parse_mode))
 
     async def log_message(self, session: UserSession, message: Message):
         """Sends message log to the log channel."""
+
+        if self.test_mode:
+            return
 
         asyncio.create_task(self._log_message(session, message))
 
     async def log_callback(self, session: UserSession, callback_query: CallbackQuery):
         """Sends callback log to the log channel."""
 
+        if self.test_mode:
+            return
+
         asyncio.create_task(self._log_callback(session, callback_query))
 
     async def log_inline(self, session: UserSession, inline_query: InlineQuery):
         """Sends an inline query to the log channel."""
 
+        if self.test_mode:
+            return
+
         asyncio.create_task(self._log_inline(session, inline_query))
 
     async def _log(self, text: str,
-                   disable_notification: bool, reply_markup: ReplyKeyboardMarkup, parse_mode: ParseMode):
-        if not self.can_log:
-            self.latest_log_dt = dt.datetime.now()                # to ensure that we won't get two logs
-            await asyncio.sleep(self.can_log_after_time.seconds)  # at the same time and fail order
-        self.latest_log_dt = dt.datetime.now()
-
-        await self.send_message(self.log_channel, text, disable_notification=disable_notification,
-                                reply_markup=reply_markup, parse_mode=parse_mode)
-
-    async def _log_message(self, session: UserSession, message: Message):
-        if config.TEST_MODE:
+                   disable_notification: bool,
+                   reply_markup: ReplyKeyboardMarkup,
+                   parse_mode: ParseMode):
+        if self.test_mode:
             return
 
-        if not self.can_log:
-            self.latest_log_dt = dt.datetime.now()                # to ensure that we won't get two logs
-            await asyncio.sleep(self.can_log_after_time.seconds)  # at the same time and fail order
+        if not self.can_log_now:
+            self.latest_log_dt = dt.datetime.now()                       # to ensure that we won't get two logs
+            await asyncio.sleep(self.time_for_next_log.total_seconds())  # at the same time and fail order
+        self.latest_log_dt = dt.datetime.now()
+
+        await self.send_message(self.log_channel_id, text,
+                                disable_notification=disable_notification,
+                                reply_markup=reply_markup,
+                                parse_mode=parse_mode)
+
+    async def _log_message(self, session: UserSession, message: Message):
+        if self.test_mode:
+            return
+
+        if not self.can_log_now:
+            self.latest_log_dt = dt.datetime.now()                       # to ensure that we won't get two logs
+            await asyncio.sleep(self.time_for_next_log.total_seconds())  # at the same time and fail order
         self.latest_log_dt = dt.datetime.now()
 
         username = message.from_user.username
         display_name = f'@{username}' if username is not None else f'{message.from_user.mention} (username hidden)'
 
-        text = (
-            f"✍️ User: {display_name}\n"
-            f"ID: {message.from_user.id}\n"
-            f"Telegram language: {message.from_user.language_code}\n"
-            f"Chosen language: {session.locale.lang_code}\n"
-            f"Private message: {message.text!r}"
-        )
-        await self.send_message(self.log_channel, text, disable_notification=True)
+        text = (f'✍️ User: {display_name}\n'
+                f'ID: {message.from_user.id}\n'
+                f'Telegram language: {message.from_user.language_code}\n'
+                f'Chosen language: {session.locale.lang_code}\n'
+                f'Private message: {message.text!r}')
+        await self.send_message(self.log_channel_id, text, disable_notification=True)
 
     async def _log_callback(self, session: UserSession, callback_query: CallbackQuery):
-        if config.TEST_MODE:
+        if self.test_mode:
             return
 
-        if not self.can_log:
-            self.latest_log_dt = dt.datetime.now()                # to ensure that we won't get two logs
-            await asyncio.sleep(self.can_log_after_time.seconds)  # at the same time and fail order
+        if not self.can_log_now:
+            self.latest_log_dt = dt.datetime.now()                       # to ensure that we won't get two logs
+            await asyncio.sleep(self.time_for_next_log.total_seconds())  # at the same time and fail order
         self.latest_log_dt = dt.datetime.now()
 
         username = callback_query.from_user.username
         display_name = f'@{username}' if username is not None \
             else f'{callback_query.from_user.mention} (username hidden)'
 
-        text = (
-            f"🔀 User: {display_name}\n"
-            f"ID: {callback_query.from_user.id}\n"
-            f"Telegram language: {callback_query.from_user.language_code}\n"
-            f"Chosen language: {session.locale.lang_code}\n"
-            f"Callback query: {callback_query.data}"
-        )
-        await self.send_message(self.log_channel, text, disable_notification=True)
+        text = (f'🔀 User: {display_name}\n'
+                f'ID: {callback_query.from_user.id}\n'
+                f'Telegram language: {callback_query.from_user.language_code}\n'
+                f'Chosen language: {session.locale.lang_code}\n'
+                f'Callback query: {callback_query.data}')
+        await self.send_message(self.log_channel_id, text, disable_notification=True)
 
     async def _log_inline(self, session: UserSession, inline_query: InlineQuery):
-        if config.TEST_MODE:
+        if self.test_mode:
             return
 
-        if not self.can_log:
-            self.latest_log_dt = dt.datetime.now()                # to ensure that we won't get two logs
-            await asyncio.sleep(self.can_log_after_time.seconds)  # at the same time and fail order
+        if not self.can_log_now:
+            self.latest_log_dt = dt.datetime.now()                       # to ensure that we won't get two logs
+            await asyncio.sleep(self.time_for_next_log.total_seconds())  # at the same time and fail order
         self.latest_log_dt = dt.datetime.now()
 
         username = inline_query.from_user.username
         display_name = f'@{username}' if username is not None else f'{inline_query.from_user.mention} (username hidden)'
 
-        text = (
-            f"🛰 User: {display_name}\n"
-            f"ID: {inline_query.from_user.id}\n"
-            f"Telegram language: {inline_query.from_user.language_code}\n"
-            f"Chosen language: {session.locale.lang_code}\n"
-            f"Inline query: {inline_query.query!r}"
-        )
-        await self.send_message(self.log_channel, text, disable_notification=True)
+        text = (f'🛰 User: {display_name}\n'
+                f'ID: {inline_query.from_user.id}\n'
+                f'Telegram language: {inline_query.from_user.language_code}\n'
+                f'Chosen language: {session.locale.lang_code}\n'
+                f'Inline query: {inline_query.query!r}')
+        await self.send_message(self.log_channel_id, text, disable_notification=True)

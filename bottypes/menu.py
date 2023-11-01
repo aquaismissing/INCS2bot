@@ -25,14 +25,18 @@ class Menu:
         return self.func(*args, *self.args, **kwargs, **self.kwargs)
 
     def __repr__(self):
-        return f'<{self.__class__.__name__}(func={self.func})>'
+        return f'<{self.__class__.__name__}(id={self.id}, func={self.func})>'
 
     def has_callback_process(self) -> bool:
         return self.callback_process is not None
 
+    def can_come_from(self, _id):
+        return self.came_from_menu_id == _id
+
 
 class NavMenu(Menu):
-    pass
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, *self.args, **kwargs, **self.kwargs)
 
 
 class FuncMenu(Menu):
