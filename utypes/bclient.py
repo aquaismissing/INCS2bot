@@ -1,3 +1,4 @@
+from dataclasses import dataclass, fields
 import datetime as dt
 from functools import wraps
 import logging
@@ -71,6 +72,18 @@ class UserSessions(dict[int, UserSession]):
             await db_sess.commit()
 
 
+@dataclass(slots=True)
+class BotRegularStats:
+    callback_queries_handled: int = 0
+    inline_queries_handled: int = 0
+    unique_users_served: int = 0
+    exceptions_caught: int = 0
+
+    def clear(self):
+        for field in fields(self):
+            setattr(self, field.name, 0)
+
+
 class BClient(Client):
     """
     Custom pyrogram.Client class to add custom properties and methods and stop PyCharm annoy me.
@@ -89,6 +102,9 @@ class BClient(Client):
         self.sessions_timeout = dt.timedelta(hours=1)
         self.latest_log_dt = dt.datetime.now()  # todo: implement logs functions in BClient?
 
+        self.startup_dt = None
+        self.rstats = BotRegularStats()
+
     @property
     def sessions(self) -> UserSessions:
         return self._sessions
@@ -100,6 +116,10 @@ class BClient(Client):
     @property
     def can_log_after_time(self) -> dt.timedelta:
         return self.LOGS_TIMEOUT - (dt.datetime.now() - self.latest_log_dt)
+
+    async def start(self):
+        await super().start()
+        self.startup_dt = dt.datetime.now(dt.UTC)
 
     async def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
         logging.info(f'Registering session with user {user.id=}, {user.username=}, {user.language_code=}')
@@ -119,6 +139,7 @@ class BClient(Client):
                 logging.info(f'Got existing record in db. {dbuser=}')
 
         self._sessions[user.id] = UserSession(dbuser, force_lang=force_lang)
+        self.rstats.unique_users_served += 1
         return self._sessions[user.id]
 
     async def clear_timeout_sessions(self):
@@ -170,6 +191,8 @@ class BClient(Client):
             if '_' not in self._available_functions:
                 return
             func, args, kwargs = self._available_functions['_']
+
+        self.rstats.callback_queries_handled += 1
         return await func(self, session, callback_query, *args, **kwargs)
 
     def came_from(self, f: callable, _id: int = None):

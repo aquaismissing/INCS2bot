@@ -66,6 +66,7 @@ def log_exception_callback(func):
             logging.exception('Caught exception!')
             await client.send_message(config.LOGCHANNEL, f'❗️ {traceback.format_exc()}',
                                       disable_notification=True, parse_mode=ParseMode.DISABLED)
+            client.rstats.exceptions_caught += 1
             await something_went_wrong(client, session, callback_query)
 
     return inner
@@ -962,12 +963,29 @@ async def log_ping(_, __, callback_query: CallbackQuery):
     await callback_query.answer('Yes, I AM working!')
 
 
+async def regular_stats_report(client: BClient):
+    now = dt.datetime.now(dt.UTC)
+
+    text = (f'📊 **Some stats for the past 8 hours:**\n'
+            f'\n'
+            f'• Unique users served: {client.rstats.unique_users_served}\n'
+            f'• Callback queries handled: {client.rstats.callback_queries_handled}\n'
+            f'• Inline queries handled: {client.rstats.inline_queries_handled}\n'
+            f'• Exceptions caught: {client.rstats.exceptions_caught}\n'
+            f'\n'
+            f'📁 **Other stats:**\n'
+            f'\n'
+            f'• Bot started up at: {now:%Y-%m-%d %H:%M:%S} (UTC)\n'
+            f'• Is working for: {info_formatters.format_timedelta(now - client.startup_dt)}')
+    await log(client, text, reply_markup=keyboards.log_ping_markup)
+    client.rstats.clear()
+
+
 async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=30)
-    scheduler.add_job(log, 'interval', hours=8,
-                      args=(bot, "Report: I\'m still active!"),
-                      kwargs={'reply_markup': keyboards.log_ping_markup})
+    scheduler.add_job(regular_stats_report, 'interval', hours=8,
+                      args=(bot,))
 
     scheduler.start()
 
