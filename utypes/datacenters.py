@@ -315,6 +315,10 @@ class DatacenterAtlas:
             Datacenter(
                 "chennai",
                 l10n_key_title=LK.dc_india_chennai
+            ),
+            Datacenter(
+                "bombay",
+                l10n_key_title=LK.dc_india_bombay
             )
         ],
         "🇮🇳",
