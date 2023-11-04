@@ -35,7 +35,7 @@ class UserSession:
             dbuser.previous_menu_id = self.previous_menu_id
             dbuser.language = self.lang_code
 
-            logging.info(f'UserSession synced with db! {dbuser.language=}')
+            logging.info(f'UserSession synced with db! {dbuser=}')
             await db_sess.commit()
 
     def update_lang(self, lang_code: str):

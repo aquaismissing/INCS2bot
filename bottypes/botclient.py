@@ -80,9 +80,9 @@ class BotClient(Client):
         await self._sessions.sync_with_db()
 
     async def clear_timeout_sessions(self):
-        """Clear all sessions that exceed given timeout."""
+        """Clear all sessions that exceed a given lifetime."""
 
-        return self._sessions.clear_timeout_sessions()
+        return await self._sessions.clear_timeout_sessions()
 
     def clear_sessions(self):
         self._sessions.clear()
@@ -219,7 +219,7 @@ class BotClient(Client):
             menu = self.get_wildcard_menu()
             is_wildcard_menu = True
 
-        self.rstats.callback_queries_handled += 1
+        self.rstats.callback_queries_handled()
 
         try:
             if is_wildcard_menu:
@@ -231,7 +231,7 @@ class BotClient(Client):
         except UserIsBlocked:
             pass
         except Exception as e:
-            self.rstats.exceptions_caught += 1
+            self.rstats.exceptions_caught()
             self._func_at_exception(self, session, callback_query, e)
 
     def register_menu(self, menu: Menu):

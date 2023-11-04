@@ -35,8 +35,7 @@ class Menu:
 
 
 class NavMenu(Menu):
-    def __call__(self, *args, **kwargs):
-        return self.func(*args, *self.args, **kwargs, **self.kwargs)
+    pass
 
 
 class FuncMenu(Menu):
