@@ -89,12 +89,12 @@ def sweden(locale: Locale):
     return _format_dc_data(DatacenterAtlas.SWEDEN, locale)
 
 
-def us_north(locale: Locale):
-    return _format_dc_data(DatacenterAtlas.US_NORTH, locale)
+def us_east(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.US_EAST, locale)
 
 
-def us_south(locale: Locale):
-    return _format_dc_data(DatacenterAtlas.US_SOUTH, locale)
+def us_west(locale: Locale):
+    return _format_dc_data(DatacenterAtlas.US_WEST, locale)
 
 
 def argentina(locale: Locale):

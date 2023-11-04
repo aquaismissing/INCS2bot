@@ -269,16 +269,16 @@ async def dc_us(_, session: UserSession, callback_query: CallbackQuery):
                                            reply_markup=keyboards.dc_us_markup(session.locale))
 
 
-@bot.on_callback_request(LK.dc_us_north)
+@bot.on_callback_request(LK.dc_us_east)
 @bot.came_from(datacenters)
-async def send_dc_us_north(client: BClient, session: UserSession, callback_query: CallbackQuery):
-    await send_dc_state(client, session, callback_query, datacenter_handlers.us_north, keyboards.dc_us_markup)
+async def send_dc_us_east(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_dc_state(client, session, callback_query, datacenter_handlers.us_east, keyboards.dc_us_markup)
 
 
-@bot.on_callback_request(LK.dc_us_south)
+@bot.on_callback_request(LK.dc_us_west)
 @bot.came_from(datacenters)
-async def send_dc_us_south(client: BClient, session: UserSession, callback_query: CallbackQuery):
-    await send_dc_state(client, session, callback_query, datacenter_handlers.us_south, keyboards.dc_us_markup)
+async def send_dc_us_west(client: BClient, session: UserSession, callback_query: CallbackQuery):
+    await send_dc_state(client, session, callback_query, datacenter_handlers.us_west, keyboards.dc_us_markup)
 
 
 @bot.on_callback_request(LK.regions_southamerica)

@@ -173,77 +173,46 @@ class DatacenterAtlas:
         LK.dc_sweden_title
     )
 
-    US_NORTH = DatacenterGroup(
-        "us_north",
+    US_EAST = DatacenterRegion(
+        "us_east",
         [
-            DatacenterRegion(
-                "northcentral",
-                [
-                    Datacenter(
-                        "chicago",
-                        l10n_key_title=LK.dc_us_north_central_chicago
-                    ),
-                ],
-                symbol="🇺🇸",
-                l10n_key_title=LK.dc_us_north_central_title
+            Datacenter(
+                "chicago",
+                l10n_key_title=LK.dc_us_chicago
             ),
-            DatacenterRegion(
-                "northeast",
-                [
-                    Datacenter(
-                        "sterling",
-                        l10n_key_title=LK.dc_us_north_east_sterling
-                    ),
-                ],
-                symbol="🇺🇸",
-                l10n_key_title=LK.dc_us_north_east_title
+            Datacenter(
+                "sterling",
+                l10n_key_title=LK.dc_us_sterling
             ),
-            DatacenterRegion(
-                "northwest",
-                [
-                    Datacenter(
-                        "new_york",
-                        l10n_key_title=LK.dc_us_north_west_new_york
-                    ),
-                    Datacenter(
-                        "seattle",
-                        l10n_key_title=LK.dc_us_north_west_seattle
-                    ),
-                ],
-                symbol="🇺🇸",
-                l10n_key_title=LK.dc_us_north_west_title
+            Datacenter(
+                "new_york",
+                l10n_key_title=LK.dc_us_new_york
+            ),
+            Datacenter(
+                "atlanta",
+                l10n_key_title=LK.dc_us_atlanta
             )
         ],
-        LK.dc_north
+        "🇺🇸",
+        LK.dc_east,
+        LK.dc_us_east_title
     )
 
-    US_SOUTH = DatacenterGroup(
-        "us_south",
+    US_WEST = DatacenterRegion(
+        "us_west",
         [
-            DatacenterRegion(
-                "southwest",
-                [
-                    Datacenter(
-                        "los_angeles",
-                        l10n_key_title=LK.dc_us_south_west_los_angeles
-                    ),
-                ],
-                symbol="🇺🇸",
-                l10n_key_title=LK.dc_us_south_west_title
+            Datacenter(
+                "los_angeles",
+                l10n_key_title=LK.dc_us_los_angeles
             ),
-            DatacenterRegion(
-                "southeast",
-                [
-                    Datacenter(
-                        "atlanta",
-                        l10n_key_title=LK.dc_us_south_east_atlanta
-                    ),
-                ],
-                symbol="🇺🇸",
-                l10n_key_title=LK.dc_us_south_east_title
+            Datacenter(
+                "seattle",
+                l10n_key_title=LK.dc_us_seattle
             )
         ],
-        LK.dc_south
+        "🇺🇸",
+        LK.dc_west,
+        LK.dc_us_west_title
     )
 
     ARGENTINA = DatacenterRegion(

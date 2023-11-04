@@ -95,6 +95,8 @@ class Locale(SLocale):
 
     dc_north: str  # North
     dc_south: str  # South
+    dc_east: str  # East
+    dc_west: str  # West
 
     dc_africa_title: str  # South Africaʼs DC
     dc_africa_inline_title: str  # African DC
@@ -134,21 +136,18 @@ class Locale(SLocale):
     dc_spain_madrid: str  # Madrid
 
     dc_us: str  # USA
-    dc_us_north: str  # North
-    dc_us_south: str  # South
-    dc_us_north_inline_title: str  # Northern USA DC
-    dc_us_north_central_title: str  # Northcentral DC
-    dc_us_north_central_chicago: str  # Chicago
-    dc_us_north_east_title: str  # Northeast DC
-    dc_us_north_east_sterling: str  # Sterling
-    dc_us_north_west_title: str  # Northwest DC
-    dc_us_north_west_new_york: str  # New York
-    dc_us_north_west_seattle: str  # Seattle
-    dc_us_south_inline_title: str  # Southern USA DC
-    dc_us_south_east_title: str  # Southeast DC
-    dc_us_south_east_atlanta: str  # Atlanta
-    dc_us_south_west_title: str  # Southwest DC
-    dc_us_south_west_los_angeles: str  # Los Angeles
+    dc_us_east: str  # East
+    dc_us_east_title: str  # East USA DC
+    dc_us_east_inline_title: str  # Eastern USA DC
+    dc_us_chicago: str  # Chicago
+    dc_us_sterling: str  # Sterling
+    dc_us_new_york: str  # New York
+    dc_us_atlanta: str  # Atlanta
+    dc_us_west: str  # West
+    dc_us_west_title: str  # West USA DC
+    dc_us_west_inline_title: str  # Western USA DC
+    dc_us_seattle: str  # Seattle
+    dc_us_los_angeles: str  # Los Angeles
 
     dc_argentina: str  # Argentina
     dc_argentina_title: str  # Argentinaʼs DC
