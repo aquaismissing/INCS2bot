@@ -22,6 +22,7 @@ Here you can see translations' progress and contributors' list:
 |  fi  | Finnish      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
 |  fr  | French       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
 |  hi  | Hindi        | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  it  | Italian      | ████████▒▒ 80%  |                      missing: leaderboard, USA DC                |          [MrJiavo]         |
 |  ja  | Japanese     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
 |  no  | Norwegian    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
 |  pl  | Polish       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
