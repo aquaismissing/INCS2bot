@@ -43,7 +43,7 @@ Here you can see translations' progress and contributors' list:
 
 ### Steps
 
-1. Fork this repository. [100%]
+1. Fork this repository.
    \
    ![forking repository](../media/fork_repo.png)
 2. Open Git Bash and clone the forked repository: `git clone {your fork link}`.
@@ -60,8 +60,8 @@ Here you can see translations' progress and contributors' list:
      Just copy `en.json` and rename it with ISO 639-1 code of prefered language (e.g. `de.json`).
       - [List of ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
 5. Open the file and start translating it based on string keys and original text.
-   - We highly recommend checking the bot functionality to have more text context.
-6. You can also add some tags in your language to `tags.json`.
+   - We highly recommend checking the bot functionality to have more context.
+6. Remember to add some tags in your language to `tags.json`.
 7. In Git, add new files, then commit and push all the changes.
    \
    ![commiting changes](../media/commit_changes.png)
