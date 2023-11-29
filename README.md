@@ -14,7 +14,7 @@ and most of the codebase was rewritten to be more modular and perfomant.
 
 Here are some noteworthy changes:
 - Bot now uses inline keyboards instead of reply ones
-- Most of the bot messages stay in one, reducing the clutter in messages
+- Most of the bot messages stay in one, reducing the clutter in message history
 - More user-friendly approach for inline queries with the help of tags
 - Personal settings (only language settings available for now)
 - Translated on **8** different languages, thanks to our beloved community
@@ -31,7 +31,7 @@ We also have plans on adding more functionality and QoL features.
 - Extended Inline Keyboard Markups (**ExtendedIKM**s), 
   made to integrate extra functionality into regular **IKM**s (e.g. localization, selection indicators)
 - Use of decorators to support transitions between menus and clean up the codebase
-- Using sqlite instead of csv for database!
+- Using sqlite instead of csv for a database!
 
 ### How can I contribute?
 
