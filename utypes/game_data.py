@@ -351,7 +351,7 @@ def drop_cap_reset_timer():
 
     time_left = wanted_datetime - now
 
-    days_left = time_left.days
+    days_left = time_left.days % 7
     hours_left = time_left.seconds // HOUR
     minutes_left = time_left.seconds % HOUR // MINUTE
     seconds_left = time_left.seconds % MINUTE
