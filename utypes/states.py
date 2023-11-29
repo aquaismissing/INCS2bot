@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import NamedTuple
 
 # noinspection PyPep8Naming
@@ -30,7 +32,7 @@ class States:
     UNKNOWN = State('unknown', LK.states_unknown)
 
     @staticmethod
-    def get(data):
+    def get(data) -> State | None:
         data = data.replace(' ', '_').upper()
         try:
             return vars(States)[data]
