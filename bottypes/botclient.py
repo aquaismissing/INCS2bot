@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import datetime as dt
-import typing
 from typing import Type
 
 from pyrogram import Client
@@ -183,14 +182,12 @@ class BotClient(Client):
         return decorator
 
     @staticmethod
-    def message_process(of: callable | NavMenu, *, go_back_after: bool = False):
+    def message_process(of: callable | NavMenu):
         def decorator(func: callable):
             if not isinstance(of, NavMenu):
                 raise TypeError('process can be set only to navmenu u doofus')
 
             of.message_process = func
-            if go_back_after:
-                of.go_back_after_message_process = go_back_after
             return func
 
         return decorator

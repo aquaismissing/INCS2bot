@@ -18,7 +18,6 @@ class Menu:
 
         # hooked process
         self.message_process = message_process
-        self.go_back_after_message_process = False
         self.callback_process = callback_process
 
         # utils
