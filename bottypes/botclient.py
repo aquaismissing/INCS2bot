@@ -429,7 +429,7 @@ class BotClient(Client):
                 f'ID: {message.from_user.id}\n'
                 f'Telegram language: {message.from_user.language_code}\n'
                 f'Chosen language: {session.locale.lang_code}\n'
-                f'Private message: {message.text!r}')
+                f'Private message: "{message.text}"')
         await self.send_message(self.log_channel_id, text, disable_notification=True)
 
     async def _log_callback(self, session: UserSession, callback_query: CallbackQuery):
@@ -468,5 +468,5 @@ class BotClient(Client):
                 f'ID: {inline_query.from_user.id}\n'
                 f'Telegram language: {inline_query.from_user.language_code}\n'
                 f'Chosen language: {session.locale.lang_code}\n'
-                f'Inline query: {inline_query.query!r}')
+                f'Inline query: "{inline_query.query}"')
         await self.send_message(self.log_channel_id, text, disable_notification=True)
