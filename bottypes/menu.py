@@ -5,6 +5,7 @@ class Menu:
                  *args,
                  came_from_menu_id: str | None = None,
                  ignore_message_not_modified: bool,
+                 message_process: callable = None,
                  callback_process: callable = None,
                  **kwargs):
         self.id = _id
@@ -16,16 +17,21 @@ class Menu:
         self.came_from_menu_id = came_from_menu_id
 
         # hooked process
+        self.message_process = message_process
+        self.go_back_after_message_process = False
         self.callback_process = callback_process
 
         # utils
         self.ignore_message_not_modified = ignore_message_not_modified
 
-    def __call__(self, *args, **kwargs):
-        return self.func(*args, *self.args, **kwargs, **self.kwargs)
+    async def __call__(self, *args, **kwargs):
+        return await self.func(*args, *self.args, **kwargs, **self.kwargs)
 
     def __repr__(self):
         return f'<{self.__class__.__name__}(id={self.id}, func={self.func})>'
+
+    def has_message_process(self) -> bool:
+        return self.message_process is not None
 
     def has_callback_process(self) -> bool:
         return self.callback_process is not None

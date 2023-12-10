@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime as dt
+import typing
 from typing import Type
 
 from pyrogram import Client
@@ -181,6 +182,19 @@ class BotClient(Client):
 
         return decorator
 
+    @staticmethod
+    def message_process(of: callable | NavMenu, *, go_back_after: bool = False):
+        def decorator(func: callable):
+            if not isinstance(of, NavMenu):
+                raise TypeError('process can be set only to navmenu u doofus')
+
+            of.message_process = func
+            if go_back_after:
+                of.go_back_after_message_process = go_back_after
+            return func
+
+        return decorator
+
     def get_wildcard_command(self):
         return self._commands.get(self.WILDCARD)
 
@@ -199,8 +213,9 @@ class BotClient(Client):
         return self._menu_routes.get(self.WILDCARD)
 
     async def get_menu_by_callback(self, session: UserSession, callback_query: CallbackQuery):
+        bot_message = callback_query.message
         if callback_query.data == self.navigate_back_callback:
-            return await self.go_back(session, callback_query)
+            return await self.go_back(session, bot_message)
 
         is_wildcard_menu = False
         try:
@@ -223,16 +238,28 @@ class BotClient(Client):
 
         try:
             if is_wildcard_menu:
-                return await self.jump_to_menu(session, callback_query, menu)
-            return await self.go_to_menu(session, callback_query, menu)
+                last_message = await self.jump_to_menu(session, bot_message, menu)
+            else:
+                last_message = await self.go_to_menu(session, bot_message, menu)
         except MessageNotModified:
             if not menu.ignore_message_not_modified:
                 raise
+            return
         except UserIsBlocked:
-            pass
+            return
+        except asyncio.exceptions.TimeoutError:
+            return
         except Exception as e:
-            self.rstats.exceptions_caught()
-            self._func_at_exception(self, session, callback_query, e)
+            self.rstats.exceptions_caught += 1
+            last_message = await self._func_at_exception(self, session, callback_query, e)
+
+        if last_message:
+            try:
+                last_message = await last_message  # for some reason sometimes we need to await for this message
+            except TypeError:
+                pass
+
+            session.last_bot_pm_id = last_message.id
 
     def register_menu(self, menu: Menu):
         if menu not in self._menus.values():
@@ -241,7 +268,7 @@ class BotClient(Client):
     def get_menu(self, _id: str):
         return self._menus.get(_id)
 
-    async def go_to_menu(self, session: UserSession, callback_query: CallbackQuery, menu: Menu):
+    async def go_to_menu(self, session: UserSession, bot_message: Message, menu: Menu):
         """
         Sends user to a specific menu if we can access that menu from the current one.
 
@@ -252,26 +279,26 @@ class BotClient(Client):
         if not menu.can_come_from(session.current_menu_id):
             raise AttributeError(f'Can\'t access {menu} from {self.get_menu(session.current_menu_id)}')
 
-        return await self.jump_to_menu(session, callback_query, menu)
+        return await self.jump_to_menu(session, bot_message, menu)
 
-    async def jump_to_menu(self, session: UserSession, callback_query: CallbackQuery, menu: Menu):
+    async def jump_to_menu(self, session: UserSession, bot_message: Message, menu: Menu):
         """Sends user to a specific menu."""
 
         if isinstance(menu, NavMenu):
             session.previous_menu_id = menu.came_from_menu_id
             session.current_menu_id = menu.id
 
-        return await menu(self, session, callback_query)
+        return await menu(self, session, bot_message)
 
-    async def go_back(self, session: UserSession, callback_query: CallbackQuery):
+    async def go_back(self, session: UserSession, bot_message: Message):
         if session.previous_menu_id is None:
             if self.WILDCARD not in self._menu_routes:
                 return
             func = self.get_wildcard_menu()
-            return await func(self, session, callback_query)
+            return await func(self, session, bot_message)
 
         previous_menu = self._menus[session.previous_menu_id]
-        return await self.jump_to_menu(session, callback_query, previous_menu)
+        return await self.jump_to_menu(session, bot_message, previous_menu)
 
     # noinspection PyUnresolvedReferences
     async def listen_message(self,
@@ -321,19 +348,20 @@ class BotClient(Client):
                                              filters,
                                              timeout)
 
-    async def ask_message_silently(self, callback_query: CallbackQuery,
-                                   text: str, *args, reply_markup: ExtendedIKM = None, **kwargs) -> Message:
+    async def ask_message_silently(self, message: Message,
+                                   text: str, *args,
+                                   reply_markup: ExtendedIKM = None, timeout: int = None, **kwargs) -> Message:
         """Asks for a message in the same message."""
 
-        await callback_query.edit_message_text(text, *args, reply_markup=reply_markup, **kwargs)
-        return await self.listen_message(callback_query.message.chat.id)
+        await message.edit(text, *args, reply_markup=reply_markup, **kwargs)
+        return await self.listen_message(message.chat.id, timeout=timeout)
 
-    async def ask_callback_silently(self, callback_query: CallbackQuery,
-                                    text: str, *args, reply_markup: ExtendedIKM = None, **kwargs) -> CallbackQuery:
+    async def ask_callback_silently(self, message: Message,
+                                    text: str, *args,
+                                    reply_markup: ExtendedIKM = None, timeout: int = None, **kwargs) -> CallbackQuery:
         """Asks for a callback query in the same message."""
-
-        await callback_query.edit_message_text(text, *args, reply_markup=reply_markup, **kwargs)
-        return await self.listen_callback(callback_query.message.chat.id, callback_query.message.id)
+        await message.edit(text, *args, reply_markup=reply_markup, **kwargs)
+        return await self.listen_callback(message.chat.id, message.id, timeout=timeout)
 
     async def log(self, text: str, *, disable_notification: bool = True,
                   reply_markup: ReplyKeyboardMarkup = None, parse_mode: ParseMode = None):
