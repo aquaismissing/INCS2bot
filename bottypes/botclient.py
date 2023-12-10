@@ -72,7 +72,7 @@ class BotClient(Client):
 
     async def register_session(self, user: User, message: Message = None, *, force_lang: str = None) -> UserSession:
         session = await self._sessions.register_session(user, message, force_lang=force_lang)
-        self.rstats.unique_users_served(user.id)
+        self.rstats.unique_users_served.append(user.id)
         return session
 
     async def dump_sessions(self):
@@ -219,7 +219,7 @@ class BotClient(Client):
             menu = self.get_wildcard_menu()
             is_wildcard_menu = True
 
-        self.rstats.callback_queries_handled()
+        self.rstats.callback_queries_handled += 1
 
         try:
             if is_wildcard_menu:
