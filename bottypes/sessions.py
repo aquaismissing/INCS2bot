@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import logging
 
-from pyrogram.types import User
+from pyrogram.types import Message, User
 from sqlalchemy.future import select
 
 from db import db_session
@@ -14,7 +14,9 @@ __all__ = ('UserSession', 'UserSessions')
 
 
 class UserSession:
-    __slots__ = ('dbuser_id', 'timestamp', 'current_menu_id', 'previous_menu_id', 'lang_code', 'locale')
+    __slots__ = ('dbuser_id', 'timestamp', 'current_menu_id',
+                 'previous_menu_id', 'lang_code', 'last_bot_pm_id',
+                 'locale')
 
     def __init__(self, dbuser: DBUser, *, force_lang: str = None):
         from functions import locale
@@ -24,6 +26,7 @@ class UserSession:
         self.current_menu_id = dbuser.current_menu_id
         self.previous_menu_id = dbuser.previous_menu_id
         self.lang_code = force_lang or dbuser.language
+        self.last_bot_pm_id = dbuser.last_bot_pm_id
         self.locale = locale(self.lang_code)
 
     async def sync_with_db(self):
@@ -34,6 +37,7 @@ class UserSession:
             dbuser.current_menu_id = self.current_menu_id
             dbuser.previous_menu_id = self.previous_menu_id
             dbuser.language = self.lang_code
+            dbuser.last_bot_pm_id = self.last_bot_pm_id
 
             logging.info(f'UserSession synced with db! {dbuser=}')
             await db_sess.commit()
@@ -62,11 +66,12 @@ class UserSessions(dict[int, UserSession]):
                 dbuser.current_menu_id = session.current_menu_id
                 dbuser.previous_menu_id = session.previous_menu_id
                 dbuser.language = session.lang_code
+                dbuser.last_bot_pm_id = session.last_bot_pm_id
 
             logging.info(f'UserSessions synced with db! {len(self)} sessions were synced.')
             await db_sess.commit()
 
-    async def register_session(self, user: User, *, force_lang: str = None) -> UserSession:
+    async def register_session(self, user: User, message: Message, *, force_lang: str = None) -> UserSession:
         if user.id in self:
             return self[user.id]
 
@@ -77,7 +82,8 @@ class UserSessions(dict[int, UserSession]):
             dbuser = (await db_sess.execute(query)).scalar()
             if dbuser is None:
                 dbuser = DBUser(userid=user.id,
-                                language=user.language_code)
+                                language=user.language_code,
+                                last_bot_pm_id=message.id if message else None)
                 db_sess.add(dbuser)
                 await db_sess.commit()
                 logging.info(f'New record in db! {dbuser=}')
