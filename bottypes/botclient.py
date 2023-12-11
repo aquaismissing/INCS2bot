@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime as dt
+import logging
 from typing import Type
 
 from pyrogram import Client
@@ -90,8 +91,15 @@ class BotClient(Client):
 
     def on_callback_exception(self):
         def decorator(func):
-            self._func_at_exception = func
-            return func
+            async def inner(client: BotClient, session: UserSession, bot_message: Message, exc: Exception,
+                            *args, **kwargs):
+                message = await func(client, session, bot_message, exc, *args, **kwargs)
+                logging.info(f'{message!r}')
+                if isinstance(message, Message):
+                    session.last_bot_pm_id = message.id
+
+            self._func_at_exception = inner
+            return inner
 
         return decorator
 
@@ -177,8 +185,16 @@ class BotClient(Client):
             if not isinstance(of, NavMenu):
                 raise TypeError('process can be set only to navmenu u doofus')
 
-            of.callback_process = func
-            return func
+            async def inner(client: BotClient, session: UserSession, query: CallbackQuery,
+                            *args, **kwargs):
+                # await client.log_callback(session, query)
+                message = await func(client, session, query, *args, **kwargs)
+                logging.info(f'{message!r}')
+                if isinstance(message, Message):
+                    session.last_bot_pm_id = message.id
+
+            of.callback_process = inner
+            return inner
 
         return decorator
 
@@ -193,6 +209,7 @@ class BotClient(Client):
                 message = await func(client, session, bot_message, user_input, *args, **kwargs)
                 if isinstance(message, Message):
                     bot_message = message
+                    session.last_bot_pm_id = bot_message.id
                 return await client.go_back(session, bot_message)
 
             of.message_process = inner
@@ -204,8 +221,9 @@ class BotClient(Client):
         user = message.from_user
 
         if message.chat.type != ChatType.PRIVATE:
-            if message.text.startswith(self.commands_prefix):         # early command handling in group chats
-                session = await self.register_session(user, message)  # since we don't want to store data
+            if message.text.startswith(self.commands_prefix):
+                session = await self.register_session(user, message)  # early command handling in group chats
+                await self.log_message(session, message)              # since we don't want to store data
                 return await self.handle_command(session, message)    # of every single user of these
             return
 
@@ -231,7 +249,7 @@ class BotClient(Client):
         if prompt not in self._commands:
             return
 
-        func, args, kwargs = await self.get_func_by_command(prompt)
+        func, args, kwargs = self.get_func_by_command(prompt)
         await message.reply_chat_action(ChatAction.TYPING)
         return await func(self, session, message, *args, **kwargs)
 
@@ -256,7 +274,7 @@ class BotClient(Client):
     def get_wildcard_command(self):
         return self._commands.get(self.WILDCARD)
 
-    async def get_func_by_command(self, prompt: str):
+    def get_func_by_command(self, prompt: str):
         return self._commands.get(prompt)
 
     def get_wildcard_menu(self):
@@ -288,9 +306,8 @@ class BotClient(Client):
         bot_message = callback_query.message
         try:
             if is_wildcard_menu:
-                last_message = await self.jump_to_menu(session, bot_message, menu)
-            else:
-                last_message = await self.go_to_menu(session, bot_message, menu)
+                return await self.jump_to_menu(session, bot_message, menu)
+            return await self.go_to_menu(session, bot_message, menu)
         except MessageNotModified:
             if not menu.ignore_message_not_modified:
                 raise
@@ -301,15 +318,7 @@ class BotClient(Client):
             return
         except Exception as e:
             self.rstats.exceptions_caught += 1
-            last_message = await self._func_at_exception(self, session, callback_query, e)
-
-        if last_message:
-            try:
-                last_message = await last_message  # for some reason sometimes we need to await for this message
-            except TypeError:
-                pass
-
-            session.last_bot_pm_id = last_message.id
+            await self._func_at_exception(self, session, bot_message, e)
 
     def register_menu(self, menu: Menu):
         if menu not in self._menus.values():
@@ -338,7 +347,10 @@ class BotClient(Client):
             session.previous_menu_id = menu.came_from_menu_id
             session.current_menu_id = menu.id
 
-        return await menu(self, session, bot_message)
+        result = await menu(self, session, bot_message)
+        if isinstance(result, Message):
+            session.last_bot_pm_id = result.id
+        return result
 
     async def go_back(self, session: UserSession, bot_message: Message):
         if session.previous_menu_id is None:

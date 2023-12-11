@@ -56,8 +56,7 @@ telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 # cat: Main
 
 @bot.on_callback_exception()
-async def handle_exceptions_in_callback(client: BotClient, session: UserSession, bot_message: Message,
-                                        exc: Exception):
+async def handle_exceptions_in_callback(client: BotClient, session: UserSession, bot_message: Message, exc: Exception):
     logging.exception('Caught exception!', exc_info=exc)
     await client.log(f'❗️ {"".join(traceback.format_tb(exc.__traceback__))}',
                      disable_notification=True, parse_mode=ParseMode.DISABLED)
@@ -464,21 +463,20 @@ async def decode_crosshair(client: BotClient, session: UserSession,
 
     decode_input = await client.ask_message_silently(bot_message, text, timeout=ASK_TIMEOUT)
 
-    return decode_crosshair_process(client, session, bot_message, decode_input)
+    return await decode_crosshair_process(client, session, bot_message, decode_input)
 
 
 @bot.message_process(of=decode_crosshair)
 async def decode_crosshair_process(client: BotClient, session: UserSession, bot_message: Message, user_input: Message):
-    await client.log_message(session, user_input)
-
     if user_input.text == "/cancel":
         await user_input.delete()
-        return
+        return await crosshair(client, session, bot_message)
 
     await bot_message.edit(session.locale.bot_loading)
 
-    _crosshair = Crosshair.decode(user_input.text)
-    if _crosshair is None:
+    try:
+        _crosshair = Crosshair.decode(user_input.text)
+    except ValueError:
         await user_input.delete()
         return await decode_crosshair(client, session, bot_message, last_error=session.locale.crosshair_decode_error)
 
