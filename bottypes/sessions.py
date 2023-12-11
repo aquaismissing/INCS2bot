@@ -18,14 +18,14 @@ class UserSession:
                  'previous_menu_id', 'lang_code', 'last_bot_pm_id',
                  'locale')
 
-    def __init__(self, dbuser: DBUser, *, force_lang: str = None):
+    def __init__(self, dbuser: DBUser):
         from functions import locale
 
         self.dbuser_id = dbuser.id
         self.timestamp = dt.datetime.now().timestamp()
         self.current_menu_id = dbuser.current_menu_id
         self.previous_menu_id = dbuser.previous_menu_id
-        self.lang_code = force_lang or dbuser.language
+        self.lang_code = dbuser.language
         self.last_bot_pm_id = dbuser.last_bot_pm_id
         self.locale = locale(self.lang_code)
 
@@ -71,7 +71,7 @@ class UserSessions(dict[int, UserSession]):
             logging.info(f'UserSessions synced with db! {len(self)} sessions were synced.')
             await db_sess.commit()
 
-    async def register_session(self, user: User, message: Message, *, force_lang: str = None) -> UserSession:
+    async def register_session(self, user: User, message: Message) -> UserSession:
         if user.id in self:
             return self[user.id]
 
@@ -90,7 +90,7 @@ class UserSessions(dict[int, UserSession]):
             else:
                 logging.info(f'Got existing record in db. {dbuser=}')
 
-        self[user.id] = UserSession(dbuser, force_lang=force_lang)
+        self[user.id] = UserSession(dbuser)
 
         return self[user.id]
 

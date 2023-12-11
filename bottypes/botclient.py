@@ -5,7 +5,7 @@ import datetime as dt
 from typing import Type
 
 from pyrogram import Client
-from pyrogram.enums import ParseMode
+from pyrogram.enums import ChatAction, ChatType, ParseMode
 from pyrogram.errors import MessageNotModified, UserIsBlocked
 from pyrogram.types import (CallbackQuery, InlineQuery, Message,
                             MessageEntity, InlineKeyboardMarkup,
@@ -31,7 +31,7 @@ class BotClient(Client):
 
     WILDCARD = '_'
 
-    def __init__(self, *args, log_channel_id: int, navigate_back_callback: str, **kwargs):
+    def __init__(self, *args, log_channel_id: int, navigate_back_callback: str, commands_prefix: str = '/', **kwargs):
         super().__init__(*args, **kwargs)
 
         self.log_channel_id = log_channel_id
@@ -40,6 +40,7 @@ class BotClient(Client):
         self._sessions: UserSessions = UserSessions()
 
         self._commands: dict[str, tuple | dict] = {}
+        self.commands_prefix = commands_prefix
 
         # menus
         self._menus: dict[str, Menu] = {}
@@ -96,7 +97,7 @@ class BotClient(Client):
 
     def on_command(self, command: str, *args, **kwargs):
         def decorator(func):
-            self._commands[command] = (func, args, kwargs)
+            self._commands[self.commands_prefix + command] = (func, args, kwargs)
             return func
 
         return decorator
@@ -187,33 +188,81 @@ class BotClient(Client):
             if not isinstance(of, NavMenu):
                 raise TypeError('process can be set only to navmenu u doofus')
 
-            of.message_process = func
-            return func
+            async def inner(client: BotClient, session: UserSession, bot_message: Message, user_input: Message,
+                            *args, **kwargs):
+                message = await func(client, session, bot_message, user_input, *args, **kwargs)
+                if isinstance(message, Message):
+                    bot_message = message
+                return await client.go_back(session, bot_message)
+
+            of.message_process = inner
+            return inner
 
         return decorator
+
+    async def handle_message(self, message: Message):
+        user = message.from_user
+
+        if message.chat.type != ChatType.PRIVATE:
+            if message.text.startswith(self.commands_prefix):         # early command handling in group chats
+                session = await self.register_session(user, message)  # since we don't want to store data
+                return await self.handle_command(session, message)    # of every single user of these
+            return
+
+        session = await self.register_session(user, message)
+
+        await self.log_message(session, message)
+
+        current_menu = self.get_menu(session.current_menu_id)
+        if current_menu and current_menu.has_message_process():  # handling message processes after reload
+            bot_message = await self.get_messages(message.chat.id, session.last_bot_pm_id)
+            return await current_menu.message_process(self, session, bot_message, message)
+
+        if message.text.startswith(self.commands_prefix):
+            return await self.handle_command(session, message)
+
+    async def handle_command(self, session: UserSession, message: Message):
+        prompt = message.text
+
+        if '@' in prompt:
+            prompt, username = prompt.split('@', 2)
+            if username != self.me.username:
+                return
+        if prompt not in self._commands:
+            return
+
+        func, args, kwargs = await self.get_func_by_command(prompt)
+        await message.reply_chat_action(ChatAction.TYPING)
+        return await func(self, session, message, *args, **kwargs)
+
+    async def handle_callback(self, callback_query: CallbackQuery):
+        if callback_query.message.chat.type != ChatType.PRIVATE:
+            return
+
+        user = callback_query.from_user
+        session = self.sessions.get(user.id)
+        if session is None:
+            session = await self.register_session(user, callback_query.message)
+
+        if callback_query.message.chat.id != self.log_channel_id:
+            await self.log_callback(session, callback_query)
+
+        bot_message = callback_query.message
+        if callback_query.data == self.navigate_back_callback:
+            return await self.go_back(session, bot_message)
+
+        return await self.get_menu_by_callback(session, callback_query)
 
     def get_wildcard_command(self):
         return self._commands.get(self.WILDCARD)
 
-    async def get_func_by_command(self, session: UserSession, message: Message):
-        try:
-            text = message.text.split('@', 2)[0]  # removing mention from command
-            text = text.lstrip('/')
-            func, args, kwargs = self._commands[text]
-        except KeyError:
-            if self.WILDCARD not in self._commands:
-                return
-            func, args, kwargs = self.get_wildcard_command()
-        return await func(self, session, message, *args, **kwargs)
+    async def get_func_by_command(self, prompt: str):
+        return self._commands.get(prompt)
 
     def get_wildcard_menu(self):
         return self._menu_routes.get(self.WILDCARD)
 
     async def get_menu_by_callback(self, session: UserSession, callback_query: CallbackQuery):
-        bot_message = callback_query.message
-        if callback_query.data == self.navigate_back_callback:
-            return await self.go_back(session, bot_message)
-
         is_wildcard_menu = False
         try:
             possible_menus = self._menu_routes[callback_query.data]
@@ -224,7 +273,10 @@ class BotClient(Client):
         except KeyError:
             current_menu = self.get_menu(session.current_menu_id)
             if current_menu.has_callback_process():
-                return await current_menu.callback_process(self, session, callback_query)
+                try:
+                    return await current_menu.callback_process(self, session, callback_query)
+                except asyncio.exceptions.TimeoutError:
+                    return
 
             if self.WILDCARD not in self._menu_routes:
                 return
@@ -233,6 +285,7 @@ class BotClient(Client):
 
         self.rstats.callback_queries_handled += 1
 
+        bot_message = callback_query.message
         try:
             if is_wildcard_menu:
                 last_message = await self.jump_to_menu(session, bot_message, menu)

@@ -59,68 +59,25 @@ telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 async def handle_exceptions_in_callback(client: BotClient, session: UserSession, bot_message: Message,
                                         exc: Exception):
     logging.exception('Caught exception!', exc_info=exc)
-    await client.log(f'❗️ {traceback.format_tb(exc.__traceback__)}',
+    await client.log(f'❗️ {"".join(traceback.format_tb(exc.__traceback__))}',
                      disable_notification=True, parse_mode=ParseMode.DISABLED)
 
     return await something_went_wrong(client, session, bot_message)
 
 
 @bot.on_message(~filters.me)
-async def sync_user_data(client: BotClient, message: Message):
-    if message.chat.type != ChatType.PRIVATE:
-        message.continue_propagation()
-
-    user = message.from_user
-    if user.id not in client.sessions:
-        await client.register_session(user, message, force_lang=config.FORCE_LANG)
-
-    session = client.sessions[user.id]
-
-    await client.log_message(session, message)
-
-    current_menu = client.get_menu(session.current_menu_id)
-    if current_menu and current_menu.has_message_process():
-        bot_message = await client.get_messages(message.chat.id, session.last_bot_pm_id)
-        return await current_menu.message_process(client, session, bot_message, message)
-
-    message.continue_propagation()
-
-
-@bot.on_message(filters.command(ALL_COMMANDS))
-async def any_command(client: BotClient, message: Message):
-    await client.send_chat_action(message.chat.id, ChatAction.TYPING)
-
-    user = message.from_user
-
-    if message.chat.type != ChatType.PRIVATE and user.id not in client.sessions:
-        await client.register_session(user, message, force_lang=config.FORCE_LANG)
-
-    session = client.sessions[user.id]
-
-    return await client.get_func_by_command(session, message)
+async def handle_messages(client: BotClient, message: Message):
+    return await client.handle_message(message)
 
 
 @bot.on_callback_query()
-async def sync_user_data_callback(client: BotClient, callback_query: CallbackQuery):
-    if callback_query.message.chat.type != ChatType.PRIVATE:
-        return
+async def handle_callbacks(client: BotClient, callback_query: CallbackQuery):
+    if callback_query.message.chat.id != client.log_channel_id:
+        # Render selection indicator on selectable markups
+        for markup in keyboards.all_selectable_markups:
+            markup.select_button_by_key(callback_query.data)
 
-    user = callback_query.from_user
-    if user.id not in client.sessions:
-        await client.register_session(user, callback_query.message, force_lang=config.FORCE_LANG)
-
-    session = client.sessions[user.id]
-
-    if callback_query.message.chat.id == client.log_channel_id:
-        return await client.get_menu_by_callback(session, callback_query)
-
-    await client.log_callback(session, callback_query)
-
-    # Render selection indicator on selectable markups
-    for markup in keyboards.all_selectable_markups:
-        markup.select_button_by_key(callback_query.data)
-
-    return await client.get_menu_by_callback(session, callback_query)
+    return await client.handle_callback(callback_query)
 
 
 @bot.navmenu('main', ignore_message_not_modified=True)
@@ -510,13 +467,13 @@ async def decode_crosshair(client: BotClient, session: UserSession,
     return decode_crosshair_process(client, session, bot_message, decode_input)
 
 
-@bot.message_process(of=decode_crosshair)  # special case which is really idiotic but whatever
+@bot.message_process(of=decode_crosshair)
 async def decode_crosshair_process(client: BotClient, session: UserSession, bot_message: Message, user_input: Message):
     await client.log_message(session, user_input)
 
     if user_input.text == "/cancel":
         await user_input.delete()
-        return await crosshair(client, session, bot_message)
+        return
 
     await bot_message.edit(session.locale.bot_loading)
 
@@ -528,9 +485,8 @@ async def decode_crosshair_process(client: BotClient, session: UserSession, bot_
     text = session.locale.crosshair_decode_result.format('; '.join(_crosshair.cs2_commands))
 
     await user_input.reply(text)
-    await user_input.reply(session.locale.bot_choose_func,
-                           reply_markup=keyboards.crosshair_markup(session.locale))
-    return await client.go_back(session, bot_message)
+    return await user_input.reply(session.locale.bot_choose_func,
+                                  reply_markup=keyboards.crosshair_markup(session.locale))
 
 
 @bot.funcmenu(LK.exchangerate_button_title, came_from=extra_features, ignore_message_not_modified=True)

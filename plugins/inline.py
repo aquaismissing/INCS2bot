@@ -8,7 +8,6 @@ from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessa
 # noinspection PyUnresolvedReferences
 import env
 from bottypes import BotClient, UserSession
-import config
 from functions import datacenter_handlers, info_formatters
 import keyboards
 from l10n import dump_tags
@@ -57,10 +56,8 @@ def get_triggered_tags(query: str):
 @BotClient.on_inline_query()
 async def sync_user_data_inline(client: BotClient, inline_query: InlineQuery):
     user = inline_query.from_user
-    if user.id not in client.sessions:
-        await client.register_session(user, force_lang=config.FORCE_LANG)
+    session = await client.register_session(user)
 
-    session = client.sessions[user.id]
     await client.log_inline(session, inline_query)
 
     query = inline_query.query.strip()
