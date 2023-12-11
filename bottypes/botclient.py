@@ -70,9 +70,9 @@ class BotClient(Client):
         await super().start()
         self.startup_dt = dt.datetime.now(dt.UTC)
 
-    async def register_session(self, user: User, message: Message = None, *, force_lang: str = None) -> UserSession:
-        session = await self._sessions.register_session(user, message, force_lang=force_lang)
-        self.rstats.unique_users_served.append(user.id)
+    async def register_session(self, user: User, message: Message = None) -> UserSession:
+        session = await self._sessions.register_session(user, message)
+        self.rstats.unique_users_served.add(user.id)
         return session
 
     async def dump_sessions(self):
