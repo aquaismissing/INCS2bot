@@ -58,7 +58,7 @@ telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 @bot.on_callback_exception()
 async def handle_exceptions_in_callback(client: BotClient, session: UserSession, bot_message: Message, exc: Exception):
     logging.exception('Caught exception!', exc_info=exc)
-    await client.log(f'❗️ {"".join(traceback.format_tb(exc.__traceback__))}',
+    await client.log(f'❗️ {"".join(traceback.format_exception(exc))}',
                      disable_notification=True, parse_mode=ParseMode.DISABLED)
 
     return await something_went_wrong(client, session, bot_message)
@@ -303,41 +303,41 @@ async def profile_info(client: BotClient, session: UserSession, bot_message: Mes
                            reply_markup=keyboards.profile_markup(session.locale))
 
 
-@bot.funcmenu(LK.user_profileinfo_title, came_from=profile_info)
-async def user_profile_info(client: BotClient, session: UserSession,
-                            bot_message: Message, last_error: str = None):
+@bot.navmenu(LK.user_profileinfo_title, came_from=profile_info)
+async def user_profile_info(client: BotClient, session: UserSession, bot_message: Message, last_error: str = None):
     text = session.locale.steam_url_example if last_error is None else last_error
     text += '\n\n' + session.locale.bot_use_cancel
 
     steam_url = await client.ask_message_silently(bot_message, text, timeout=ASK_TIMEOUT)
 
-    await client.log_message(session, steam_url)
+    return await user_profile_info_process(client, session, bot_message, steam_url)
 
-    if steam_url.text == '/cancel':
-        await steam_url.delete()
+
+@bot.message_process(of=user_profile_info)
+async def user_profile_info_process(client: BotClient, session: UserSession, bot_message: Message, user_input: Message):
+    if user_input.text == '/cancel':
+        await user_input.delete()
         return await profile_info(client, session, bot_message)
 
     await bot_message.edit(session.locale.bot_loading)
     await client.send_chat_action(bot_message.chat.id, ChatAction.TYPING)
 
     try:
-        info = ProfileInfo.get(steam_url.text)
+        info = ProfileInfo.get(user_input.text)
     except ParseUserStatsError as e:
-        await steam_url.delete()
-        error_msg = await user_info_handle_error(client, session, steam_url, e)
+        await user_input.delete()
+        error_msg = await user_info_handle_error(client, session, user_input, e)
         return await user_profile_info(client, session, bot_message, last_error=error_msg)
     except Exception as e:
-        await steam_url.delete()
+        await user_input.delete()
         raise e
-
-    lang_code = bot_message.from_user.language_code
 
     if info.vanity_url is None:
         info.vanity_url = session.locale.user_profileinfo_notset
 
     if info.account_created:
         info.account_created = dt.datetime.fromtimestamp(info.account_created)
-        info.account_created = f'{format_datetime(info.account_created, "dd MMM yyyy", locale=lang_code).title()}'
+        info.account_created = f'{format_datetime(info.account_created, "dd MMM yyyy", locale=session.lang_code).title()}'
     else:
         info.account_created = session.locale.states_unknown
 
@@ -365,36 +365,37 @@ async def user_profile_info(client: BotClient, session: UserSession,
 
     text = session.locale.user_profileinfo_text.format(*info.to_tuple())
 
-    await bot_message.reply(text, disable_web_page_preview=True)
-    return await bot_message.reply(session.locale.bot_choose_cmd,
-                                   reply_markup=keyboards.profile_markup(session.locale))
+    await user_input.reply(text, disable_web_page_preview=True)
+    return await user_input.reply(session.locale.bot_loading)
 
 
-@bot.funcmenu(LK.user_gamestats_button_title, came_from=profile_info, ignore_message_not_modified=True)
-async def user_game_stats(client: BotClient, session: UserSession, bot_message: Message,
-                          last_error: str = None):
+@bot.navmenu(LK.user_gamestats_button_title, came_from=profile_info, ignore_message_not_modified=True)
+async def user_game_stats(client: BotClient, session: UserSession, bot_message: Message, last_error: str = None):
     text = session.locale.steam_url_example if last_error is None else last_error
     text += '\n\n' + session.locale.bot_use_cancel
 
     steam_url = await client.ask_message_silently(bot_message, text, timeout=ASK_TIMEOUT)
 
-    await client.log_message(session, steam_url)
+    return await user_game_stats_process(client, session, bot_message, steam_url)
 
-    if steam_url.text == '/cancel':
-        await steam_url.delete()
+
+@bot.message_process(of=user_game_stats)
+async def user_game_stats_process(client: BotClient, session: UserSession, bot_message: Message, user_input: Message):
+    if user_input.text == '/cancel':
+        await user_input.delete()
         return await profile_info(client, session, bot_message)
 
     await bot_message.edit(session.locale.bot_loading)
     await client.send_chat_action(bot_message.chat.id, ChatAction.TYPING)
 
     try:
-        user_stats = UserGameStats.get(steam_url.text)
+        user_stats = UserGameStats.get(user_input.text)
     except ParseUserStatsError as e:
-        await steam_url.delete()
-        error_msg = await user_info_handle_error(client, session, steam_url, e)
+        await user_input.delete()
+        error_msg = await user_info_handle_error(client, session, user_input, e)
         return await user_game_stats(client, session, bot_message, last_error=error_msg)
     except Exception as e:
-        await steam_url.delete()
+        await user_input.delete()
         raise e
 
     steamid, *stats = user_stats
@@ -407,16 +408,15 @@ async def user_game_stats(client: BotClient, session: UserSession, bot_message: 
                                                          author_name='@INCS2bot',
                                                          author_url='https://t.me/INCS2bot')
     except json.JSONDecodeError:
-        await steam_url.delete()
+        await user_input.delete()
         return await user_game_stats(client, session, bot_message, last_error=session.locale.user_telegraph_error)
 
     share_btn = ExtendedIKB(session.locale.user_gamestats_share,
                             switch_inline_query=telegraph_response['url'])
     markup_share = ExtendedIKM([[share_btn]])
 
-    await bot_message.reply(telegraph_response['url'], reply_markup=markup_share)
-    return await bot_message.reply(session.locale.bot_choose_cmd,
-                                   reply_markup=keyboards.profile_markup(session.locale))
+    await user_input.reply(telegraph_response['url'], reply_markup=markup_share)
+    return await user_input.reply(session.locale.bot_loading)
 
 
 async def user_info_handle_error(_, session: UserSession, user_input: Message, exc: ParseUserStatsError):
@@ -483,8 +483,7 @@ async def decode_crosshair_process(client: BotClient, session: UserSession, bot_
     text = session.locale.crosshair_decode_result.format('; '.join(_crosshair.cs2_commands))
 
     await user_input.reply(text)
-    return await user_input.reply(session.locale.bot_choose_func,
-                                  reply_markup=keyboards.crosshair_markup(session.locale))
+    return await user_input.reply(session.locale.bot_loading)
 
 
 @bot.funcmenu(LK.exchangerate_button_title, came_from=extra_features, ignore_message_not_modified=True)
