@@ -187,9 +187,7 @@ class BotClient(Client):
 
             async def inner(client: BotClient, session: UserSession, query: CallbackQuery,
                             *args, **kwargs):
-                # await client.log_callback(session, query)
                 message = await func(client, session, query, *args, **kwargs)
-                logging.info(f'{message!r}')
                 if isinstance(message, Message):
                     session.last_bot_pm_id = message.id
 
@@ -206,6 +204,7 @@ class BotClient(Client):
 
             async def inner(client: BotClient, session: UserSession, bot_message: Message, user_input: Message,
                             *args, **kwargs):
+                await client.log_message(session, user_input)
                 message = await func(client, session, bot_message, user_input, *args, **kwargs)
                 if isinstance(message, Message):
                     bot_message = message
@@ -229,12 +228,12 @@ class BotClient(Client):
 
         session = await self.register_session(user, message)
 
-        await self.log_message(session, message)
-
         current_menu = self.get_menu(session.current_menu_id)
         if current_menu and current_menu.has_message_process():  # handling message processes after reload
             bot_message = await self.get_messages(message.chat.id, session.last_bot_pm_id)
             return await current_menu.message_process(self, session, bot_message, message)
+
+        await self.log_message(session, message)
 
         if message.text.startswith(self.commands_prefix):
             return await self.handle_command(session, message)
