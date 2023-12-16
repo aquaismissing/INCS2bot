@@ -471,6 +471,7 @@
     "user_gamestats_share": "Paylaşmak",
     "user_invalidlink_error": "⚠️ Gönderdiğiniz bağlantı geçersiz, lütfen doğruluğunu kontrol edin ve tekrar deneyin.",
     "user_invalidrequest_error": "⚠️ Geçersiz istek.",
+    "user_nostatsavailable_error": "⚠️ There are no available CS2 stats for this account.",
     "user_telegraph_error": "⚠️ Internal Telegraph error, please re-enter your link.",
     "user_privateprofile_error": "❕ Bu hesap gizlidir, istatistik almak imkansızdır. Lütfen gizlilik ayarlarınızı değiştirin.",
     "user_profileinfo_title": "Bloklar ve kısıtlamalar",

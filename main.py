@@ -533,6 +533,8 @@ async def user_info_handle_error(_, session: UserSession, user_input: Message, e
     elif exc.code == ErrorCode.PROFILE_IS_PRIVATE:
         error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
                     session.locale.user_privateprofile_error
+    elif exc.code == ErrorCode.NO_STATS_AVAILABLE:
+        error_msg = session.locale.user_nostatsavailable_error
 
     return error_msg
 

@@ -376,6 +376,7 @@ class Locale(SLocale):
     user_gamestats_share: str
     user_invalidlink_error: str
     user_invalidrequest_error: str
+    user_nostatsavailable_error: str
     user_telegraph_error: str
     user_privateprofile_error: str
     user_profileinfo_title: str
