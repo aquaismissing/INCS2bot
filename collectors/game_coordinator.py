@@ -15,7 +15,7 @@ import time
 # from steam.enums import EResult
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from steam import App, CSGO
+from steam import App
 from steam.ext.csgo import Client
 
 
@@ -30,7 +30,7 @@ import env
 import config
 from utypes import GameVersionData, States
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s | %(name)s: %(message)s',
                     datefmt='%H:%M:%S — %d/%m/%Y',
                     force=True)
@@ -39,7 +39,7 @@ logger = logging.getLogger('root')  # f'{config.BOT_NAME}.GCCollector'
 
 
 class GCCollector(Client):
-    APPS_TO_FETCH = CSGO, App(id=740), App(id=741), App(id=745), App(id=2275500), App(id=2275530)
+    APPS_TO_FETCH = App(id=730), App(id=740), App(id=741), App(id=745), App(id=2275500), App(id=2275530)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -54,7 +54,6 @@ class GCCollector(Client):
 
     async def on_ready(self):
         logger.info('Logged in successfully.')
-        self.scheduler.start()
 
     async def on_disconnect(self):
         logger.info('Disconnected.')
@@ -70,26 +69,30 @@ class GCCollector(Client):
 
     async def on_gc_connect(self):
         logger.info('CS launched.')
+        self.scheduler.start()
 
-    async def on_gc_status_change(self, status):
-        statuses = {0: States.NORMAL, 1: States.INTERNAL_SERVER_ERROR, 2: States.OFFLINE,
-                    3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
-        game_coordinator = statuses.get(status, States.UNKNOWN)
+    async def on_gc_status_change(self, message):
+        status = await message
+        logger.info(f'{status!r}')
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache = json.load(f)
-
-        if game_coordinator != cache.get('game_coordinator'):
-            cache['game_coordinator'] = game_coordinator.literal
-
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4)
-
-        logger.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
+        # statuses = {0: States.NORMAL, 1: States.INTERNAL_SERVER_ERROR, 2: States.OFFLINE,
+        #             3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
+        # game_coordinator = statuses.get(status, States.UNKNOWN)
+        #
+        # with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        #     cache = json.load(f)
+        #
+        # if game_coordinator != cache.get('game_coordinator'):
+        #     cache['game_coordinator'] = game_coordinator.literal
+        #
+        # with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        #     json.dump(cache, f, indent=4)
+        #
+        # logger.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
 
     async def update_depots(self):
         try:
-            data = (await self.fetch_product_info(apps=self.APPS_TO_FETCH))  # ['apps']
+            data = await self.fetch_product_info(apps=self.APPS_TO_FETCH)
             logging.info(data)
             # main_data = data[730]
 
@@ -149,7 +152,7 @@ class GCCollector(Client):
             time.sleep(45)
 
     async def update_players_count(self):
-        value = self.get_app(CSGO).player_count()
+        value = await self.get_app(730).player_count()
 
         with open(config.CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
             cache = json.load(f)
