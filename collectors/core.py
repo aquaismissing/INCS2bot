@@ -166,6 +166,9 @@ async def unique_monthly():
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
+        if cache.get('monthly_unique_players') is None:
+            cache['monthly_unique_players'] = data
+
         if data != cache.get('monthly_unique_players'):
             await send_alert('monthly_unique_players',
                              (cache['monthly_unique_players'], data))

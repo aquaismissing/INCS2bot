@@ -387,7 +387,7 @@ async def profile_info(client: BClient, session: UserSession, callback_query: Ca
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache_file = json.load(f)
 
-    if cache_file['webapi'] != 'normal':
+    if cache_file.get('webapi') != 'normal':
         return await send_about_maintenance(client, session, callback_query)
 
     await callback_query.edit_message_text(session.locale.bot_choose_cmd,
