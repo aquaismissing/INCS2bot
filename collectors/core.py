@@ -98,8 +98,7 @@ def remap_dc_group(info: dict, group: DatacenterGroup):
     return result
 
 
-# noinspection PyTypeChecker
-def remap_datacenters_info(info: dict):
+def remap_datacenters_info(info: dict) -> dict:
     dcs = DatacenterAtlas.available_dcs()
     
     remapped_info = {}

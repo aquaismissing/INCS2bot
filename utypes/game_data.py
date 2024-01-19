@@ -87,9 +87,9 @@ class GameVersionData(NamedTuple):
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
 
-        cs2_client_version = cache_file['cs2_client_version']
-        cs2_patch_version = cache_file['cs2_patch_version']
-        cs2_version_dt = dt.datetime.fromisoformat(cache_file['cs2_version_timestamp']) \
+        cs2_client_version = cache_file.get('cs2_client_version', 'unknown')
+        cs2_patch_version = cache_file.get('cs2_patch_version', 'unknown')
+        cs2_version_dt = dt.datetime.fromisoformat(cache_file.get('cs2_version_timestamp', 0)) \
             .replace(tzinfo=VALVE_TIMEZONE).astimezone(ZoneInfo("UTC"))
 
         return cs2_patch_version, cs2_client_version, cs2_version_dt
@@ -124,7 +124,10 @@ class ExchangeRate:
         """Get the currencies for CS2 store"""
 
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            key_price = json.load(f)["key_price"]
+            key_price = json.load(f).get('key_price')
+
+        if key_price is None:
+            return {}
 
         prices = {k: v / 100 for k, v in key_price.items()}
         formatted_prices = {k: f'{v:.0f}' if v % 1 == 0 else f'{v:.2f}'
@@ -182,15 +185,15 @@ class GameServersData(NamedTuple):
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
 
-        if cache_file["api_timestamp"] == 'unknown':
+        game_server_dt = GameServersData.latest_info_update()
+        if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
-        
-        game_server_dt = dt.datetime.fromtimestamp(cache_file["api_timestamp"], dt.UTC)
-        gc_state = States.get(cache_file["game_coordinator"])
-        sl_state = States.get(cache_file["sessions_logon"])
-        ms_state = States.get(cache_file["matchmaking_scheduler"])
-        sc_state = States.get(cache_file["steam_community"])
-        webapi_state = States.get(cache_file["webapi"])
+
+        gc_state = States.sget(cache_file.get('game_coordinator'))
+        sl_state = States.sget(cache_file.get('sessions_logon'))
+        ms_state = States.sget(cache_file.get('matchmaking_scheduler'))
+        sc_state = States.sget(cache_file.get('steam_community'))
+        webapi_state = States.sget(cache_file.get('webapi'))
         
         now = dt.datetime.now(dt.UTC)
         is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
@@ -203,25 +206,24 @@ class GameServersData(NamedTuple):
     def cached_matchmaking_stats():
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
-
-        if cache_file["api_timestamp"] == 'unknown':
+        
+        game_server_dt = GameServersData.latest_info_update()
+        if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
         
-        game_server_dt = dt.datetime.fromtimestamp(cache_file["api_timestamp"], dt.UTC)
-        
-        gc_state = States.get(cache_file["game_coordinator"])
-        sl_state = States.get(cache_file["sessions_logon"])
+        gc_state = States.sget(cache_file.get('game_coordinator'))
+        sl_state = States.sget(cache_file.get('sessions_logon'))
 
-        graph_url = cache_file["graph_url"]
-        online_players = cache_file["online_players"]
-        online_servers = cache_file["online_servers"]
-        active_players = cache_file["active_players"] 
-        average_search_time = cache_file["average_search_time"]
-        searching_players = cache_file["searching_players"]
+        graph_url = cache_file.get('graph_url', '')
+        online_players = cache_file.get('online_players', 0)
+        online_servers = cache_file.get('online_servers', 0)
+        active_players = cache_file.get('active_players', 0)
+        average_search_time = cache_file.get('average_search_time', 0)
+        searching_players = cache_file.get('searching_players', 0)
 
-        player_24h_peak = cache_file["player_24h_peak"]
-        player_alltime_peak = cache_file["player_alltime_peak"]
-        monthly_unique_players = cache_file["monthly_unique_players"]
+        player_24h_peak = cache_file.get('player_24h_peak', 0)
+        player_alltime_peak = cache_file.get('player_alltime_peak', 0)
+        monthly_unique_players = cache_file.get('monthly_unique_players', 0)
 
         now = dt.datetime.now(tz=dt.UTC)
         is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
@@ -237,10 +239,10 @@ class GameServersData(NamedTuple):
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
 
-        if cache_file["api_timestamp"] == 'unknown':
+        if cache_file.get('api_timestamp', 'unknown') == 'unknown':
             return States.UNKNOWN
 
-        return dt.datetime.fromtimestamp(cache_file["api_timestamp"], dt.UTC)
+        return dt.datetime.fromtimestamp(cache_file.get('api_timestamp', 0), dt.UTC)
 
     def asdict(self):
         return self._asdict()
@@ -312,7 +314,7 @@ class LeaderboardStats(NamedTuple):
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
 
-        world_leaderboard_stats = cache_file['world_leaderboard_stats']
+        world_leaderboard_stats = cache_file.get('world_leaderboard_stats', [])
         return [LeaderboardStats(**person) for person in world_leaderboard_stats]
 
     @staticmethod
@@ -320,7 +322,7 @@ class LeaderboardStats(NamedTuple):
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache_file = json.load(f)
 
-        regional_leaderboard_stats = cache_file[f'regional_leaderboard_stats_{region}']
+        regional_leaderboard_stats = cache_file.get(f'regional_leaderboard_stats_{region}', [])
         return [LeaderboardStats(**person) for person in regional_leaderboard_stats]
 
     def asdict(self):

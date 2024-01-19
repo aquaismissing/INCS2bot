@@ -7,12 +7,12 @@ from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessa
 
 # noinspection PyUnresolvedReferences
 import env
-import config
-from functions import datacenter_handlers, log_inline, info_formatters
+from bottypes import BotClient, UserSession
+from functions import datacenter_handlers, info_formatters
 import keyboards
 from l10n import dump_tags
-from utypes import (BClient, DatacenterInlineResult, ExchangeRate,
-                    GameServersData, GameVersionData, UserSession,
+from utypes import (DatacenterInlineResult, ExchangeRate,
+                    GameServersData, GameVersionData,
                     drop_cap_reset_timer)
 
 
@@ -22,16 +22,16 @@ TAGS = dump_tags()
 def log_exception_inline(func):
     """Decorator to catch and log exceptions in bot inline functions."""
 
-    async def inner(client: BClient, session: UserSession, inline_query: InlineQuery, *args, **kwargs):
+    async def inner(client: BotClient, session: UserSession, inline_query: InlineQuery, *args, **kwargs):
         # noinspection PyBroadException
         try:
             await func(client, session, inline_query, *args, **kwargs)
         except Exception:
             logging.exception('Caught exception!')
-            await client.send_message(config.LOGCHANNEL, f'❗️ {traceback.format_exc()}\n'
-                                                         f'\n'
-                                                         f'↩️ inline_query',
-                                      disable_notification=True, parse_mode=ParseMode.DISABLED)
+            await client.log(f'❗️ {traceback.format_exc()}\n'
+                             f'\n'
+                             f'↩️ inline_query',
+                             disable_notification=True, parse_mode=ParseMode.DISABLED)
 
     return inner
 
@@ -53,18 +53,17 @@ def get_triggered_tags(query: str):
                 yield tag
 
 
-@BClient.on_inline_query()
-async def sync_user_data_inline(client: BClient, inline_query: InlineQuery):
+@BotClient.on_inline_query()
+async def sync_user_data_inline(client: BotClient, inline_query: InlineQuery):
     user = inline_query.from_user
-    if user.id not in client.sessions:
-        await client.register_session(user, force_lang=config.FORCE_LANG)
+    session = await client.register_session(user)
 
-    session = client.sessions[user.id]
-    await log_inline(client, session, inline_query)
+    await client.log_inline(session, inline_query)
 
     query = inline_query.query.strip()
 
     client.rstats.inline_queries_handled += 1
+
     # if-chain because it's a plugin
     if is_user_stats_page(inline_query):
         return await share_inline(client, session, inline_query)

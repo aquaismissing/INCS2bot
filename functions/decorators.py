@@ -1,13 +1,10 @@
 from functools import wraps
 
 from pyrogram import Client
-from pyrogram.errors import MessageNotModified, UserIsBlocked
+from pyrogram.errors import MessageNotModified
 from pyrogram.types import CallbackQuery
 
-from utypes import UserSession
-
-
-__all__ = ('ignore_blocking', 'ignore_message_not_modified')
+from bottypes import UserSession
 
 
 def ignore_message_not_modified(func):
@@ -18,19 +15,6 @@ def ignore_message_not_modified(func):
         try:
             await func(client, session, callback_query, *args, **kwargs)
         except MessageNotModified:
-            pass
-
-    return inner
-
-
-def ignore_blocking(func):
-    """Decorator to ignore `pyrogram.errors.UserIsBlocked`."""
-
-    @wraps(func)
-    async def inner(client: Client, *args, **kwargs):
-        try:
-            await func(client, *args, **kwargs)
-        except UserIsBlocked:
             pass
 
     return inner
