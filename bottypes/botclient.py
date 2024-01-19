@@ -289,7 +289,11 @@ class BotClient(Client):
                 menu = possible_menus[session.current_menu_id]
         except KeyError:
             current_menu = self.get_menu(session.current_menu_id)
-            if current_menu.has_callback_process():
+            if current_menu is None and self.WILDCARD in self._menu_routes:  # happens if the user clicks on the menu
+                session.current_menu_id = self.get_wildcard_menu().id        # but there is no user data
+                return await self.get_menu_by_callback(session, callback_query)
+
+            if current_menu is not None and current_menu.has_callback_process():
                 try:
                     return await current_menu.callback_process(self, session, callback_query)
                 except asyncio.exceptions.TimeoutError:
