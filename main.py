@@ -197,14 +197,14 @@ async def dc_us(_, session: UserSession, bot_message: Message):
                            reply_markup=keyboards.dc_us_markup(session.locale))
 
 
-@bot.funcmenu(LK.dc_us_north, came_from=dc_us)
-async def send_dc_us_north(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.us_north, keyboards.dc_us_markup)
+@bot.funcmenu(LK.dc_us_east, came_from=dc_us)
+async def send_dc_us_east(client: BotClient, session: UserSession, bot_message: Message):
+    await send_dc_state(client, session, bot_message, datacenter_handlers.us_east, keyboards.dc_us_markup)
 
 
-@bot.funcmenu(LK.dc_us_south, came_from=dc_us)
-async def send_dc_us_south(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.us_south, keyboards.dc_us_markup)
+@bot.funcmenu(LK.dc_us_west, came_from=dc_us)
+async def send_dc_us_west(client: BotClient, session: UserSession, bot_message: Message):
+    await send_dc_state(client, session, bot_message, datacenter_handlers.us_west, keyboards.dc_us_markup)
 
 
 @bot.navmenu(LK.regions_southamerica, came_from=datacenters, ignore_message_not_modified=True)
