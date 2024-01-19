@@ -132,5 +132,5 @@ async def cs_l10n_update(_, message: Message):
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
 async def filter_forwards(_, message: Message):
-    if message.forward_from_chat.id in config.FILTER_FORWARDS:
+    if message.forward_from_chat and message.forward_from_chat.id in config.FILTER_FORWARDS:
         await message.delete()
