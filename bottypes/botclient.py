@@ -28,7 +28,7 @@ class BotClient(Client):
     Custom pyrogram.Client class to add custom properties and methods and stop PyCharm annoy me.
     """
 
-    LOGS_TIMEOUT = dt.timedelta(seconds=4)  # define how often logs should be sent
+    LOGS_TIMEOUT = dt.timedelta(seconds=10)  # define how often logs should be sent
 
     WILDCARD = '_'
 
@@ -218,6 +218,9 @@ class BotClient(Client):
 
     async def handle_message(self, message: Message):
         user = message.from_user
+
+        if message.text is None:
+            return
 
         if message.chat.type != ChatType.PRIVATE:
             if message.text.startswith(self.commands_prefix):
@@ -494,7 +497,7 @@ class BotClient(Client):
                 f'ID: {message.from_user.id}\n'
                 f'Telegram language: {message.from_user.language_code}\n'
                 f'Chosen language: {session.locale.lang_code}\n'
-                f'Private message: "{message.text}"')
+                f'Private message: "{message.text if message.text is not None else ""}"')
         await self.send_message(self.log_channel_id, text, disable_notification=True)
 
     async def _log_callback(self, session: UserSession, callback_query: CallbackQuery):
