@@ -134,7 +134,7 @@ def depots():
 
 
 def gv_updater():
-    timeout = 1800
+    timeout = 30 * 60
     timeout_start = time.time()
     while time.time() < timeout_start + timeout:
         # noinspection PyBroadException
@@ -156,7 +156,10 @@ def gv_updater():
             time.sleep(45)
             continue
         time.sleep(45)
-    sys.exit()
+    # xPaw: Zzz...
+    # because of this, we retry in an hour
+    time.sleep(60 * 60)
+    gv_updater()
 
 
 @scheduler.scheduled_job('interval', seconds=45)
