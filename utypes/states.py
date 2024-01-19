@@ -29,10 +29,19 @@ class States:
     INTERNAL_STEAM_ERROR = State('internal Steam error', LK.states_internal_steam_error)
     UNKNOWN = State('unknown', LK.states_unknown)
 
-    @staticmethod
-    def get(data):
+    @classmethod
+    def get(cls, data: str) -> State | None:
         data = data.replace(' ', '_').upper()
         try:
-            return vars(States)[data]
+            return getattr(cls, data)
         except KeyError:
             return
+
+    @classmethod
+    def sget(cls, data: str | None) -> State:
+        """Same as States.get(), but returns States.UNKNOWN if there's no such state or `data is None`."""
+        if data is None:
+            return States.UNKNOWN
+        st = cls.get(data)
+
+        return st if st is not None else States.UNKNOWN

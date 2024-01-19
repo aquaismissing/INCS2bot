@@ -87,6 +87,8 @@ async def main_menu(_, session: UserSession,
 
     if session_timeout:
         text = session.locale.error_session_timeout + '\n\n' + text
+        if text == bot_message.text:  # rare edge case
+            text += '‎'  # use empty char to bypass
 
     await bot_message.edit(text, reply_markup=keyboards.main_markup(session.locale))
 
@@ -296,7 +298,7 @@ async def profile_info(client: BotClient, session: UserSession, bot_message: Mes
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache_file = json.load(f)
 
-    if cache_file['webapi'] != 'normal':
+    if cache_file.get('webapi') != 'normal':
         return await send_about_maintenance(client, session, bot_message)
 
     await bot_message.edit(session.locale.bot_choose_cmd,

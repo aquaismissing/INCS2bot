@@ -44,8 +44,8 @@ DATACENTER_API_FIELDS = {
     ('peru', 'lima'): 'Peru',
     ('argentina', 'buenos_aires'): 'Argentina',
     'hongkong': 'Hong Kong',
-    ('india', 'mumbai'): 'India',
-    ('india', 'chennai'): 'India East',
+    ('india', 'mumbai'): 'India Mumbai',
+    ('india', 'chennai'): 'India Chennai',
     ('china', 'shanghai'): 'China Shanghai',
     ('china', 'tianjin'): 'China Tianjin',
     ('china', 'guangzhou'): 'China Guangzhou',
@@ -97,8 +97,7 @@ def remap_dc_group(info: dict, group: DatacenterGroup):
     return result
 
 
-# noinspection PyTypeChecker
-def remap_datacenters_info(info: dict):
+def remap_datacenters_info(info: dict) -> dict:
     dcs = DatacenterAtlas.available_dcs()
     
     remapped_info = {}
