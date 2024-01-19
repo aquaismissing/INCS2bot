@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime as dt
 import json
 from typing import NamedTuple
@@ -327,16 +329,16 @@ class LeaderboardStats(NamedTuple):
         return self._asdict()
 
 
-def get_monthly_unique_players():
+def get_monthly_unique_players() -> int:
     response = requests.get(MONTHLY_UNIQUE_PLAYERS_API, headers=HEADERS, timeout=15).json()
     return int(response['result']['players'])
 
 
-def is_pdt(_datetime: dt.datetime):
+def is_pdt(_datetime: dt.datetime) -> bool:
     return _datetime.strftime('%Z') == 'PDT'
 
 
-def drop_cap_reset_timer():
+def drop_cap_reset_timer() -> tuple[int, int, int, int]:
     """Get drop cap reset time"""
 
     wanted_weekday = 1
@@ -353,7 +355,7 @@ def drop_cap_reset_timer():
 
     time_left = wanted_datetime - now
 
-    days_left = time_left.days
+    days_left = time_left.days % 7
     hours_left = time_left.seconds // HOUR
     minutes_left = time_left.seconds % HOUR // MINUTE
     seconds_left = time_left.seconds % MINUTE

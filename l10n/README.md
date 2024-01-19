@@ -9,16 +9,30 @@ Then check [Contributing](#contributing) section to know how to start translatin
 
 Here you can see translations' progress and contributors' list:
 
-| Code | Language     |    Progress     |                    Summary                     |        Contributors        |
-|:----:|--------------|:---------------:|:----------------------------------------------:|:--------------------------:|
-|  gb  | English      | ██████████ 100% |                    built in                    |                            |
-|  ru  | Russian      | ██████████ 100% |                    built in                    |                            |
-|  fa  | Persian      | █████████▒ 80%  |         settings, leaderboard missing          |    [@A460N] (telegram)     |
-|  tr  | Turkish      | ███████▒▒▒ 70%  |      settings, leaderboard, tags missing       |   [@ITMiroN] (telegram)    |
-|  uz  | Uzbek        | ███████▒▒▒ 70%  | user game stats, settings, leaderboard missing |   [@d1az1337] (telegram)   |
-|  uk  | Ukrainian    | █████████▒ 90%  |              leaderboard missing               | [akimerslys], [Agent47Dev] |
-|  be  | Belarusian   | █████████▒ 90%  |              leaderboard missing               |       [HiddenDeath]        |
-|  it  | Italian      | █████████▒ 90%  |              leaderboard missing               |         [MrJiavo]          |
+| Code | Language     |    Progress     |                             Summary                              |        Contributors        |
+|:----:|--------------|:---------------:|:----------------------------------------------------------------:|:--------------------------:|
+|  en  | English      | ██████████ 100% |                             built in                             |                            |
+|  ru  | Russian      | ██████████ 100% |                             built in                             |                            |
+|  ar  | Arabic       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  be  | Belarusian   | ██████████ 100% |                            fully done                            |       [HiddenDeath]        |
+|  da  | Danish       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  de  | German       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  es  | Spanish      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  fa  | Persian      | ████████▒▒ 80%  |               missing: settings, leaderboard, USA DC             |          [@A460N]          |
+|  fi  | Finnish      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  fr  | French       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  hi  | Hindi        | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  it  | Italian      | ████████▒▒ 80%  |                    missing: leaderboard, USA DC                  |          [MrJiavo]         |
+|  ja  | Japanese     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  no  | Norwegian    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  pl  | Polish       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  pt  | Portuguese   | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  sv  | Swedish      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+|  tr  | Turkish      | ███████▒▒▒ 70%  |           missing: settings, leaderboard, tags, USA DC           |         [@ITMiroN]         |
+|  uk  | Ukrainian    | ████████▒▒ 80%  |                    missing: leaderboard, USA DC                  | [akimerslys], [Agent47Dev] |
+|  uz  | Uzbek        | ███████▒▒▒ 70%  |       missing: user game stats, settings, leaderboard, USA DC    |         [@d1az1337]        |
+|  zh  | Chinese      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
+
 
 ## Contributing 
 
@@ -29,7 +43,7 @@ Here you can see translations' progress and contributors' list:
 
 ### Steps
 
-1. Fork this repository. [100%]
+1. Fork this repository.
    \
    ![forking repository](../media/fork_repo.png)
 2. Open Git Bash and clone the forked repository: `git clone {your fork link}`.
@@ -46,8 +60,8 @@ Here you can see translations' progress and contributors' list:
      Just copy `en.json` and rename it with ISO 639-1 code of prefered language (e.g. `de.json`).
       - [List of ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
 5. Open the file and start translating it based on string keys and original text.
-   - We highly recommend checking the bot functionality to have more text context.
-6. You can also add some tags in your language to `tags.json`.
+   - We highly recommend checking the bot functionality to have more context.
+6. Remember to add some tags in your language to `tags.json`.
 7. In Git, add new files, then commit and push all the changes.
    \
    ![commiting changes](../media/commit_changes.png)

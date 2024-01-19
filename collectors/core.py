@@ -33,12 +33,12 @@ DATACENTER_API_FIELDS = {
     ('netherlands', 'amsterdam'): 'EU Holland',
     ('austria', 'vienna'): 'EU Austria',
     ('poland', 'warsaw'): 'EU Poland',
-    ('us_north', 'northcentral', 'chicago'): 'US Chicago',
-    ('us_north', 'northeast', 'sterling'): 'US Virginia',
-    ('us_north', 'northwest', 'new_york'): 'US NewYork',
-    ('us_north', 'northwest', 'seattle'): 'US Seattle',
-    ('us_south', 'southwest', 'los_angeles'): 'US California',
-    ('us_south', 'southeast', 'atlanta'): 'US Atlanta',
+    ('us_east', 'chicago'): 'US Chicago',
+    ('us_east', 'sterling'): 'US Virginia',
+    ('us_east', 'new_york'): 'US NewYork',
+    ('us_east', 'atlanta'): 'US Atlanta',
+    ('us_west', 'seattle'): 'US Seattle',
+    ('us_west', 'los_angeles'): 'US California',
     ('brazil', 'sao_paulo'): 'Brazil',
     ('chile', 'santiago'): 'Chile',
     ('peru', 'lima'): 'Peru',
@@ -46,6 +46,7 @@ DATACENTER_API_FIELDS = {
     'hongkong': 'Hong Kong',
     ('india', 'mumbai'): 'India Mumbai',
     ('india', 'chennai'): 'India Chennai',
+    ('india', 'bombay'): 'India Bombay',
     ('china', 'shanghai'): 'China Shanghai',
     ('china', 'tianjin'): 'China Tianjin',
     ('china', 'guangzhou'): 'China Guangzhou',
@@ -163,6 +164,9 @@ async def unique_monthly():
 
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
+
+        if cache.get('monthly_unique_players') is None:
+            cache['monthly_unique_players'] = data
 
         if data != cache.get('monthly_unique_players'):
             await send_alert('monthly_unique_players',

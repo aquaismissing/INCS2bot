@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.exceptions import TimeoutError
 import datetime as dt
 import json
 import traceback
@@ -432,6 +433,8 @@ async def user_info_handle_error(_, session: UserSession, user_input: Message, e
     elif exc.code == ErrorCode.PROFILE_IS_PRIVATE:
         error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
                     session.locale.user_privateprofile_error
+    elif exc.code == ErrorCode.NO_STATS_AVAILABLE:
+        error_msg = session.locale.user_nostatsavailable_error
 
     return error_msg
 
@@ -690,7 +693,7 @@ async def smgs_process(client: BotClient, session: UserSession, callback_query: 
 
     chosen_gun = callback_query.data
     bot_message = callback_query.message
-    
+
     if chosen_gun in GUNS_INFO:
         keyboards.smgs_markup.select_button_by_key(chosen_gun)
         return await send_gun_info(client, session, bot_message, smgs, GUNS_INFO[chosen_gun],
@@ -721,7 +724,7 @@ async def rifles_process(client: BotClient, session: UserSession, callback_query
 
     chosen_gun = callback_query.data
     bot_message = callback_query.message
-    
+
     if chosen_gun in GUNS_INFO:
         keyboards.rifles_markup.select_button_by_key(chosen_gun)
         return await send_gun_info(client, session, bot_message, rifles, GUNS_INFO[chosen_gun],
@@ -781,7 +784,7 @@ async def language_process(client: BotClient, session: UserSession, callback_que
 
     chosen_lang = callback_query.data
     bot_message = callback_query.message
-    
+
     if chosen_lang == LK.bot_back:
         return await client.go_back(session, bot_message)
     if chosen_lang in AVAILABLE_LANGUAGES:
@@ -816,7 +819,12 @@ async def leave_feedback(client: BotClient, session: UserSession, message: Messa
 
     text = session.locale.bot_feedback_text + '\n\n' + session.locale.bot_use_cancel
 
-    feedback = await client.ask_message(message.chat.id, text)
+    try:
+        feedback = await client.ask_message(message.chat.id, text, timeout=ASK_TIMEOUT)
+    except TimeoutError:
+        await client.send_message(message.chat.id, 'Timed out.')  # todo: добавить строку локализации
+        session.current_menu_id = main_menu.id
+        return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
 
     if feedback.text == '/cancel':
         await feedback.delete()

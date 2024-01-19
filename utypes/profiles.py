@@ -36,6 +36,7 @@ class ErrorCode(StrEnum):
     INVALID_LINK = 'INVALID_LINK'
     PROFILE_IS_PRIVATE = 'PROFILE_IS_PRIVATE'
     UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+    NO_STATS_AVAILABLE = 'NO_STATS_AVAILABLE'
 
 
 class ParseUserStatsError(Exception):
@@ -245,6 +246,9 @@ class UserGameStats(NamedTuple):
             if not response:
                 raise ParseUserStatsError(ErrorCode.PROFILE_IS_PRIVATE)
 
+            logging.info(response)
+            if response.get('playerstats') is None or response['playerstats'].get('stats') is None:
+                raise ParseUserStatsError(ErrorCode.NO_STATS_AVAILABLE)
             stats_dict = {stat['name']: stat['value'] for stat in response['playerstats']['stats']}
             stats_dict['steamid'] = steam64
 

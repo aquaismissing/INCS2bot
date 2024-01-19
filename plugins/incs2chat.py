@@ -1,12 +1,29 @@
 import asyncio
 
 from pyrogram import Client, filters
-from pyrogram.enums import ChatMembersFilter
-from pyrogram.types import Message
+from pyrogram.enums import ChatMembersFilter, MessageEntityType
+from pyrogram.types import Message, MessageEntity
 
 # noinspection PyUnresolvedReferences
 import env
 import config
+
+
+def correct_message_entity(entities: list[MessageEntity] | None,
+                           original_text: str, new_text: str) -> list[MessageEntity] | None:
+    """Correct message entities (a.k.a. Markdown formatting) for edited text."""
+
+    if entities is None:
+        return
+
+    length_diff = len(original_text) - len(new_text)
+    for entity in entities:
+        if entity.type == MessageEntityType.BOT_COMMAND:
+            del entity
+        else:
+            entity.offset -= length_diff
+
+    return entities
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("ban"))
@@ -55,7 +72,7 @@ async def warn(client: Client, message: Message):
     await message.delete()
 
 
-@Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("echo"))
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.command('echo'))
 async def echo(client: Client, message: Message):  # todo: more attachments?
     chat = await client.get_chat(config.INCS2CHAT)
     admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
@@ -72,35 +89,36 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
         reply_to = message
         should_reply = False
 
-    if message.animation:
-        animation = message.animation.file_id
-        caption = message.caption.removeprefix('/echo').strip()
-        return await reply_to.reply_animation(animation, quote=should_reply, caption=caption)
-
-    if message.audio:
-        audio = message.audio.file_id
-        caption = message.caption.removeprefix('/echo').strip()
-        return await reply_to.reply_audio(audio, quote=should_reply, caption=caption)
-
-    if message.photo:
-        photo = message.photo.file_id
-        caption = message.caption.removeprefix('/echo').strip()
-        return await reply_to.reply_photo(photo, quote=should_reply, caption=caption)
-
     if message.text:
         text = message.text.removeprefix('/echo').strip()
+        entities = correct_message_entity(message.entities, message.text, text)
+
         if not text:
-            msg = await message.reply("Пустой текст.", quote=False)
+            msg = await message.reply('Пустой текст.', quote=False)
             await asyncio.sleep(5)
             await msg.delete()
             return
 
-        return await reply_to.reply(text, quote=should_reply)
+        return await reply_to.reply(text, entities=entities, quote=should_reply, disable_web_page_preview=True)
+
+    caption = message.caption.removeprefix('/echo').strip()
+    entities = correct_message_entity(message.entities, message.caption, caption)
+
+    if message.animation:
+        animation = message.animation.file_id
+        return await reply_to.reply_animation(animation, quote=should_reply, caption=caption, caption_entities=entities)
+
+    if message.audio:
+        audio = message.audio.file_id
+        return await reply_to.reply_audio(audio, quote=should_reply, caption=caption, caption_entities=entities)
+
+    if message.photo:
+        photo = message.photo.file_id
+        return await reply_to.reply_photo(photo, quote=should_reply, caption=caption, caption_entities=entities)
 
     if message.video:
         video = message.video.file_id
-        caption = message.caption.removeprefix('/echo').strip()
-        return await reply_to.reply_video(video, quote=should_reply, caption=caption)
+        return await reply_to.reply_video(video, quote=should_reply, caption=caption, caption_entities=entities)
 
 
 @Client.on_message(filters.linked_channel & filters.chat(config.INCS2CHAT))

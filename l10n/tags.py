@@ -46,8 +46,8 @@ class Tags(NamedTuple):
     dc_europe_sweden: list  # Sweden
 
     dc_us: list  # USA
-    dc_us_north: list  # North
-    dc_us_south: list  # South
+    dc_us_east: list  # East
+    dc_us_west: list  # West
 
     dc_asia: list  # Asia
     dc_asia_india: list  # India
