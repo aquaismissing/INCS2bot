@@ -2,6 +2,7 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
+import datetime as dt
 import json
 import logging
 import platform
@@ -144,7 +145,12 @@ def gv_updater():
             with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
                 cache = json.load(f)
 
-            if data.cs2_client_version != cache.get('cs2_client_version'):
+            # We want to ensure that the data is up to date so we check datetime
+            new_data_datetime = dt.datetime.fromisoformat(data.cs2_version_timestamp)  # no need to convert timezones
+            cached_data_datetime = dt.datetime.fromisoformat(cache.get('cs2_client_version'))  # since they are the same
+            is_up_to_date = new_data_datetime > cached_data_datetime
+
+            if is_up_to_date and data.cs2_client_version != cache.get('cs2_client_version'):
                 for key, value in data.asdict().items():
                     cache[key] = value
 
