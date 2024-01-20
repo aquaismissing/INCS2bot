@@ -145,7 +145,7 @@ def gv_updater():
             with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
                 cache = json.load(f)
 
-            # We want to ensure that the data is up to date so we check datetime
+            # We want to ensure that the data is up to date, so we check datetimes
             new_data_datetime = dt.datetime.fromisoformat(data.cs2_version_timestamp)  # no need to convert timezones
             cached_data_datetime = dt.datetime.fromisoformat(cache.get('cs2_client_version'))  # since they are the same
             is_up_to_date = new_data_datetime > cached_data_datetime

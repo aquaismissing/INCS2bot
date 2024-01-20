@@ -31,7 +31,6 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko
 
 MINUTE = 60
 HOUR = 60 * MINUTE
-UTC_TIMEZONE = ZoneInfo('UTC')
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 
 
@@ -93,7 +92,7 @@ class GameVersionData(NamedTuple):
         cs2_client_version = cache_file.get('cs2_client_version', 'unknown')
         cs2_patch_version = cache_file.get('cs2_patch_version', 'unknown')
         cs2_version_dt = dt.datetime.fromisoformat(cache_file.get('cs2_version_timestamp', 0)) \
-            .replace(tzinfo=VALVE_TIMEZONE).astimezone(UTC_TIMEZONE)
+            .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC)
 
         return cs2_patch_version, cs2_client_version, cs2_version_dt
 
@@ -230,7 +229,7 @@ class GameServersData(NamedTuple):
         player_alltime_peak = cache_file.get('player_alltime_peak', 0)
         monthly_unique_players = cache_file.get('monthly_unique_players', 0)
 
-        now = dt.datetime.now(tz=dt.UTC)
+        now = dt.datetime.now(dt.UTC)
         is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
             and (gc_state is not States.NORMAL or sl_state is not States.NORMAL)
 
