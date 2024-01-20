@@ -67,7 +67,9 @@ async def handle_exceptions_in_callback(client: BotClient, session: UserSession,
 
 @bot.on_message(~filters.me)
 async def handle_messages(client: BotClient, message: Message):
-    return await client.handle_message(message)
+    result = await client.handle_message(message)
+    if result is None:
+        message.continue_propagation()
 
 
 @bot.on_callback_query()
@@ -604,6 +606,37 @@ async def send_game_leaderboard(_, session: UserSession, bot_message: Message,
 
     await bot_message.edit(text, reply_markup=keyboards.leaderboard_markup(session.locale))
 
+
+# cat: Crosshair editor
+
+async def edit_crosshair_style(client: BotClient, session: UserSession, bot_message: Message, data: dict = None):
+    chosen_style = await client.ask_callback_silently(bot_message,
+                                                      'Choose a style for your crosshair',
+                                                      reply_markup=ExtendedIKM([
+                                                          [ExtendedIKB('Classic', 'classic')],
+                                                          [ExtendedIKB('Classic Static', 'classic_static')],
+                                                          [ExtendedIKB('Traditional', 'traditional')],
+                                                          [keyboards.back_button],
+                                                      ]),
+                                                      timeout=ASK_TIMEOUT)
+
+
+# @bot.callback_process(of=edit_crosshair_style)
+async def edit_crosshair_style_process(client: BotClient, session: UserSession, callback_query: CallbackQuery):
+    await client.log_callback(session, callback_query)
+
+    styles = {'classic': 0, 'classic_static': 0, 'traditional': 0}  # todo: what are the real values
+
+    chosen_style = callback_query.data
+    bot_message = callback_query.message
+
+    if chosen_style in styles:
+        keyboards.pistols_markup.select_button_by_key(chosen_style)
+        return await send_gun_info(client, session, bot_message, pistols, styles[chosen_style],
+                                   reply_markup=keyboards.pistols_markup)
+    if chosen_style == LK.bot_back:
+        return await client.go_back(session, bot_message)
+    return await unknown_request(client, session, bot_message, keyboards.pistols_markup)
 
 # cat: Guns info
 
