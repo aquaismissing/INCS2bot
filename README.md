@@ -7,8 +7,8 @@
 ### Isn't it just CS:GO Beta Bot but rebranded?
 
 Not really. 
-We swapped from Telebot to Pyrogram to [get advantages of the MTProto API][mtproto api advantages], 
-and most of the codebase was rewritten to be more modular and perfomant. 
+We swapped from Telebot to Pyrogram, 
+and most of the codebase was rewritten to be more modular and perfomant.
 
 ### Any changes?
 
