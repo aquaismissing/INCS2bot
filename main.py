@@ -22,7 +22,7 @@ import config
 from db import db_session
 from functions import datacenter_handlers, info_formatters
 from functions.decorators import ignore_message_not_modified
-from functions.locale import get_available_languages
+from functions.locale import get_available_languages, get_refined_lang_code
 import keyboards
 # noinspection PyPep8Naming
 from l10n import Locale, LocaleKeys as LK
@@ -34,7 +34,7 @@ from utypes.profiles import ErrorCode, ParseUserStatsError  # to clearly indicat
 
 GUNS_INFO = GunInfo.load()
 AVAILABLE_LANGUAGES = get_available_languages()
-ALL_COMMANDS = ['start', 'help', 'feedback']
+ALL_COMMANDS = ('start', 'help', 'feedback')
 ASK_TIMEOUT = 5 * 60
 
 logging.basicConfig(level=logging.INFO,
@@ -107,7 +107,7 @@ async def server_stats(_, session: UserSession, bot_message: Message):
 async def send_server_status(client: BotClient, session: UserSession, bot_message: Message):
     """Send the status of Counter-Strike servers"""
 
-    data = GameServersData.cached_server_status()
+    data = GameServersData.cached_server_status(config.CACHE_FILE_PATH)
 
     if data == States.UNKNOWN:
         return await something_went_wrong(client, session, bot_message)
@@ -121,7 +121,7 @@ async def send_server_status(client: BotClient, session: UserSession, bot_messag
 async def send_matchmaking_stats(client: BotClient, session: UserSession, bot_message: Message):
     """Send Counter-Strike matchamaking statistics"""
 
-    data = GameServersData.cached_matchmaking_stats()
+    data = GameServersData.cached_matchmaking_stats(config.CACHE_FILE_PATH)
 
     if data == States.UNKNOWN:
         return await something_went_wrong(client, session, bot_message)
@@ -282,10 +282,14 @@ async def send_dc_south_korea(client: BotClient, session: UserSession, bot_messa
 async def send_dc_state(client: BotClient, session: UserSession, bot_message: Message,
                         dc_state_func: Callable[[Locale], str | State], reply_markup: ExtendedIKM):
     try:
-        state = dc_state_func(session.locale)
-
-        if state == States.UNKNOWN:
+        game_servers_datetime = GameServersData.latest_info_update(config.CACHE_FILE_PATH)
+        if game_servers_datetime is States.UNKNOWN:
             return await something_went_wrong(client, session, bot_message)
+
+        state = dc_state_func(session.locale)
+        lang_code = get_refined_lang_code(session.locale)
+        state += '\n\n'
+        state += f'{format_datetime(game_servers_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
 
         await bot_message.edit(state, reply_markup=reply_markup(session.locale))
     except Exception as e:
@@ -493,7 +497,7 @@ async def decode_crosshair_process(client: BotClient, session: UserSession, bot_
 
 @bot.funcmenu(LK.exchangerate_button_title, came_from=extra_features, ignore_message_not_modified=True)
 async def send_exchange_rate(_, session: UserSession, bot_message: Message):
-    prices = ExchangeRate.cached_data()
+    prices = ExchangeRate.cached_data(config.CACHE_FILE_PATH)
 
     await bot_message.edit(session.locale.exchangerate_text.format(*prices.values()),
                            reply_markup=keyboards.extra_markup(session.locale))
@@ -521,7 +525,7 @@ async def send_dropcap_timer(_, session: UserSession, bot_message: Message):
 async def send_game_version(client: BotClient, session: UserSession, bot_message: Message):
     """Send a current version of CS:GO/CS 2"""
 
-    data = GameVersionData.cached_data()
+    data = GameVersionData.cached_data(config.CACHE_FILE_PATH)
 
     if data == States.UNKNOWN:
         return await something_went_wrong(client, session, bot_message)
@@ -534,7 +538,7 @@ async def send_game_version(client: BotClient, session: UserSession, bot_message
 
 @bot.navmenu(LK.game_leaderboard_button_title, came_from=extra_features, ignore_message_not_modified=True)
 async def game_leaderboard(_, session: UserSession, bot_message: Message):
-    world_data = LeaderboardStats.cached_world_stats()
+    world_data = LeaderboardStats.cached_world_stats(config.CACHE_FILE_PATH)
     text = info_formatters.format_game_world_leaderboard(world_data, session.locale)
 
     await bot_message.edit(text, reply_markup=keyboards.leaderboard_markup(session.locale))
@@ -592,10 +596,10 @@ async def send_game_leaderboard(_, session: UserSession, bot_message: Message,
 
     region = region.split('_')[-1]
     if region == 'world':
-        data = LeaderboardStats.cached_world_stats()
+        data = LeaderboardStats.cached_world_stats(config.CACHE_FILE_PATH)
         text = info_formatters.format_game_world_leaderboard(data, session.locale)
     else:
-        data = LeaderboardStats.cached_regional_stats(region)
+        data = LeaderboardStats.cached_regional_stats(config.CACHE_FILE_PATH, region)
         text = info_formatters.format_game_regional_leaderboard(region, data, session.locale)
 
     await bot_message.edit(text, reply_markup=keyboards.leaderboard_markup(session.locale))

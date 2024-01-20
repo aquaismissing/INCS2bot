@@ -1,23 +1,10 @@
-from babel.dates import format_datetime
-
 from l10n import Locale
-from .locale import get_refined_lang_code
 from utypes import (DatacenterAtlas,
                     DatacenterVariation,
-                    DatacenterState, DatacenterRegionState, DatacenterGroupState,
-                    GameServersData, States)
+                    DatacenterState, DatacenterRegionState, DatacenterGroupState)
 
 
 def _format_dc_data(dc: DatacenterVariation, locale: Locale):
-    game_servers_datetime = GameServersData.latest_info_update()
-    if game_servers_datetime is States.UNKNOWN:
-        return States.UNKNOWN
-
-    lang_code = get_refined_lang_code(locale)
-
-    game_servers_datetime = (f'{format_datetime(game_servers_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()}'
-                             f' (UTC)')
-
     state = DatacenterAtlas.get_state(dc)
 
     if isinstance(state, DatacenterState):
@@ -25,7 +12,7 @@ def _format_dc_data(dc: DatacenterVariation, locale: Locale):
                                                     locale.get(state.dc.l10n_key_title))
         summary = locale.dc_status_text_summary_city.format(locale.get(state.load.l10n_key),
                                                             locale.get(state.capacity.l10n_key))
-        return '\n\n'.join((header, summary, locale.latest_data_update.format(game_servers_datetime)))
+        return '\n\n'.join((header, summary))
 
     if isinstance(state, DatacenterRegionState):
         header = locale.dc_status_text_title.format(state.region.symbol,
@@ -36,7 +23,7 @@ def _format_dc_data(dc: DatacenterVariation, locale: Locale):
                                                            locale.get(dc_state.load.l10n_key),
                                                            locale.get(dc_state.capacity.l10n_key))
             summaries.append(summary)
-        return '\n\n'.join((header, '\n\n'.join(summaries), locale.latest_data_update.format(game_servers_datetime)))
+        return '\n\n'.join((header, '\n\n'.join(summaries)))
 
     if isinstance(state, DatacenterGroupState):
         infos = []
@@ -50,7 +37,7 @@ def _format_dc_data(dc: DatacenterVariation, locale: Locale):
                                                                locale.get(dc_state.capacity.l10n_key))
                 summaries.append(summary)
             infos.append(header + '\n\n' + '\n\n'.join(summaries))
-        return '\n\n'.join((*infos, locale.latest_data_update.format(game_servers_datetime)))
+        return '\n\n'.join(infos)
 
 
 def africa(locale: Locale):

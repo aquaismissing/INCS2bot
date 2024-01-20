@@ -8,6 +8,7 @@ from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessa
 # noinspection PyUnresolvedReferences
 import env
 from bottypes import BotClient, UserSession
+import config
 from functions import datacenter_handlers, info_formatters
 import keyboards
 from l10n import dump_tags
@@ -83,7 +84,7 @@ async def share_inline(_, session: UserSession, inline_query: InlineQuery):
 
 @log_exception_inline
 async def inline_exchange_rate(_, session: UserSession, inline_query: InlineQuery):
-    data = ExchangeRate.cached_data()
+    data = ExchangeRate.cached_data(config.CACHE_FILE_PATH)
 
     try:
         query = inline_query.query.split()[1].lower()
@@ -270,12 +271,14 @@ async def inline_datacenters(_, session: UserSession, inline_query: InlineQuery)
 
 @log_exception_inline
 async def default_inline(_, session: UserSession, inline_query: InlineQuery):
-    game_version_data = GameVersionData.cached_data()
+    game_version_data = GameVersionData.cached_data(config.CACHE_FILE_PATH)
 
-    server_status_text = info_formatters.format_server_status(GameServersData.cached_server_status(),
-                                                              session.locale)
+    server_status_text = info_formatters.format_server_status(
+        GameServersData.cached_server_status(config.CACHE_FILE_PATH),
+        session.locale
+    )
     matchmaking_stats_text = info_formatters.format_matchmaking_stats(
-        GameServersData.cached_matchmaking_stats(), session.locale
+        GameServersData.cached_matchmaking_stats(config.CACHE_FILE_PATH), session.locale
     )
 
     valve_hq_time_text = info_formatters.format_valve_hq_time(session.locale)

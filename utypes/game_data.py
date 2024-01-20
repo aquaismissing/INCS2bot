@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+from pathlib import Path
 from typing import NamedTuple
 from zoneinfo import ZoneInfo
 
@@ -30,6 +31,7 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko
 
 MINUTE = 60
 HOUR = 60 * MINUTE
+UTC_TIMEZONE = ZoneInfo('UTC')
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 
 
@@ -68,12 +70,13 @@ class GameVersionData(NamedTuple):
             key, val = entry.split('=')
             options[key] = val
 
-        version_datetime = f'{options["VersionDate"]} {options["VersionTime"]}'
+        version_datetime = dt.datetime.strptime(f'{options["VersionDate"]} {options["VersionTime"]}',
+                                                '%b %d %Y %H:%M:%S')
 
-        cs2_client_version = int(options["ClientVersion"]) - 2000000
-        cs2_server_version = int(options["ServerVersion"]) - 2000000
-        cs2_patch_version = options["PatchVersion"]
-        cs2_version_timestamp = dt.datetime.strptime(version_datetime, "%b %d %Y %H:%M:%S").isoformat()
+        cs2_client_version = int(options['ClientVersion']) - 2000000
+        cs2_server_version = int(options['ServerVersion']) - 2000000
+        cs2_patch_version = options['PatchVersion']
+        cs2_version_timestamp = version_datetime.isoformat()
 
         return GameVersionData(cs2_client_version,
                                cs2_server_version,
@@ -81,16 +84,16 @@ class GameVersionData(NamedTuple):
                                cs2_version_timestamp)
     
     @staticmethod
-    def cached_data():
+    def cached_data(filename: str | Path):
         """Get the version of the game"""
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             cache_file = json.load(f)
 
         cs2_client_version = cache_file.get('cs2_client_version', 'unknown')
         cs2_patch_version = cache_file.get('cs2_patch_version', 'unknown')
         cs2_version_dt = dt.datetime.fromisoformat(cache_file.get('cs2_version_timestamp', 0)) \
-            .replace(tzinfo=VALVE_TIMEZONE).astimezone(ZoneInfo("UTC"))
+            .replace(tzinfo=VALVE_TIMEZONE).astimezone(UTC_TIMEZONE)
 
         return cs2_patch_version, cs2_client_version, cs2_version_dt
 
@@ -114,16 +117,16 @@ class ExchangeRate:
     @staticmethod
     def request():
         r = requests.get(GET_KEY_PRICES_API, timeout=15).json()['result']['assets']
-        key_price = [item for item in r if item['classid'] == '1544098059'][0]["prices"]
-        del key_price["Unknown"], key_price["BYN"]
+        key_price = [item for item in r if item['classid'] == '1544098059'][0]['prices']
+        del key_price['Unknown'], key_price['BYN']
 
         return key_price
 
     @staticmethod
-    def cached_data():
+    def cached_data(filename: str | Path):
         """Get the currencies for CS2 store"""
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             key_price = json.load(f).get('key_price')
 
         if key_price is None:
@@ -151,41 +154,43 @@ class GameServersData(NamedTuple):
     @staticmethod
     def request():
         response = requests.get(GAME_SERVERS_STATUS_API, timeout=15)
-        if response.status_code == 200:
-            webapi = States.NORMAL
+        if response.status_code != 200:
+            return GameServersData(States.UNKNOWN, 0, States.UNKNOWN,
+                                   States.UNKNOWN, States.UNKNOWN, 0,
+                                   0, 0, 0, {})
 
-            result = response.json()["result"]
-            api_timestamp = result["app"]["timestamp"]
-            sessions_logon = States.get(result["services"]["SessionsLogon"])
-            steam_community = States.get(result["services"]["SteamCommunity"])
-            matchmaking_scheduler = States.get(result["matchmaking"]["scheduler"])
-            online_servers = result["matchmaking"]["online_servers"]
-            active_players = result["matchmaking"]["online_players"]
-            searching_players = result["matchmaking"]["searching_players"]
-            average_search_time = result["matchmaking"]["search_seconds_avg"]
-            datacenters = result["datacenters"]
-            return GameServersData(webapi,
-                                   api_timestamp,
-                                   sessions_logon,
-                                   steam_community,
-                                   matchmaking_scheduler,
-                                   online_servers,
-                                   active_players,
-                                   searching_players,
-                                   average_search_time,
-                                   datacenters)
-        return GameServersData(States.UNKNOWN, 0, States.UNKNOWN,
-                               States.UNKNOWN, States.UNKNOWN, 0,
-                               0, 0, 0, {})
+        result = response.json()['result']
+        services = result['services']
+        matchmaking = result['matchmaking']
+
+        api_timestamp = result['app']['timestamp']
+        sessions_logon = States.get(services['SessionsLogon'])
+        steam_community = States.get(services['SteamCommunity'])
+        matchmaking_scheduler = States.get(matchmaking['scheduler'])
+        online_servers = matchmaking['online_servers']
+        active_players = matchmaking['online_players']
+        searching_players = matchmaking['searching_players']
+        average_search_time = matchmaking['search_seconds_avg']
+        datacenters = result['datacenters']
+        return GameServersData(States.NORMAL,
+                               api_timestamp,
+                               sessions_logon,
+                               steam_community,
+                               matchmaking_scheduler,
+                               online_servers,
+                               active_players,
+                               searching_players,
+                               average_search_time,
+                               datacenters)
 
     @staticmethod
-    def cached_server_status():
+    def cached_server_status(filename: str | Path):
         """Get the status of Counter-Strike servers"""
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        with open(filename, encoding='utf-8') as f:
             cache_file = json.load(f)
 
-        game_server_dt = GameServersData.latest_info_update()
+        game_server_dt = GameServersData.latest_info_update(filename)
         if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
 
@@ -203,11 +208,11 @@ class GameServersData(NamedTuple):
                 sc_state, webapi_state, is_maintenance)
     
     @staticmethod
-    def cached_matchmaking_stats():
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+    def cached_matchmaking_stats(filename: str | Path):
+        with open(filename, encoding='utf-8') as f:
             cache_file = json.load(f)
         
-        game_server_dt = GameServersData.latest_info_update()
+        game_server_dt = GameServersData.latest_info_update(filename)
         if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
         
@@ -235,8 +240,8 @@ class GameServersData(NamedTuple):
                 is_maintenance)
     
     @staticmethod
-    def latest_info_update():
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+    def latest_info_update(filename: str | Path):
+        with open(filename, encoding='utf-8') as f:
             cache_file = json.load(f)
 
         if cache_file.get('api_timestamp', 'unknown') == 'unknown':
@@ -310,16 +315,16 @@ class LeaderboardStats(NamedTuple):
         return [LeaderboardStats.from_json(person).asdict() for person in regional_leaderboard_data]
 
     @staticmethod
-    def cached_world_stats():
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+    def cached_world_stats(filename: str | Path):
+        with open(filename, encoding='utf-8') as f:
             cache_file = json.load(f)
 
         world_leaderboard_stats = cache_file.get('world_leaderboard_stats', [])
         return [LeaderboardStats(**person) for person in world_leaderboard_stats]
 
     @staticmethod
-    def cached_regional_stats(region: str):
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+    def cached_regional_stats(filename: str | Path, region: str):
+        with open(filename, encoding='utf-8') as f:
             cache_file = json.load(f)
 
         regional_leaderboard_stats = cache_file.get(f'regional_leaderboard_stats_{region}', [])
