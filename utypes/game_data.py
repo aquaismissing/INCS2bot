@@ -75,7 +75,8 @@ class GameVersionData(NamedTuple):
         cs2_client_version = int(options['ClientVersion']) - 2000000
         cs2_server_version = int(options['ServerVersion']) - 2000000
         cs2_patch_version = options['PatchVersion']
-        cs2_version_timestamp = version_datetime.isoformat()
+        cs2_version_timestamp = version_datetime.isoformat()  # todo: maybe should use unix timestamp
+                                                              # todo: instead of this piece of crap?
 
         return GameVersionData(cs2_client_version,
                                cs2_server_version,

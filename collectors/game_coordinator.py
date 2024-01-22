@@ -9,6 +9,7 @@ import platform
 import sys
 from threading import Thread
 import time
+from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.gevent import GeventScheduler
 from csgo.client import CSGOClient
@@ -24,6 +25,9 @@ if platform.system() == 'Linux':
 import env
 import config
 from utypes import GameVersionData, States
+
+
+VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s | GC: %(message)s',
@@ -145,12 +149,15 @@ def gv_updater():
             with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
                 cache = json.load(f)
 
-            # We want to ensure that the data is up to date, so we check datetimes
-            new_data_datetime = dt.datetime.fromisoformat(data.cs2_version_timestamp)  # no need to convert timezones
-            cached_data_datetime = dt.datetime.fromisoformat(cache.get('cs2_client_version'))  # since they are the same
-            is_up_to_date = new_data_datetime > cached_data_datetime
+            # Made to ensure we will grab the latest public data if we *somehow* don't have anything cached
+            no_cached_data = (cache.get('cs2_client_version') is None)
 
-            if is_up_to_date and data.cs2_client_version != cache.get('cs2_client_version'):
+            # We also want to ensure that the data is up to date, so we check datetime
+            new_data_datetime = (dt.datetime.fromisoformat(data.cs2_version_timestamp)
+                                 .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
+            is_up_to_date = dt.datetime.now(dt.UTC) - new_data_datetime < dt.timedelta(hours=12)
+
+            if no_cached_data or (is_up_to_date and data.cs2_client_version != cache.get('cs2_client_version')):
                 for key, value in data.asdict().items():
                     cache[key] = value
 
