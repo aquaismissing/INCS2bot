@@ -17,17 +17,13 @@ from functions import locale
 
 loc = locale('ru')
 
-MONITORING_IDS = ('sdk_build_id', 'ds_build_id', 'valve_ds_changenumber',
-                  'cs2_app_changenumber', 'cs2_server_changenumber',
+MONITORING_IDS = ('cs2_app_changenumber', 'cs2_server_changenumber',
                   'dprp_build_id', 'dpr_build_id', 'public_build_id')
 
 available_alerts = {'public_build_id': loc.notifs_build_public,
                     'dpr_build_id': loc.notifs_build_dpr,
                     'dprp_build_id': loc.notifs_build_dprp,
                     'dpr_build_sync_id': f'{loc.notifs_build_dpr} 🔃',
-                    'sdk_build_id': loc.notifs_build_sdk,
-                    'ds_build_id': loc.notifs_build_ds,
-                    'valve_ds_changenumber': loc.notifs_build_valve_ds,
                     'cs2_app_changenumber': loc.notifs_build_cs2_client,
                     'cs2_server_changenumber': loc.notifs_build_cs2_server}
 

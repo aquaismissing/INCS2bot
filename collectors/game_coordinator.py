@@ -99,17 +99,12 @@ def handle_after_logon():
 def depots():
     # noinspection PyBroadException
     try:
-        data = client.get_product_info(apps=[730, 740, 741, 745, 2275500, 2275530],
-                                       timeout=15)['apps']
+        data = client.get_product_info(apps=[730, 2275500, 2275530], timeout=15)['apps']
         main_data = data[730]
 
         public_build_id = int(main_data['depots']['branches']['public']['buildid'])
         dpr_build_id = int(main_data['depots']['branches']['dpr']['buildid'])
         dprp_build_id = int(main_data['depots']['branches']['dprp']['buildid'])
-
-        ds_build_id = int(data[740]['depots']['branches']['public']['buildid'])
-        valve_ds_change_number = data[741]['_change_number']
-        sdk_build_id = int(data[745]['depots']['branches']['public']['buildid'])
 
         cs2_app_change_number = data[2275500]['_change_number']
         cs2_server_change_number = data[2275530]['_change_number']
@@ -120,9 +115,6 @@ def depots():
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache = json.load(f)
 
-    cache['sdk_build_id'] = sdk_build_id
-    cache['ds_build_id'] = ds_build_id
-    cache['valve_ds_changenumber'] = valve_ds_change_number
     cache['cs2_app_changenumber'] = cs2_app_change_number
     cache['cs2_server_changenumber'] = cs2_server_change_number
     cache['dprp_build_id'] = dprp_build_id
