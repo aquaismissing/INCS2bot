@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+from dataclasses import dataclass
 import datetime as dt
 import json
 from pathlib import Path
@@ -12,18 +14,17 @@ import config
 from .states import State, States
 from .protobufs import ScoreLeaderboardData
 
-__all__ = ('GameVersionData',  'ExchangeRate', 'GameServersData', 'LeaderboardStats',
+__all__ = ('GameVersion', 'GameVersionData',
+           'ExchangeRate', 'ExchangeRateData',
+           'GameServers', 'OverallGameServersData', 'ServerStatusData', 'MatchmakingStatsData',
+           'LeaderboardStats',
            'get_monthly_unique_players', 'drop_cap_reset_timer', 'LEADERBOARD_API_REGIONS')
 
 
 MONTHLY_UNIQUE_PLAYERS_API = 'https://api.steampowered.com/ICSGOServers_730/GetMonthlyPlayerCount/v1'
-CS2_VERSION_DATA_URL = 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/master/game/csgo/steam.inf'
-GET_KEY_PRICES_API = f'https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/' \
-                     f'?appid={config.CS_APP_ID}&key={config.STEAM_API_KEY}'
-GAME_SERVERS_STATUS_API = f'https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1' \
-                          f'?key={config.STEAM_API_KEY}'
 CS2_LEADERBOARD_API = 'https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1/' \
                       '?lbname=official_leaderboard_premier_season1'
+PICKEM_GET_TOURNAMENT_LAYOUT_API = f'https://api.steampowered.com/ICSGOTournaments_730/GetTournamentLayout/v1/'
 
 LEADERBOARD_API_REGIONS = ('northamerica', 'southamerica', 'europe', 'asia', 'australia', 'china', 'africa')
 
@@ -55,14 +56,118 @@ class GameVersionData(NamedTuple):
     cs2_client_version: int
     cs2_server_version: int
     cs2_patch_version: str
-    cs2_version_timestamp: str
+    cs2_version_timestamp: float | str
 
-    @staticmethod
-    def request():
+    def asdict(self):
+        return self._asdict()
+
+
+class ExchangeRateData(NamedTuple):
+    USD: float
+    GBP: float
+    EUR: float
+    RUB: float
+    BRL: float
+    JPY: float
+    NOK: float
+    IDR: float
+    MYR: float
+    PHP: float
+    SGD: float
+    THB: float
+    VND: float
+    KRW: float
+    TRY: float
+    UAH: float
+    MXN: float
+    CAD: float
+    AUD: float
+    NZD: float
+    PLN: float
+    CHF: float
+    AED: float
+    CLP: float
+    CNY: float
+    COP: float
+    PEN: float
+    SAR: float
+    TWD: float
+    HKD: float
+    ZAR: float
+    INR: float
+    ARS: float
+    CRC: float
+    ILS: float
+    KWD: float
+    QAR: float
+    UYU: float
+    KZT: float
+
+    def asdict(self):
+        return self._asdict()
+
+
+@dataclass(frozen=True, slots=True)
+class BasicServerStatusData:
+    info_requested_datetime: dt.datetime
+    game_coordinator_state: State
+    sessions_logon_state: State
+
+    def is_maintenance(self):
+        now = dt.datetime.now(dt.UTC)
+        return (((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4))
+                and not (self.game_coordinator_state is States.NORMAL and self.sessions_logon_state is States.NORMAL))
+
+    def asdict(self):
+        return dataclasses.asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class ServerStatusData(BasicServerStatusData):
+    matchmaking_scheduler_state: State
+    steam_community_state: State
+    webapi_state: State
+
+
+@dataclass(frozen=True, slots=True)
+class MatchmakingStatsData(BasicServerStatusData):
+    graph_url: str
+    online_servers: int
+    online_players: int
+    active_players: int
+    searching_players: int
+    average_search_time: int
+    player_24h_peak: int
+    player_alltime_peak: int
+    monthly_unique_players: int
+
+
+@dataclass(frozen=True, slots=True)
+class OverallGameServersData:
+    api_timestamp: int
+    sessions_logon_state: State
+    matchmaking_scheduler_state: State
+    steam_community_state: State
+    webapi_state: State
+    online_servers: int
+    active_players: int
+    searching_players: int
+    average_search_time: int
+    datacenters: dict
+
+    def asdict(self):
+        return dataclasses.asdict(self)
+
+
+class GameVersion:
+    CS2_VERSION_DATA_URL = 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/master/game/csgo/steam.inf'
+
+    @classmethod
+    def request(cls):
         options = {}
 
         # cs2
-        cs2_data = requests.get(CS2_VERSION_DATA_URL, headers=HEADERS, timeout=15).text
+        cs2_data = requests.get(cls.CS2_VERSION_DATA_URL, headers=HEADERS, timeout=15).text
         config_entries = (line for line in cs2_data.split('\n') if line)
 
         for entry in config_entries:
@@ -75,7 +180,7 @@ class GameVersionData(NamedTuple):
         cs2_client_version = int(options['ClientVersion']) - 2000000
         cs2_server_version = int(options['ServerVersion']) - 2000000
         cs2_patch_version = options['PatchVersion']
-        cs2_version_timestamp = version_datetime.isoformat()  # todo: maybe should use unix timestamp
+        cs2_version_timestamp = version_datetime.timestamp()  # todo: maybe should use unix timestamp
                                                               # todo: instead of this piece of crap?
 
         return GameVersionData(cs2_client_version,
@@ -91,19 +196,25 @@ class GameVersionData(NamedTuple):
             cache_file = json.load(f)
 
         cs2_client_version = cache_file.get('cs2_client_version', 'unknown')
+        cs2_server_version = cache_file.get('cs2_client_version', 'unknown')
         cs2_patch_version = cache_file.get('cs2_patch_version', 'unknown')
-        cs2_version_dt = dt.datetime.fromisoformat(cache_file.get('cs2_version_timestamp', 0)) \
-            .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC)
 
-        return cs2_patch_version, cs2_client_version, cs2_version_dt
+        # Timestamp could be saved as ISO-8601, so we need to address that
+        cs2_version_timestamp = cache_file.get('cs2_version_timestamp', 0)
+        if isinstance(cs2_version_timestamp, str):
+            cs2_version_timestamp = dt.datetime.fromisoformat(cs2_version_timestamp).timestamp()
 
-    def asdict(self):
-        return self._asdict()
+        return GameVersionData(cs2_client_version,
+                               cs2_server_version,
+                               cs2_patch_version,
+                               cs2_version_timestamp)
 
 
 class ExchangeRate:
     __slots__ = ()
-    currencies_symbols = {"USD": "$", "GBP": "£", "EUR": "€", "RUB": "₽",
+    GET_KEY_PRICES_API = f'https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/' \
+                         f'?appid={config.CS_APP_ID}&key={config.STEAM_API_KEY}'
+    CURRENCIES_SYMBOLS = {"USD": "$", "GBP": "£", "EUR": "€", "RUB": "₽",
                           "BRL": "R$", "JPY": "¥", "NOK": "kr", "IDR": "Rp",
                           "MYR": "RM", "PHP": "₱", "SGD": "S$", "THB": "฿",
                           "VND": "₫", "KRW": "₩", "TRY": "₺", "UAH": "₴",
@@ -114,50 +225,40 @@ class ExchangeRate:
                           "INR": "₹", "ARS": "ARS$", "CRC": "₡", "ILS": "₪",
                           "KWD": "KD", "QAR": "QR", "UYU": "$U", "KZT": "₸"}
 
-    @staticmethod
-    def request():
-        r = requests.get(GET_KEY_PRICES_API, timeout=15).json()['result']['assets']
+    @classmethod
+    def request(cls):
+        r = requests.get(cls.GET_KEY_PRICES_API, timeout=15).json()['result']['assets']
         key_price = [item for item in r if item['classid'] == '1544098059'][0]['prices']
         del key_price['Unknown'], key_price['BYN']
 
-        return key_price
+        prices = {k: v / 100 for k, v in key_price.items()}
+        formatted_prices = {k: f'{v:.0f}' if v % 1 == 0 else f'{v:.2f}'
+                            for k, v in prices.items()}
+
+        return ExchangeRateData(**formatted_prices)
 
     @staticmethod
     def cached_data(filename: str | Path):
         """Get the currencies for CS2 store"""
 
         with open(filename, encoding='utf-8') as f:
-            key_price = json.load(f).get('key_price')
+            key_prices = json.load(f).get('key_price')
 
-        if key_price is None:
+        if key_prices is None:
             return {}
 
-        prices = {k: v / 100 for k, v in key_price.items()}
-        formatted_prices = {k: f'{v:.0f}' if v % 1 == 0 else f'{v:.2f}'
-                            for k, v in prices.items()}
-
-        return formatted_prices
+        return ExchangeRateData(**key_prices)
     
 
-class GameServersData(NamedTuple):
-    webapi: State
-    api_timestamp: int
-    sessions_logon: State
-    steam_community: State
-    matchmaking_scheduler: State
-    online_servers: int
-    active_players: int
-    searching_players: int
-    average_search_time: int
-    datacenters: dict
+class GameServers:
+    GAME_SERVERS_STATUS_API = f'https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1' \
+                              f'?key={config.STEAM_API_KEY}'
 
-    @staticmethod
-    def request():
-        response = requests.get(GAME_SERVERS_STATUS_API, timeout=15)
+    @classmethod
+    def request(cls):
+        response = requests.get(cls.GAME_SERVERS_STATUS_API, timeout=15)
         if response.status_code != 200:
-            return GameServersData(States.UNKNOWN, 0, States.UNKNOWN,
-                                   States.UNKNOWN, States.UNKNOWN, 0,
-                                   0, 0, 0, {})
+            return
 
         result = response.json()['result']
         services = result['services']
@@ -172,16 +273,17 @@ class GameServersData(NamedTuple):
         searching_players = matchmaking['searching_players']
         average_search_time = matchmaking['search_seconds_avg']
         datacenters = result['datacenters']
-        return GameServersData(States.NORMAL,
-                               api_timestamp,
-                               sessions_logon,
-                               steam_community,
-                               matchmaking_scheduler,
-                               online_servers,
-                               active_players,
-                               searching_players,
-                               average_search_time,
-                               datacenters)
+
+        return OverallGameServersData(api_timestamp,
+                                      sessions_logon,
+                                      matchmaking_scheduler,
+                                      steam_community,
+                                      States.NORMAL,
+                                      online_servers,
+                                      active_players,
+                                      searching_players,
+                                      average_search_time,
+                                      datacenters)
 
     @staticmethod
     def cached_server_status(filename: str | Path):
@@ -190,7 +292,7 @@ class GameServersData(NamedTuple):
         with open(filename, encoding='utf-8') as f:
             cache_file = json.load(f)
 
-        game_server_dt = GameServersData.latest_info_update(filename)
+        game_server_dt = GameServers.latest_info_update(filename)
         if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
 
@@ -199,21 +301,17 @@ class GameServersData(NamedTuple):
         ms_state = States.sget(cache_file.get('matchmaking_scheduler'))
         sc_state = States.sget(cache_file.get('steam_community'))
         webapi_state = States.sget(cache_file.get('webapi'))
-        
-        now = dt.datetime.now(dt.UTC)
-        is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
-            and not (gc_state == States.NORMAL and sl_state == States.NORMAL)
 
-        return (game_server_dt, gc_state, sl_state, ms_state,
-                sc_state, webapi_state, is_maintenance)
+        return ServerStatusData(game_server_dt,
+                                gc_state, sl_state, ms_state, sc_state, webapi_state)
     
     @staticmethod
     def cached_matchmaking_stats(filename: str | Path):
         with open(filename, encoding='utf-8') as f:
             cache_file = json.load(f)
         
-        game_server_dt = GameServersData.latest_info_update(filename)
-        if game_server_dt == States.UNKNOWN:
+        game_server_dt = GameServers.latest_info_update(filename)
+        if game_server_dt is States.UNKNOWN:
             return States.UNKNOWN
         
         gc_state = States.sget(cache_file.get('game_coordinator'))
@@ -230,14 +328,12 @@ class GameServersData(NamedTuple):
         player_alltime_peak = cache_file.get('player_alltime_peak', 0)
         monthly_unique_players = cache_file.get('monthly_unique_players', 0)
 
-        now = dt.datetime.now(dt.UTC)
-        is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
-            and (gc_state is not States.NORMAL or sl_state is not States.NORMAL)
-
-        return (game_server_dt, graph_url, online_servers, online_players,
-                active_players, searching_players, average_search_time,
-                player_24h_peak, player_alltime_peak, monthly_unique_players,
-                is_maintenance)
+        return MatchmakingStatsData(game_server_dt,
+                                    gc_state, sl_state,
+                                    graph_url,
+                                    online_servers,
+                                    online_players, active_players, searching_players, average_search_time,
+                                    player_24h_peak, player_alltime_peak, monthly_unique_players)
     
     @staticmethod
     def latest_info_update(filename: str | Path):
@@ -248,9 +344,6 @@ class GameServersData(NamedTuple):
             return States.UNKNOWN
 
         return dt.datetime.fromtimestamp(cache_file.get('api_timestamp', 0), dt.UTC)
-
-    def asdict(self):
-        return self._asdict()
 
 
 class LeaderboardStats(NamedTuple):

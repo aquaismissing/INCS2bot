@@ -18,7 +18,7 @@ import env
 import config
 from l10n import locale
 from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
-                    DatacenterRegion, DatacenterGroup, GameServersData,
+                    DatacenterRegion, DatacenterGroup, GameServers,
                     LeaderboardStats, State, get_monthly_unique_players,
                     LEADERBOARD_API_REGIONS)
 
@@ -123,7 +123,7 @@ async def update_cache_info():
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
-        overall_data = GameServersData.request()
+        overall_data = GameServers.request()
 
         for key, value in overall_data.asdict().items():
             if key == 'datacenters':

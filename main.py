@@ -26,7 +26,7 @@ from functions.locale import get_available_languages, get_refined_lang_code
 import keyboards
 # noinspection PyPep8Naming
 from l10n import Locale, LocaleKeys as LK
-from utypes import (ExchangeRate, GameServersData, GameVersionData,
+from utypes import (ExchangeRate, GameServers, GameVersion,
                     GunInfo, LeaderboardStats, ProfileInfo, State,
                     States, UserGameStats, drop_cap_reset_timer)
 from utypes.profiles import ErrorCode, ParseUserStatsError  # to clearly indicate relation
@@ -109,9 +109,9 @@ async def server_stats(_, session: UserSession, bot_message: Message):
 async def send_server_status(client: BotClient, session: UserSession, bot_message: Message):
     """Send the status of Counter-Strike servers"""
 
-    data = GameServersData.cached_server_status(config.CACHE_FILE_PATH)
+    data = GameServers.cached_server_status(config.CACHE_FILE_PATH)
 
-    if data == States.UNKNOWN:
+    if data is States.UNKNOWN:
         return await something_went_wrong(client, session, bot_message)
 
     text = info_formatters.format_server_status(data, session.locale)
@@ -123,9 +123,9 @@ async def send_server_status(client: BotClient, session: UserSession, bot_messag
 async def send_matchmaking_stats(client: BotClient, session: UserSession, bot_message: Message):
     """Send Counter-Strike matchamaking statistics"""
 
-    data = GameServersData.cached_matchmaking_stats(config.CACHE_FILE_PATH)
+    data = GameServers.cached_matchmaking_stats(config.CACHE_FILE_PATH)
 
-    if data == States.UNKNOWN:
+    if data is States.UNKNOWN:
         return await something_went_wrong(client, session, bot_message)
 
     text = info_formatters.format_matchmaking_stats(data, session.locale)
@@ -284,7 +284,7 @@ async def send_dc_south_korea(client: BotClient, session: UserSession, bot_messa
 async def send_dc_state(client: BotClient, session: UserSession, bot_message: Message,
                         dc_state_func: Callable[[Locale], str | State], reply_markup: ExtendedIKM):
     try:
-        game_servers_datetime = GameServersData.latest_info_update(config.CACHE_FILE_PATH)
+        game_servers_datetime = GameServers.latest_info_update(config.CACHE_FILE_PATH)
         if game_servers_datetime is States.UNKNOWN:
             return await something_went_wrong(client, session, bot_message)
 
@@ -524,14 +524,10 @@ async def send_dropcap_timer(_, session: UserSession, bot_message: Message):
 
 
 @bot.funcmenu(LK.game_version_button_title, came_from=extra_features, ignore_message_not_modified=True)
-async def send_game_version(client: BotClient, session: UserSession, bot_message: Message):
+async def send_game_version(_, session: UserSession, bot_message: Message):
     """Send a current version of CS:GO/CS 2"""
 
-    data = GameVersionData.cached_data(config.CACHE_FILE_PATH)
-
-    if data == States.UNKNOWN:
-        return await something_went_wrong(client, session, bot_message)
-
+    data = GameVersion.cached_data(config.CACHE_FILE_PATH)
     text = info_formatters.format_game_version_info(data, session.locale)
 
     await bot_message.edit(text, reply_markup=keyboards.extra_markup(session.locale),
