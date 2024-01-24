@@ -274,9 +274,6 @@ class Locale(SLocale):
     notifs_build_public: str
     notifs_build_dpr: str
     notifs_build_dprp: str
-    notifs_build_sdk: str
-    notifs_build_ds: str
-    notifs_build_valve_ds: str
     notifs_build_cs2_client: str
     notifs_build_cs2_server: str
     notifs_new_map: str

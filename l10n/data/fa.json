@@ -339,15 +339,6 @@
     "notifs_build_dprp": [
         "notifs_build_dprp"
     ],
-    "notifs_build_sdk": [
-        "notifs_build_sdk"
-    ],
-    "notifs_build_ds": [
-        "notifs_build_ds"
-    ],
-    "notifs_build_valve_ds": [
-        "notifs_build_valve_ds"
-    ],
     "notifs_build_cs2_client": [
         "notifs_build_cs2_client"
     ],
