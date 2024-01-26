@@ -233,6 +233,9 @@ class BotClient(Client):
 
         current_menu = self.get_menu(session.current_menu_id)
         if current_menu and current_menu.has_message_process():  # handling message processes after reload
+            if session.last_bot_pm_id is None:                              # caused by silly mistake in sessions.py
+                menu = self.get_wildcard_menu()                             # shitty ahh fix (might not even be a fix tbh, but it worked)
+                return await self.jump_to_menu(session, message, menu)      # todo: proper fixing needed!!
             bot_message = await self.get_messages(message.chat.id, session.last_bot_pm_id)
             return await current_menu.message_process(self, session, bot_message, message)
 

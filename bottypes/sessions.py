@@ -99,7 +99,7 @@ class UserSessions(dict[int, UserSession]):
 
         now = dt.datetime.now()
 
-        for _id, session in self.items():
+        for _id, session in self.copy().items():
             session_time = dt.datetime.fromtimestamp(session.timestamp)
             if (now - session_time) > self.SESSIONS_LIFETIME:
                 await session.sync_with_db()
