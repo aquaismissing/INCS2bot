@@ -193,7 +193,7 @@ async def send_dc_sweden(client: BotClient, session: UserSession, bot_message: M
     await send_dc_state(client, session, bot_message, datacenter_handlers.sweden, keyboards.dc_eu_markup)
 
 
-@bot.funcmenu(LK.dc_us, came_from=datacenters, ignore_message_not_modified=True)
+@bot.navmenu(LK.dc_us, came_from=datacenters, ignore_message_not_modified=True)
 async def dc_us(_, session: UserSession, bot_message: Message):
     await bot_message.edit(session.locale.dc_status_specify_region,
                            reply_markup=keyboards.dc_us_markup(session.locale))
