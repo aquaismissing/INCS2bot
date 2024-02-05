@@ -1,5 +1,5 @@
 {
-    "lang": "🇺🇦 Український",
+    "lang": "🇺🇦 Українська",
     "bot_start_text": [
         "👋🏼 Привітики, {}!",
         "Цей бот призначенний для перевiрки кiлькостi гравцiв онлайн, доступнiсть серверiв Counter-Strike, та багато іншого",
@@ -190,7 +190,7 @@
     "dc_southkorea_seoul": "Сеул",
     "error_internal": "🧐 Вибачаємось, щось пішло не так. Будь ласка, спробуйте пізніше.",
     "error_unknownrequest": "⚠️ Нічого не знайдено, будь ласка, використовуйте одну з запропонованних команд:",
-    "error_wip": "💤 Розробляється...",
+    "error_wip": "💤 У розробці...",
     "error_session_timeout": "⚠️ Cессія була скасована, час очікування вийшов.",
     "exchangerate_button_title": "Курс CS",
     "exchangerate_text": [
@@ -276,13 +276,13 @@
     "game_dropcaptimer_inline_title": "Оновлення обмежень",
     "game_dropcaptimer_inline_description": "Час до оновлення обмежень щотижневого досвіду та дропу",
     "game_dropcaptimer_text": "⏳ Час до оновлення обмежень щотижневого досвіду та дропу: {} д. {} год. {} хв. {} сек.",
-    "game_leaderboard_button_title": "🆕 Таблица лидеров CS2",
+    "game_leaderboard_button_title": "🆕 Таблица лідерів CS2",
     "game_leaderboard_world": "Світ",
-    "game_leaderboard_header_world": "Лучшие игроки CS2 по миру:",
-    "game_leaderboard_header_regional": "Лучшие игроки CS2 по этому региону:",
-    "game_leaderboard_detailed_link": "Полную таблицу лидеров, а также подробную статистику игроков можно посмотреть [тут]({}).",
+    "game_leaderboard_header_world": "Накращі гравці у світі:",
+    "game_leaderboard_header_regional": "Найкращі гравці у регіоні:",
+    "game_leaderboard_detailed_link": "Повну таблицу та статистику ви можете подивитись [осьтут]({}).",
     "gun_button_text": "Дані о зброї",
-    "gun_select_category": "#️⃣ Виберіть категорію, котра Вас цікавить:",
+    "gun_select_category": "#️⃣ Натисніть на категорію, що Вас цікавить:",
     "gun_pistols": "Пістолети",
     "gun_select_pistol": "🔫 Виберіть пістолет:",
     "gun_heavy": "Важке Озброєння",
@@ -330,7 +330,7 @@
     "gun_origin_uk": "Сполучене Королівство",
     "gun_origin_south_africa": "Південна Африка",
     "latest_data_update": "Останнє оновлення данних: {}",
-    "data_not_found": "Данные не найдены.",
+    "data_not_found": "Не знайденно.",
     "notifs_build_public": [
         "notifs_build_public"
     ],
@@ -382,7 +382,7 @@
     "states_unknown": "невідомо",
     "stats_matchmaking_button_title": "Статистика ММ",
     "stats_matchmaking_inline_title": "Статистика ММ",
-    "stats_matchmaking_inline_description": "Статистика онлайну матчмейкінгу",
+    "stats_matchmaking_inline_description": "Кількість онлайну матчмейкінгу",
     "stats_matchmaking_text": [
         "<a href=\"{}\">‎</a>⁠📊 **Статистика матчмейкінгу:**",
         "",
