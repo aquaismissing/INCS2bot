@@ -229,7 +229,7 @@ class ExchangeRate:
     def request(cls):
         r = requests.get(cls.GET_KEY_PRICES_API, timeout=15).json()['result']['assets']
         key_price = [item for item in r if item['classid'] == '1544098059'][0]['prices']
-        del key_price['Unknown'], key_price['BYN']
+        del key_price['Unknown'], key_price['BYN']  #, key_price['ARS'], key_price['TRY']  # undefined values
 
         prices = {k: v / 100 for k, v in key_price.items()}
         formatted_prices = {k: f'{v:.0f}' if v % 1 == 0 else f'{v:.2f}'

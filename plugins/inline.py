@@ -84,7 +84,7 @@ async def share_inline(_, session: UserSession, inline_query: InlineQuery):
 
 @log_exception_inline
 async def inline_exchange_rate(_, session: UserSession, inline_query: InlineQuery):
-    data = ExchangeRate.cached_data(config.CACHE_FILE_PATH)
+    data = ExchangeRate.cached_data(config.CACHE_FILE_PATH).asdict()
 
     try:
         query = inline_query.query.split()[1].lower()

@@ -185,7 +185,7 @@ async def unique_monthly():
 async def check_currency():
     # noinspection PyBroadException
     try:
-        new_prices = ExchangeRate.request()
+        new_prices = ExchangeRate.request().asdict()
 
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)

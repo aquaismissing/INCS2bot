@@ -499,7 +499,7 @@ async def decode_crosshair_process(client: BotClient, session: UserSession, bot_
 
 @bot.funcmenu(LK.exchangerate_button_title, came_from=extra_features, ignore_message_not_modified=True)
 async def send_exchange_rate(_, session: UserSession, bot_message: Message):
-    prices = ExchangeRate.cached_data(config.CACHE_FILE_PATH)
+    prices = ExchangeRate.cached_data(config.CACHE_FILE_PATH).asdict()
 
     await bot_message.edit(session.locale.exchangerate_text.format(*prices.values()),
                            reply_markup=keyboards.extra_markup(session.locale))
