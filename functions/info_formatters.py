@@ -8,7 +8,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from l10n import Locale
 from .locale import get_refined_lang_code
-from utypes import States, LeaderboardStats
+from utypes import GameVersionData, ServerStatusData, MatchmakingStatsData, States, LeaderboardStats
 
 
 MINUTE = 60
@@ -35,7 +35,7 @@ WEB_LEADERBOARD_REGIONS = {'africa': 'af',
                            'southamerica': 'sa'}
 
 
-def format_timedelta(td) -> str:
+def format_timedelta(td: dt.timedelta) -> str:
     time_elapsed = int(td.total_seconds())
 
     time_elapsed_strf = []
@@ -58,68 +58,69 @@ def format_timedelta(td) -> str:
     return f'{"~" if elapsed_years or elapsed_months else ""}{", ".join(time_elapsed_strf)}'
 
 
-def format_server_status(data, locale: Locale) -> str:
+def format_server_status(data: ServerStatusData, locale: Locale) -> str:
     if data is States.UNKNOWN:
         return locale.error_internal
 
     lang_code = get_refined_lang_code(locale)
 
-    (gs_dt, gc_state, sl_state, ms_state,
-        sc_state, w_state, is_maintenance) = data
+    tick = '✅' if (data.game_coordinator_state == data.sessions_logon_state
+                   == data.matchmaking_scheduler_state == States.NORMAL) else '❌'
+    states = tuple(locale.get(state.l10n_key) for state in (data.game_coordinator_state,
+                                                            data.sessions_logon_state,
+                                                            data.matchmaking_scheduler_state,
+                                                            data.steam_community_state,
+                                                            data.webapi_state))
 
-    tick = "✅" if (gc_state == sl_state == ms_state == States.NORMAL) else "❌"
-    states = tuple(locale.get(state.l10n_key) for state in (gc_state, sl_state, ms_state, sc_state, w_state))
-
-    game_servers_datetime = f'{format_datetime(gs_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
+    game_servers_dt = data.info_requested_datetime
+    game_servers_dt = f'{format_datetime(game_servers_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
 
     text = (
         f'{locale.game_status_text.format(tick, *states)}'
         f'\n\n'
-        f'{locale.latest_data_update.format(game_servers_datetime)}'
+        f'{locale.latest_data_update.format(game_servers_dt)}'
     )
 
-    if is_maintenance:
+    if data.is_maintenance():
         text += f'\n\n{locale.valve_steam_maintenance_text}'
 
     return text
 
 
-def format_matchmaking_stats(data, locale: Locale) -> str:
+def format_matchmaking_stats(data: MatchmakingStatsData, locale: Locale) -> str:
     if data is States.UNKNOWN:
         return locale.error_internal
 
     lang_code = get_refined_lang_code(locale)
 
-    (gs_dt, *data, p_24h_peak, p_all_peak,
-        monthly_unique_p, is_maintenance) = data
+    game_servers_dt = data.info_requested_datetime
+    game_servers_dt = f'{format_datetime(game_servers_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
 
-    game_servers_datetime = f'{format_datetime(gs_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
-
+    packed = (data.graph_url, data.online_servers, data.online_players,
+              data.active_players, data.searching_players, data.average_search_time)
     text = (
-        f'{locale.stats_matchmaking_text.format(*data)}'
+        f'{locale.stats_matchmaking_text.format(*packed)}'
         f'\n\n'
-        f'{locale.stats_additional.format(p_24h_peak, p_all_peak, monthly_unique_p)}'
+        f'{locale.stats_additional.format(data.player_24h_peak, data.player_alltime_peak, data.monthly_unique_players)}'
         f'\n\n'
-        f'{locale.latest_data_update.format(game_servers_datetime)}'
+        f'{locale.latest_data_update.format(game_servers_dt)}'
     )
 
-    if is_maintenance:
+    if data.is_maintenance():
         text += f'\n\n{locale.valve_steam_maintenance_text}'
 
     return text
 
 
-def format_game_version_info(data, locale: Locale) -> str:
-    if data is States.UNKNOWN:
-        return locale.error_internal
-
+def format_game_version_info(data: GameVersionData, locale: Locale) -> str:
     lang_code = get_refined_lang_code(locale)
 
-    *data, cs2_version_dt = data
+    cs2_version_dt = (dt.datetime.fromtimestamp(data.cs2_version_timestamp)
+                      .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
 
     cs2_version_dt = f'{format_datetime(cs2_version_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
 
-    return locale.game_version_text.format(*data, cs2_version_dt)
+    return locale.game_version_text.format(data.cs2_patch_version, data.cs2_client_version, cs2_version_dt)
 
 
 def format_valve_hq_time(locale: Locale) -> str:
