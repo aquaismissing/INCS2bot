@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 import requests
 
 import config
+from functions import utime
 from .states import State, States
 from .protobufs import ScoreLeaderboardData
 
@@ -200,7 +201,7 @@ class GameServersData(NamedTuple):
         sc_state = States.sget(cache_file.get('steam_community'))
         webapi_state = States.sget(cache_file.get('webapi'))
         
-        now = dt.datetime.now(dt.UTC)
+        now = utime.utcnow()
         is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
             and not (gc_state == States.NORMAL and sl_state == States.NORMAL)
 
@@ -230,7 +231,7 @@ class GameServersData(NamedTuple):
         player_alltime_peak = cache_file.get('player_alltime_peak', 0)
         monthly_unique_players = cache_file.get('monthly_unique_players', 0)
 
-        now = dt.datetime.now(dt.UTC)
+        now = utime.utcnow()
         is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
             and (gc_state is not States.NORMAL or sl_state is not States.NORMAL)
 

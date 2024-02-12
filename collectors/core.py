@@ -16,6 +16,7 @@ if platform.system() == 'Linux':
 # noinspection PyUnresolvedReferences
 import env
 import config
+from functions import utime
 from l10n import locale
 from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServersData,
@@ -141,7 +142,7 @@ async def update_cache_info():
             cache['player_alltime_peak'] = cache['online_players']
 
         df = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
-        now = dt.datetime.now(dt.UTC)
+        now = utime.utcnow()
         end_date = f'{now:%Y-%m-%d %H:%M:%S}'
         start_date = f'{(now - dt.timedelta(days=1)):%Y-%m-%d %H:%M:%S}'
         mask = (df['DateTime'] > start_date) & (df['DateTime'] <= end_date)

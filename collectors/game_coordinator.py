@@ -24,6 +24,7 @@ if platform.system() == 'Linux':
 # noinspection PyUnresolvedReferences
 import env
 import config
+from functions import utime
 from utypes import GameVersionData, States
 
 
@@ -147,7 +148,7 @@ def gv_updater():
             # We also want to ensure that the data is up to date, so we check datetime
             new_data_datetime = (dt.datetime.fromisoformat(data.cs2_version_timestamp)
                                  .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
-            is_up_to_date = dt.datetime.now(dt.UTC) - new_data_datetime < dt.timedelta(hours=12)
+            is_up_to_date = utime.utcnow() - new_data_datetime < dt.timedelta(hours=12)
 
             if no_cached_data or (is_up_to_date and data.cs2_client_version != cache.get('cs2_client_version')):
                 for key, value in data.asdict().items():

@@ -20,7 +20,7 @@ from telegraph.aio import Telegraph
 from bottypes import BotClient, ExtendedIKB, ExtendedIKM, UserSession
 import config
 from db import db_session
-from functions import datacenter_handlers, info_formatters
+from functions import datacenter_handlers, info_formatters, utime
 from functions.decorators import ignore_message_not_modified
 from functions.locale import get_available_languages, get_refined_lang_code
 import keyboards
@@ -931,7 +931,7 @@ async def unknown_request(_, session: UserSession, bot_message: Message,
 
 
 async def regular_stats_report(client: BotClient):
-    now = dt.datetime.now(dt.UTC)
+    now = utime.utcnow()
 
     text = (f'📊 **Some stats for the past 8 hours:**\n'
             f'\n'

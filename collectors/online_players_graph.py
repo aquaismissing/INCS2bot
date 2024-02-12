@@ -14,6 +14,7 @@ from telegraph import Telegraph
 # noinspection PyUnresolvedReferences
 import env
 import config
+from functions import utime
 
 MINUTE = 60
 
@@ -41,7 +42,7 @@ def graph_maker():
             old_player_data.drop(0, axis=0, inplace=True)
 
         temp_player_data = pd.DataFrame(
-            [[f'{dt.datetime.now(dt.UTC):%Y-%m-%d %H:%M:%S}', player_count]],
+            [[f'{utime.utcnow():%Y-%m-%d %H:%M:%S}', player_count]],
             columns=["DateTime", "Players"],
         )
         temp_player_data["Players"] = temp_player_data["Players"].astype("int64")
@@ -106,7 +107,7 @@ def graph_maker():
             image_path = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))[0]['src']
         image_url = f'https://telegra.ph{image_path}'
 
-        if image_url != cache.get("graph_url"):
+        if image_url != cache.get('graph_url'):
             cache['graph_url'] = image_url
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
