@@ -28,7 +28,7 @@ class BotClient(Client):
     Custom pyrogram.Client class to add custom properties and methods and stop PyCharm annoy me.
     """
 
-    LOGS_TIMEOUT = dt.timedelta(seconds=10)  # define how often logs should be sent
+    MAINLOOP_TIMEOUT = dt.timedelta(seconds=10)  # define how often mainloop tasks are being handled
 
     WILDCARD = '_'
 
@@ -47,7 +47,8 @@ class BotClient(Client):
         self._menus: dict[str, Menu] = {}
         self._menu_routes: dict[str, Menu | dict[str, Menu]] = {}
 
-        self.latest_log_dt = dt.datetime.now()
+        self.is_in_mainloop = False
+        self._logs_queue = asyncio.Queue()
 
         # injects
         self._func_at_exception: callable = None
@@ -60,17 +61,39 @@ class BotClient(Client):
     def sessions(self) -> UserSessions:
         return self._sessions
 
-    @property
-    def can_log_now(self) -> bool:
-        return (dt.datetime.now() - self.latest_log_dt) >= self.LOGS_TIMEOUT
-
-    @property
-    def time_for_next_log(self) -> dt.timedelta:
-        return self.LOGS_TIMEOUT - (dt.datetime.now() - self.latest_log_dt)
-
     async def start(self):
         await super().start()
         self.startup_dt = dt.datetime.now(dt.UTC)
+
+    async def mainloop(self):
+        # ESSENTIALS FOR MAINLOOP
+        import signal
+        from signal import signal as signal_fn, SIGINT, SIGTERM, SIGABRT
+
+        signals = {k: v for v, k in signal.__dict__.items()
+                   if v.startswith('SIG') and not v.startswith('SIG_')}
+        task = None
+
+        def signal_handler(signum, __):
+            logging.info(f'Stop signal received ({signals[signum]}). Exiting...')
+            task.cancel()
+
+        for s in (SIGINT, SIGTERM, SIGABRT):
+            signal_fn(s, signal_handler)
+        # ESSENTIALS FOR MAINLOOP END
+
+        self.is_in_mainloop = True
+        while True:
+            task = asyncio.create_task(asyncio.sleep(self.MAINLOOP_TIMEOUT.total_seconds()))
+            try:
+                await task
+                if not self._logs_queue.empty():
+                    log_coroutine = await self._logs_queue.get()
+                    await log_coroutine
+
+            except asyncio.CancelledError:
+                self.is_in_mainloop = False
+                break
 
     async def register_session(self, user: User, message: Message = None) -> UserSession:
         session = await self._sessions.register_session(user, message)
@@ -441,7 +464,11 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        asyncio.create_task(self._log(text, disable_notification, reply_markup, parse_mode))
+        if not self.is_in_mainloop:  # made for specific log messages (e.g. "Bot is shutting down...")
+            await self._log(text, disable_notification, reply_markup, parse_mode)  # log instantly
+            return
+
+        await self._logs_queue.put(self._log(text, disable_notification, reply_markup, parse_mode))
 
     async def log_message(self, session: UserSession, message: Message):
         """Sends message log to the log channel."""
@@ -449,7 +476,7 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        asyncio.create_task(self._log_message(session, message))
+        await self._logs_queue.put(self._log_message(session, message))
 
     async def log_callback(self, session: UserSession, callback_query: CallbackQuery):
         """Sends callback log to the log channel."""
@@ -457,7 +484,7 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        asyncio.create_task(self._log_callback(session, callback_query))
+        await self._logs_queue.put(self._log_callback(session, callback_query))
 
     async def log_inline(self, session: UserSession, inline_query: InlineQuery):
         """Sends an inline query to the log channel."""
@@ -465,7 +492,7 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        asyncio.create_task(self._log_inline(session, inline_query))
+        await self._logs_queue.put(self._log_inline(session, inline_query))
 
     async def _log(self, text: str,
                    disable_notification: bool,
@@ -473,11 +500,6 @@ class BotClient(Client):
                    parse_mode: ParseMode):
         if self.test_mode:
             return
-
-        if not self.can_log_now:
-            self.latest_log_dt = dt.datetime.now()                       # to ensure that we won't get two logs
-            await asyncio.sleep(self.time_for_next_log.total_seconds())  # at the same time and fail order
-        self.latest_log_dt = dt.datetime.now()
 
         await self.send_message(self.log_channel_id, text,
                                 disable_notification=disable_notification,
@@ -487,11 +509,6 @@ class BotClient(Client):
     async def _log_message(self, session: UserSession, message: Message):
         if self.test_mode:
             return
-
-        if not self.can_log_now:
-            self.latest_log_dt = dt.datetime.now()                       # to ensure that we won't get two logs
-            await asyncio.sleep(self.time_for_next_log.total_seconds())  # at the same time and fail order
-        self.latest_log_dt = dt.datetime.now()
 
         username = message.from_user.username
         display_name = f'@{username}' if username is not None else f'{message.from_user.mention} (username hidden)'
@@ -507,11 +524,6 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        if not self.can_log_now:
-            self.latest_log_dt = dt.datetime.now()                       # to ensure that we won't get two logs
-            await asyncio.sleep(self.time_for_next_log.total_seconds())  # at the same time and fail order
-        self.latest_log_dt = dt.datetime.now()
-
         username = callback_query.from_user.username
         display_name = f'@{username}' if username is not None \
             else f'{callback_query.from_user.mention} (username hidden)'
@@ -526,11 +538,6 @@ class BotClient(Client):
     async def _log_inline(self, session: UserSession, inline_query: InlineQuery):
         if self.test_mode:
             return
-
-        if not self.can_log_now:
-            self.latest_log_dt = dt.datetime.now()                       # to ensure that we won't get two logs
-            await asyncio.sleep(self.time_for_next_log.total_seconds())  # at the same time and fail order
-        self.latest_log_dt = dt.datetime.now()
 
         username = inline_query.from_user.username
         display_name = f'@{username}' if username is not None else f'{inline_query.from_user.mention} (username hidden)'

@@ -9,7 +9,7 @@ import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_datetime
 from csxhair import Crosshair
-from pyrogram import filters, idle
+from pyrogram import filters
 from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
 from pyrogram.types import CallbackQuery, Message
@@ -956,7 +956,7 @@ async def main():
         await db_session.init(config.USER_DB_FILE_PATH)
         await bot.start()
         await bot.log('Bot started.')
-        await idle()
+        await bot.mainloop()
     except Exception as e:
         logging.exception('The bot got terminated because of exception!')
         await bot.log(f'Bot got terminated because of exception!\n'
