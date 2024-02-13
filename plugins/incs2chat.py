@@ -4,9 +4,15 @@ from pyrogram import Client, filters
 from pyrogram.enums import ChatMembersFilter, MessageEntityType
 from pyrogram.types import Message, MessageEntity
 
+# analyzer
+from pymorphy3 import MorphAnalyzer
+
 # noinspection PyUnresolvedReferences
 import env
 import config
+
+
+morph = MorphAnalyzer(lang="ru")
 
 
 def correct_message_entity(entities: list[MessageEntity] | None,
@@ -70,6 +76,19 @@ async def warn(client: Client, message: Message):
         og_msg = message.reply_to_message
         await og_msg.reply_animation(config.MEDIA_PATH / 'warn.gif.mp4')
     await message.delete()
+
+
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.user(1241065892) & filters.text)
+async def danger_message_delete(client: Client, message: Message):
+    for word in message.text.lower().strip().split():
+        parsed_word = morph.parse(word)[0]
+        normal_form = parsed_word.normal_form
+        for trigger in config.triggers:
+            if trigger in normal_form:
+                await client.delete_messages(
+                    chat_id=config.INCS2CHAT,
+                    message_ids=message.id
+                )
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command('echo'))
