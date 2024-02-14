@@ -22,7 +22,7 @@ if platform.system() == 'Linux':
 import env
 import config
 from functions import utime
-from utypes import GameVersion, States
+from utypes import GameVersion, States, SteamWebAPI
 
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 
@@ -32,6 +32,9 @@ logging.basicConfig(format='%(asctime)s | %(name)s: %(message)s',
 
 logger = logging.getLogger(f'{config.BOT_NAME}.GCCollector')  # f'{config.BOT_NAME}.GCCollector'
 logger.setLevel(logging.INFO)
+
+
+api = SteamWebAPI(config.STEAM_API_KEY)
 
 
 class GCCollector(Client):
@@ -47,7 +50,8 @@ class GCCollector(Client):
 
         self.scheduler = AsyncIOScheduler()
         self.scheduler.add_job(self.update_depots, 'interval', seconds=45)
-        # self.scheduler.add_job(self.update_players_count, 'interval', seconds=45) # currently doesn't work
+        # self.scheduler.add_job(self.update_players_count, 'interval', seconds=45)     # for GC requesting which doesn't work for now
+        self.scheduler.add_job(self.update_players_count_alter, 'interval', minutes=2)  # currently use WebAPI as an alternative
 
     async def login(self, *args, **kwargs):
         logger.info('Logging in...')
@@ -142,11 +146,17 @@ class GCCollector(Client):
         await asyncio.sleep(60 * 60)
         await self.update_game_version()
 
-    # async def update_players_count(self):  # currently doesn't work
-    #     value = await self.get_app(730).player_count()  # freezes the function entirely
-    #     self.update_cache({'online_players': value})
-    #
-    #     logger.info(f'Successfully dumped player count: {value}')
+    async def update_players_count(self):
+        value = await self.get_app(730).player_count()      # currently doesn't work - freezes the function entirely
+        self.update_cache({'online_players': value})
+
+        logger.info(f'Successfully dumped player count: {value}')
+
+    async def update_players_count_alter(self):
+        value = api.get_number_of_current_players(appid=730)  # getting this value from gc is more accurate
+        self.update_cache({'online_players': value})
+
+        logger.info(f'Successfully dumped player count: {value}')
 
     def load_cache(self):
         """Loads cache into ``self.cache``."""

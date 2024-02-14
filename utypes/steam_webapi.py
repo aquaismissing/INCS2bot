@@ -50,6 +50,10 @@ class SteamWebAPI:
         return self._method('ISteamEconomy', 'GetAssetPrices', 1,
                             {'appid': appid})
 
+    def get_number_of_current_players(self, appid: int):
+        return self._method('ISteamUserStats', 'GetNumberOfCurrentPlayers', 1,
+                            {'appid': appid})
+
     def csgo_get_monthly_player_count(self):
         return self._method('ICSGOServers_730', 'GetMonthlyPlayerCount', 1)
 
