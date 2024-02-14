@@ -940,7 +940,7 @@ async def regular_stats_report(client: BotClient):
             f'\n'
             f'• Bot started up at: {client.startup_dt:%Y-%m-%d %H:%M:%S} (UTC)\n'
             f'• Is working for: {info_formatters.format_timedelta(now - client.startup_dt)}')
-    await client.log(text, reply_markup=keyboards.log_ping_markup)
+    await client.log(text)
     client.rstats.clear()
 
 

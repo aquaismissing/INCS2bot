@@ -12,11 +12,6 @@ inline_button_channel_link = ExtendedIKB(LK.bot_author_text, url=LK.bot_author_l
 
 markup_inline_button = ExtendedIKM([[inline_button_channel_link]])
 
-# Ping button for specific log
-log_ping_button = ExtendedIKB('Ping', 'log_ping')
-
-log_ping_markup = ExtendedIKM([[log_ping_button]])
-
 # Default
 _server_stats = ExtendedIKB(LK.bot_servers_stats)
 _profile_info = ExtendedIKB(LK.bot_profile_info)
