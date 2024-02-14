@@ -519,6 +519,7 @@ class BotClient(Client):
                 f'Chosen language: {session.locale.lang_code}\n'
                 f'Private message: "{message.text if message.text is not None else ""}"')
         await self.send_message(self.log_channel_id, text, disable_notification=True)
+        print(f'{message.entities!r}')
 
     async def _log_callback(self, session: UserSession, callback_query: CallbackQuery):
         if self.test_mode:
