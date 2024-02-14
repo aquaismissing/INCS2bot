@@ -332,7 +332,7 @@ async def user_profile_info_process(client: BotClient, session: UserSession, bot
     await client.send_chat_action(bot_message.chat.id, ChatAction.TYPING)
 
     try:
-        info = ProfileInfo.get(user_input.text)
+        info = await ProfileInfo.get(user_input.text)
     except ParseUserStatsError as e:
         await user_input.delete()
         error_msg = await user_info_handle_error(client, session, user_input, e)
@@ -398,7 +398,7 @@ async def user_game_stats_process(client: BotClient, session: UserSession, bot_m
     await client.send_chat_action(bot_message.chat.id, ChatAction.TYPING)
 
     try:
-        user_stats = UserGameStats.get(user_input.text)
+        user_stats = await UserGameStats.get(user_input.text)
     except ParseUserStatsError as e:
         await user_input.delete()
         error_msg = await user_info_handle_error(client, session, user_input, e)

@@ -61,7 +61,7 @@ class GCCollector(Client):
         self.scheduler.pause()
 
         logger.info('Reconnecting...')
-        await self.login(refresh_token=config.STEAM_REFRESH_TOKEN)
+        await self.login(username=config.STEAM_USERNAME, password=config.STEAM_PASS)
         result = self.is_ready()
 
         logger.info('Reconnected successfully.' if result else 'Failed to reconnect.')
@@ -173,7 +173,7 @@ class GCCollector(Client):
 
 def main():
     collector = GCCollector(cache_file_path=config.CACHE_FILE_PATH)
-    collector.run(refresh_token=config.STEAM_REFRESH_TOKEN, debug=True)
+    collector.run(username=config.STEAM_USERNAME, password=config.STEAM_PASS, debug=True)
 
 
 if __name__ == '__main__':
