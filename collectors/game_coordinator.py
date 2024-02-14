@@ -1,20 +1,17 @@
-import gevent.monkey
-
-gevent.monkey.patch_all()
-
+import asyncio
 import datetime as dt
 import json
 import logging
+from pathlib import Path
 import platform
-import sys
-from threading import Thread
 import time
 from zoneinfo import ZoneInfo
 
-from apscheduler.schedulers.gevent import GeventScheduler
-from csgo.client import CSGOClient
-from steam.client import SteamClient
-from steam.enums import EResult
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from steam import App
+from steam.ext.csgo import Client
+from steam.ext.csgo.protobufs.sdk import GcConnectionStatus
+
 if platform.system() == 'Linux':
     # noinspection PyPackageRequirements
     import uvloop
@@ -25,180 +22,158 @@ if platform.system() == 'Linux':
 import env
 import config
 from functions import utime
-from utypes import GameVersionData, States
-
+from utypes import GameVersion, States
 
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s | GC: %(message)s',
-                    datefmt='%H:%M:%S — %d/%m/%Y')
+logging.basicConfig(format='%(asctime)s | %(name)s: %(message)s',
+                    datefmt='%H:%M:%S — %d/%m/%Y',
+                    force=True)
 
-client = SteamClient()
-client.set_credential_location(config.STEAM_CREDS_PATH)
-cs = CSGOClient(client)
-scheduler = GeventScheduler()
+logger = logging.getLogger(f'{config.BOT_NAME}.GCCollector')  # f'{config.BOT_NAME}.GCCollector'
+logger.setLevel(logging.INFO)
 
 
-@client.on('error')
-def handle_error(result):
-    logging.info(f'Logon result: {result!r}')
+class GCCollector(Client):
+    APPS_TO_FETCH = App(id=730), App(id=2275500), App(id=2275530)  # the last two apps don't get fetched
 
+    cache: dict[str, ...]
 
-@client.on('channel_secured')
-def send_relogin():
-    if client.relogin_available:
-        client.relogin()
+    def __init__(self, cache_file_path: Path, **kwargs):
+        super().__init__(**kwargs)
 
+        self.cache_file_path = cache_file_path
+        self.load_cache()
 
-@client.on('connected')
-def log_connect():
-    logging.info(f'Connected to {client.current_server_addr}')
+        self.scheduler = AsyncIOScheduler()
+        self.scheduler.add_job(self.update_depots, 'interval', seconds=45)
+        # self.scheduler.add_job(self.update_players_count, 'interval', seconds=45) # currently doesn't work
 
+    async def login(self, *args, **kwargs):
+        logger.info('Logging in...')
+        await super().login(*args, **kwargs)
 
-@client.on('reconnect')
-def handle_reconnect(delay):
-    logging.info(f'Reconnect in {delay}s...')
+    async def on_ready(self):
+        logger.info('Logged in successfully.')
 
+    async def on_disconnect(self):
+        logger.info('Disconnected.')
+        self.scheduler.pause()
 
-@client.on('disconnected')
-def handle_disconnect():
-    logging.info('Disconnected.')
+        logger.info('Reconnecting...')
+        await self.login(refresh_token=config.STEAM_REFRESH_TOKEN)
+        result = self.is_ready()
 
-    # if client.relogin_available:          # currently broken in steam 1.4.4
-    #     logging.info('Reconnecting...')   # https://github.com/ValvePython/steam/issues/439
-    #     client.reconnect(maxdelay=30)
+        logger.info('Reconnected successfully.' if result else 'Failed to reconnect.')
+        if result:
+            self.scheduler.resume()
 
-    sys.exit()  # a temporary solution - just stop the script and reboot it from another script
+    async def on_gc_ready(self):
+        logger.info('CS launched.')
+        self.scheduler.start()
 
+    async def on_gc_status_change(self, status: GcConnectionStatus):  # currently doesn't get called
+        logger.info(f'{status.name!r} (on_gc_status_change)')
 
-@cs.on('connection_status')
-def gc_status_change(status):
-    statuses = {0: States.NORMAL, 1: States.INTERNAL_SERVER_ERROR, 2: States.OFFLINE,
-                3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
-    game_coordinator = statuses.get(status, States.UNKNOWN)
-    
-    with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-        cache = json.load(f)
+        statuses = {0: States.NORMAL, 1: States.INTERNAL_SERVER_ERROR, 2: States.OFFLINE,
+                    3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
+        game_coordinator = statuses.get(status.value, States.UNKNOWN)
 
-    if game_coordinator != cache.get('game_coordinator'):
-        cache['game_coordinator'] = game_coordinator.literal
+        if game_coordinator != self.cache.get('game_coordinator'):
+            self.update_cache({'game_coordinator': game_coordinator.literal})
 
-    with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-        json.dump(cache, f, indent=4)
+        logger.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
 
-    logging.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
-
-
-@client.on('logged_on')
-def handle_after_logon():
-    cs.launch()
-    scheduler.start()
-
-
-@scheduler.scheduled_job('interval', seconds=45)
-def depots():
-    # noinspection PyBroadException
-    try:
-        data = client.get_product_info(apps=[730, 2275500, 2275530], timeout=15)['apps']
-        main_data = data[730]
-
-        public_build_id = int(main_data['depots']['branches']['public']['buildid'])
-        dpr_build_id = int(main_data['depots']['branches']['dpr']['buildid'])
-        dprp_build_id = int(main_data['depots']['branches']['dprp']['buildid'])
-
-        cs2_app_change_number = data[2275500]['_change_number']
-        cs2_server_change_number = data[2275530]['_change_number']
-    except Exception:
-        logging.exception('Caught an exception while trying to fetch depots!')
-        return
-
-    with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-        cache = json.load(f)
-
-    cache['cs2_app_changenumber'] = cs2_app_change_number
-    cache['cs2_server_changenumber'] = cs2_server_change_number
-    cache['dprp_build_id'] = dprp_build_id
-    cache['dpr_build_id'] = dpr_build_id
-
-    if public_build_id != cache.get('public_build_id'):
-        cache['public_build_id'] = public_build_id
-        Thread(target=gv_updater).start()
-
-    with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-        json.dump(cache, f, indent=4)
-
-    logging.info('Successfully dumped game build IDs.')
-
-
-def gv_updater():
-    timeout = 30 * 60
-    timeout_start = time.time()
-    while time.time() < timeout_start + timeout:
-        # noinspection PyBroadException
+    async def update_depots(self):
         try:
-            data = GameVersionData.request()
+            data = await self.fetch_product_info(apps=self.APPS_TO_FETCH)
+            data = {int(app.id): app for app in data}
+            logging.info(data)
 
-            with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-                cache = json.load(f)
+            main_data = data[730]
+            public_build_id = main_data.public_branch.build_id
+            dpr_build_id = main_data.get_branch('dpr').build_id
+            dprp_build_id = main_data.get_branch('dprp').build_id
 
-            # Made to ensure we will grab the latest public data if we *somehow* don't have anything cached
-            no_cached_data = (cache.get('cs2_client_version') is None)
-
-            # We also want to ensure that the data is up to date, so we check datetime
-            new_data_datetime = (dt.datetime.fromisoformat(data.cs2_version_timestamp)
-                                 .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
-            is_up_to_date = utime.utcnow() - new_data_datetime < dt.timedelta(hours=12)
-
-            if no_cached_data or (is_up_to_date and data.cs2_client_version != cache.get('cs2_client_version')):
-                for key, value in data.asdict().items():
-                    cache[key] = value
-
-                with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                    json.dump(cache, f, indent=4)
-                sys.exit()
+            # currently can't track  todo: investigate, is it steam.py's issue or valve's
+            # cs2_app_change_number = data[2275500].change_number
+            # cs2_server_change_number = data[2275530].change_number
         except Exception:
-            logging.exception('Caught an exception while trying to get new version!')
-            time.sleep(45)
-            continue
-        time.sleep(45)
-    # xPaw: Zzz...
-    # because of this, we retry in an hour
-    time.sleep(60 * 60)
-    gv_updater()
+            logger.exception('Caught an exception while trying to fetch depots!')
+            return
 
+        if public_build_id != self.cache.get('public_build_id'):
+            t = asyncio.create_task(self.update_game_version())
 
-@scheduler.scheduled_job('interval', seconds=45)
-def online_players():
-    value = client.get_player_count(730)
+        self.update_cache({
+            'public_build_id': public_build_id,
+            'dpr_build_id': dpr_build_id,
+            'dprp_build_id': dprp_build_id,
+            # 'cs2_app_changenumber': cs2_app_change_number,
+            # 'cs2_server_changenumber': cs2_server_change_number
+        })
 
-    with open(config.CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
-        cache = json.load(f)
+        logger.info('Successfully dumped game build IDs.')
 
-    if value != cache.get('online_players'):
-        cache['online_players'] = value
+    async def update_game_version(self):
+        timeout = 30 * 60
+        timeout_start = time.time()
+        while time.time() < timeout_start + timeout:
+            try:
+                data = GameVersion.request()
 
-    with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-        json.dump(cache, f, indent=4)
+                # Made to ensure we will grab the latest public data if we *somehow* don't have anything cached
+                no_cached_data = (self.cache.get('cs2_client_version') is None)
 
-    logging.info(f'Successfully dumped player count: {value}')
+                # We also want to ensure that the data is up to date, so we check datetime
+                new_data_datetime = (dt.datetime.fromisoformat(data.cs2_version_timestamp)
+                                     .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
+                is_up_to_date = utime.utcnow() - new_data_datetime < dt.timedelta(hours=12)
+
+                if no_cached_data or (is_up_to_date and data.cs2_client_version != self.cache.get('cs2_client_version')):
+                    self.update_cache(data.asdict())
+                    return
+            except Exception:
+                logging.exception('Caught an exception while trying to get new version!')
+            await asyncio.sleep(45)
+
+        # sometimes steamdb updates the info much later (xPaw: Zzz...)
+        # because of this, we retry in an hour
+        await asyncio.sleep(60 * 60)
+        await self.update_game_version()
+
+    # async def update_players_count(self):  # currently doesn't work
+    #     value = await self.get_app(730).player_count()  # freezes the function entirely
+    #     self.update_cache({'online_players': value})
+    #
+    #     logger.info(f'Successfully dumped player count: {value}')
+
+    def load_cache(self):
+        """Loads cache into ``self.cache``."""
+
+        with open(self.cache_file_path, encoding='utf-8') as f:
+            self.cache = json.load(f)
+
+    def dump_cache(self):
+        """Dumps ``self.cache`` to the cache file."""
+
+        with open(self.cache_file_path, 'w', encoding='utf-8') as f:
+            json.dump(self.cache, f, indent=4)
+
+    def update_cache(self, new_info: dict[str, ...]):
+        """Loads the cache into ``self.cache``, updates it with new info and dumps back to the cache file."""
+
+        self.load_cache()
+
+        for k, v in new_info.items():
+            self.cache[k] = v
+
+        self.dump_cache()
 
 
 def main():
-    try:
-        logging.info('Logging in...')
-        result = client.login(username=config.STEAM_USERNAME, password=config.STEAM_PASS)
-
-        if result != EResult.OK:
-            logging.error(f"Failed to login: {result!r}")
-            sys.exit(1)
-
-        logging.info('Logged in successfully.')
-        client.run_forever()
-    except KeyboardInterrupt:
-        if client.connected:
-            logging.info('Logout...')
-            client.logout()
+    collector = GCCollector(cache_file_path=config.CACHE_FILE_PATH)
+    collector.run(refresh_token=config.STEAM_REFRESH_TOKEN, debug=True)
 
 
 if __name__ == '__main__':
