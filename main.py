@@ -17,7 +17,7 @@ from pyrogram.types import CallbackQuery, Message
 from pyropatch import pyropatch  # do not delete!!
 from telegraph.aio import Telegraph
 
-from bottypes import BotClient, ExtendedIKB, ExtendedIKM, UserSession
+from bottypes import BotClient, BotLogger, ExtendedIKB, ExtendedIKM, UserSession
 import config
 from db import db_session
 from functions import datacenter_handlers, info_formatters, utime
@@ -48,7 +48,7 @@ bot = BotClient(config.BOT_NAME,
                 plugins={'root': 'plugins'},
                 test_mode=config.TEST_MODE,
                 workdir=config.SESS_FOLDER,
-                log_channel_id=config.LOGCHANNEL,
+                logger=BotLogger(config.LOGCHANNEL),
                 navigate_back_callback=LK.bot_back,)
 
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
@@ -74,7 +74,7 @@ async def handle_messages(client: BotClient, message: Message):
 
 @bot.on_callback_query()
 async def handle_callbacks(client: BotClient, callback_query: CallbackQuery):
-    if callback_query.message.chat.id != client.log_channel_id:
+    if callback_query.message.chat.id != client.logger.log_channel_id:
         # Render selection indicator on selectable markups
         for markup in keyboards.all_selectable_markups:
             markup.select_button_by_key(callback_query.data)
@@ -940,7 +940,7 @@ async def regular_stats_report(client: BotClient):
             f'\n'
             f'• Bot started up at: {client.startup_dt:%Y-%m-%d %H:%M:%S} (UTC)\n'
             f'• Is working for: {info_formatters.format_timedelta(now - client.startup_dt)}')
-    await client.log(text)
+    await client.log(text, instant=True)
     client.rstats.clear()
 
 
@@ -955,7 +955,7 @@ async def main():
     try:
         await db_session.init(config.USER_DB_FILE_PATH)
         await bot.start()
-        await bot.log('Bot started.')
+        await bot.log('Bot started.', instant=True)
         await bot.mainloop()
     except Exception as e:
         logging.exception('The bot got terminated because of exception!')
@@ -964,7 +964,7 @@ async def main():
                       f'❗️ {e.__traceback__}', disable_notification=False)
     finally:
         logging.info('Shutting down the bot...')
-        await bot.log('Bot is shutting down...')
+        await bot.log('Bot is shutting down...', instant=True)
         await bot.dump_sessions()
         await bot.stop(block=False)
 

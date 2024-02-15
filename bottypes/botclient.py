@@ -16,6 +16,7 @@ from pyrogram.types import (CallbackQuery, InlineQuery, Message,
 from pyropatch import pyropatch  # do not delete!!
 
 from .extended_ik import ExtendedIKM
+from .logger import BotLogger
 from .menu import Menu, NavMenu, FuncMenu
 from .sessions import UserSession, UserSessions
 from .stats import BotRegularStats
@@ -32,10 +33,10 @@ class BotClient(Client):
 
     WILDCARD = '_'
 
-    def __init__(self, *args, log_channel_id: int, navigate_back_callback: str, commands_prefix: str = '/', **kwargs):
+    def __init__(self, *args, logger: BotLogger, navigate_back_callback: str, commands_prefix: str = '/', **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.log_channel_id = log_channel_id
+        self.logger = logger
         self.navigate_back_callback = navigate_back_callback
 
         self._sessions: UserSessions = UserSessions()
@@ -48,7 +49,6 @@ class BotClient(Client):
         self._menu_routes: dict[str, Menu | dict[str, Menu]] = {}
 
         self.is_in_mainloop = False
-        self._logs_queue = asyncio.Queue()
 
         # injects
         self._func_at_exception: callable = None
@@ -83,17 +83,15 @@ class BotClient(Client):
         # ESSENTIALS FOR MAINLOOP END
 
         self.is_in_mainloop = True
-        while True:
+        while self.is_in_mainloop:
             task = asyncio.create_task(asyncio.sleep(self.MAINLOOP_TIMEOUT.total_seconds()))
             try:
                 await task
-                if not self._logs_queue.empty():
-                    log_coroutine = await self._logs_queue.get()
-                    await log_coroutine
+                if not self.logger.is_queue_empty():
+                    await self.logger.process_queue()
 
             except asyncio.CancelledError:
                 self.is_in_mainloop = False
-                break
 
     async def register_session(self, user: User, message: Message = None) -> UserSession:
         session = await self._sessions.register_session(user, message)
@@ -256,9 +254,9 @@ class BotClient(Client):
 
         current_menu = self.get_menu(session.current_menu_id)
         if current_menu and current_menu.has_message_process():  # handling message processes after reload
-            if session.last_bot_pm_id is None:                              # caused by silly mistake in sessions.py
-                menu = self.get_wildcard_menu()                             # shitty ahh fix (might not even be a fix tbh, but it worked)
-                return await self.jump_to_menu(session, message, menu)      # todo: proper fixing needed!!
+            if session.last_bot_pm_id is None:
+                menu = self.get_wildcard_menu()
+                return await self.jump_to_menu(session, message, menu)
             bot_message = await self.get_messages(message.chat.id, session.last_bot_pm_id)
             return await current_menu.message_process(self, session, bot_message, message)
 
@@ -290,7 +288,7 @@ class BotClient(Client):
         if session is None:
             session = await self.register_session(user, callback_query.message)
 
-        if callback_query.message.chat.id != self.log_channel_id:
+        if callback_query.message.chat.id != self.logger.log_channel_id:
             await self.log_callback(session, callback_query)
 
         bot_message = callback_query.message
@@ -454,21 +452,19 @@ class BotClient(Client):
                                     text: str, *args,
                                     reply_markup: ExtendedIKM = None, timeout: int = None, **kwargs) -> CallbackQuery:
         """Asks for a callback query in the same message."""
+
         await message.edit(text, *args, reply_markup=reply_markup, **kwargs)
         return await self.listen_callback(message.chat.id, message.id, timeout=timeout)
 
     async def log(self, text: str, *, disable_notification: bool = True,
-                  reply_markup: ReplyKeyboardMarkup = None, parse_mode: ParseMode = None):
+                  reply_markup: ReplyKeyboardMarkup = None, parse_mode: ParseMode = None, instant: bool = False):
         """Sends log to the log channel."""
 
-        if self.test_mode:
+        if instant:  # made for specific log messages (e.g. "Bot is shutting down...")
+            await self.logger.log_instantly(self, text, disable_notification, reply_markup, parse_mode)
             return
 
-        if not self.is_in_mainloop:  # made for specific log messages (e.g. "Bot is shutting down...")
-            await self._log(text, disable_notification, reply_markup, parse_mode)  # log instantly
-            return
-
-        await self._logs_queue.put(self._log(text, disable_notification, reply_markup, parse_mode))
+        await self.logger.log(self, text, disable_notification, reply_markup, parse_mode)
 
     async def log_message(self, session: UserSession, message: Message):
         """Sends message log to the log channel."""
@@ -476,76 +472,20 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        await self._logs_queue.put(self._log_message(session, message))
+        await self.logger.log_message(self, session, message)
 
     async def log_callback(self, session: UserSession, callback_query: CallbackQuery):
-        """Sends callback log to the log channel."""
+        """Sends callback query log to the log channel."""
 
         if self.test_mode:
             return
 
-        await self._logs_queue.put(self._log_callback(session, callback_query))
+        await self.logger.log_callback(self, session, callback_query)
 
     async def log_inline(self, session: UserSession, inline_query: InlineQuery):
-        """Sends an inline query to the log channel."""
+        """Sends an inline query log to the log channel."""
 
         if self.test_mode:
             return
 
-        await self._logs_queue.put(self._log_inline(session, inline_query))
-
-    async def _log(self, text: str,
-                   disable_notification: bool,
-                   reply_markup: ReplyKeyboardMarkup,
-                   parse_mode: ParseMode):
-        if self.test_mode:
-            return
-
-        await self.send_message(self.log_channel_id, text,
-                                disable_notification=disable_notification,
-                                reply_markup=reply_markup,
-                                parse_mode=parse_mode)
-
-    async def _log_message(self, session: UserSession, message: Message):
-        if self.test_mode:
-            return
-
-        username = message.from_user.username
-        display_name = f'@{username}' if username is not None else f'{message.from_user.mention} (username hidden)'
-
-        text = (f'✍️ User: {display_name}\n'
-                f'ID: {message.from_user.id}\n'
-                f'Telegram language: {message.from_user.language_code}\n'
-                f'Chosen language: {session.locale.lang_code}\n'
-                f'Private message: "{message.text if message.text is not None else ""}"')
-        await self.send_message(self.log_channel_id, text, disable_notification=True)
-        print(f'{message.entities!r}')
-
-    async def _log_callback(self, session: UserSession, callback_query: CallbackQuery):
-        if self.test_mode:
-            return
-
-        username = callback_query.from_user.username
-        display_name = f'@{username}' if username is not None \
-            else f'{callback_query.from_user.mention} (username hidden)'
-
-        text = (f'🔀 User: {display_name}\n'
-                f'ID: {callback_query.from_user.id}\n'
-                f'Telegram language: {callback_query.from_user.language_code}\n'
-                f'Chosen language: {session.locale.lang_code}\n'
-                f'Callback query: {callback_query.data}')
-        await self.send_message(self.log_channel_id, text, disable_notification=True)
-
-    async def _log_inline(self, session: UserSession, inline_query: InlineQuery):
-        if self.test_mode:
-            return
-
-        username = inline_query.from_user.username
-        display_name = f'@{username}' if username is not None else f'{inline_query.from_user.mention} (username hidden)'
-
-        text = (f'🛰 User: {display_name}\n'
-                f'ID: {inline_query.from_user.id}\n'
-                f'Telegram language: {inline_query.from_user.language_code}\n'
-                f'Chosen language: {session.locale.lang_code}\n'
-                f'Inline query: "{inline_query.query}"')
-        await self.send_message(self.log_channel_id, text, disable_notification=True)
+        await self.logger.log_inline(self, session, inline_query)
