@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from steam import App
-from steam.ext.csgo import Client
+from steam.ext.csgo import Client as CS2GCClient
 from steam.ext.csgo.protobufs.sdk import GcConnectionStatus
 
 if platform.system() == 'Linux':
@@ -30,14 +30,14 @@ logging.basicConfig(format='%(asctime)s | %(name)s: %(message)s',
                     datefmt='%H:%M:%S — %d/%m/%Y',
                     force=True)
 
-logger = logging.getLogger(f'{config.BOT_NAME}.GCCollector')  # f'{config.BOT_NAME}.GCCollector'
+logger = logging.getLogger(f'{config.BOT_NAME}.GCCollector')
 logger.setLevel(logging.INFO)
 
 
 api = SteamWebAPI(config.STEAM_API_KEY)
 
 
-class GCCollector(Client):
+class GCCollector(CS2GCClient):
     APPS_TO_FETCH = App(id=730), App(id=2275500), App(id=2275530)  # the last two apps don't get fetched
 
     cache: dict[str, ...]

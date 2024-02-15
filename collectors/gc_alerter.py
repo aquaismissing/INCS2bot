@@ -50,16 +50,14 @@ async def scan_for_gc_update():
             cache = json.load(f)
 
         for _id in MONITORING_IDS:
-            if prev_cache.get(_id) != cache[_id]:
-                prev_cache[_id] = cache[_id]
-                if _id == 'dpr_build_id':
-                    if cache['dpr_build_id'] == cache['public_build_id']:
-                        await send_alert('dpr_build_sync_id', cache['dpr_build_id'])
-                    else:
-                        await send_alert('dpr_build_id', cache['dpr_build_id'])
+            new_value = cache[_id]
+            if prev_cache.get(_id) != new_value:
+                prev_cache[_id] = new_value
+                if _id == 'dpr_build_id' and new_value == cache['public_build_id']:
+                    await send_alert('dpr_build_sync_id', new_value)
                     continue
 
-                await send_alert(_id, cache[_id])
+                await send_alert(_id, new_value)
 
         with open(config.GC_PREV_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(prev_cache, f, indent=4)
