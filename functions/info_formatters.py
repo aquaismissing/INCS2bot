@@ -69,8 +69,7 @@ def format_server_status(data: ServerStatusData, locale: Locale) -> str:
     states = tuple(locale.get(state.l10n_key) for state in (data.game_coordinator_state,
                                                             data.sessions_logon_state,
                                                             data.matchmaking_scheduler_state,
-                                                            data.steam_community_state,
-                                                            data.webapi_state))
+                                                            data.steam_community_state))
 
     game_servers_dt = data.info_requested_datetime
     game_servers_dt = f'{format_datetime(game_servers_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'

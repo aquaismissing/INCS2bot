@@ -258,11 +258,10 @@
     "game_status_text": [
         "{} **Counter-Strike xizmatlarining holati:**",
         "",
-        "• O'yin koordinatori: {}",
-        "• Serverlarga ulanish: {}",
+        "• Counter-Strike API: {}",
+        "• Seans avtorizatsiyasi: {}",
         "• Reja tuzuvchi matchmakinga: {}",
-        "• O'yinchilarning inventarizatsiyasi: {}",
-        "• Steam Web-API: {}"
+        "• O'yinchilarning inventarizatsiyasi: {}"
     ],
     "game_version_button_title": "O'yin versiyasi",
     "game_version_inline_title": "O'yin versiyasi",

@@ -257,11 +257,10 @@
     "game_status_text": [
         "{} **Counter-Strike service status:**",
         "",
-        "• Game coordinator: {}",
-        "• Server connection: {}",
+        "• Counter-Strike API: {}",
+        "• Sessions logon: {}",
         "• Matchmaking scheduler: {}",
-        "• Player inventories: {}",
-        "• Steam Web API: {}"
+        "• Player inventories: {}"
     ],
     "game_version_button_title": "Game version",
     "game_version_inline_title": "Game version",

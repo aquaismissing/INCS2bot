@@ -257,11 +257,10 @@
     "game_status_text": [
         "{} **Stato del servizio di Counter-Strike:**",
         "",
-        "• Coordinatore del gioco: {}",
+        "• Counter-Strike API: {}",
         "• Connessione al server: {}",
         "• Pianificatore del matchmaking: {}",
-        "• Inventario dei giocatori: {}",
-        "• API Web di Steam: {}"
+        "• Inventario dei giocatori: {}"
     ],
     "game_version_button_title": "Versione del gioco",
     "game_version_inline_title": "Versione del gioco",
