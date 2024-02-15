@@ -46,13 +46,19 @@ Here you can see translations' progress and contributors' list:
 1. Fork this repository.
    \
    ![forking repository](../media/fork_repo.png)
-2. Open Git Bash and clone the forked repository: `git clone {your fork link}`.
-   \
-   Then use `cd INCS2bot`.
-   \
+2. Open Git Bash and clone the forked repository: 
+   ```bash
+   git clone {your fork link}
+   ```
+   Then go into the project directory with: 
+   ```bash
+   cd INCS2bot
+   ```
    ![cloning repository](../media/clone_repo.png)
-3. Create a new repository branch and checkout to it using `git checkout -b {branch name}`.
-   \
+3. Create a new repository branch and checkout to it with: 
+   ```bash
+   git checkout -b {branch name}
+   ```
    ![creating branch](../media/create_branch.png)
 4. Open the repository folder. In `l10n/data/` folder, find prefered lang file.
    - If there is no such file, you can create it by yourself.
@@ -62,10 +68,20 @@ Here you can see translations' progress and contributors' list:
 5. Open the file and start translating it based on string keys and original text.
    - We highly recommend checking the bot functionality to have more context.
 6. Remember to add some tags in your language to `tags.json`.
-7. In Git, add new files, then commit and push all the changes.
-   \
+7. In Git, add new files with:
+   ```bash
+   git add *
+   ```
+   Then commit the changes:
+   ```bash
+   git commit -a -m "{Useful commit message here}"
+   ```
+   And push them to your fork.
+   ```bash
+   git push origin {branch name}
+   ```
    ![commiting changes](../media/commit_changes.png)
-8. Submit a pull request to the original repository and wait for our feedback.
+9. Submit a pull request to the original repository and wait for tests results and our feedback.
    \
    ![submiting pull](../media/submit_pull_request.png)
 
