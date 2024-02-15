@@ -147,16 +147,21 @@ class GCCollector(Client):
         await self.update_game_version()
 
     async def update_players_count(self):
-        value = await self.get_app(730).player_count()      # currently doesn't work - freezes the function entirely
-        self.update_cache({'online_players': value})
+        player_count = await self.get_app(730).player_count()  # currently doesn't work - freezes the function entirely
+        self.update_cache({'online_players': player_count})
 
-        logger.info(f'Successfully dumped player count: {value}')
+        logger.info(f'Successfully dumped player count: {player_count}')
 
     async def update_players_count_alter(self):
-        value = api.get_number_of_current_players(appid=730)  # getting this value from gc is more accurate
-        self.update_cache({'online_players': value})
+        response = api.get_number_of_current_players(appid=730).get('response')  # getting this value from gc is more accurate
 
-        logger.info(f'Successfully dumped player count: {value}')
+        player_count = 0
+        if response.get('result') == 1 and response.get('player_count'):
+            player_count = response['player_count']
+
+        self.update_cache({'online_players': player_count})
+
+        logger.info(f'Successfully dumped player count: {player_count}')
 
     def load_cache(self):
         """Loads cache into ``self.cache``."""
