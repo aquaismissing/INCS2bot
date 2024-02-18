@@ -6,11 +6,7 @@
         "",
         "Qo'shimcha ma'lumot olish uchun /help buyrug'idan foydalaning."
     ],
-    "bot_help_text": [
-        "[‎](https://telegra.ph/Podrobnoe-opisanie-03-07)ℹ️ Ushbu bot @INCS2 telegram kanalini tomonidan ishlab chiqilgan. Manba kodi [GitHub] da mavjud (https://github.com/aquaismissing/INCS2bot).",
-        "",
-        "telegra.ph/Podrobnoe-opisanie-03-07"
-    ],
+    "bot_help_text": "ℹ️ Ushbu bot @INCS2 telegram kanalini tomonidan ishlab chiqilgan. Manba kodi [GitHub](https://github.com/aquaismissing/INCS2bot) da mavjud.",
     "bot_feedback_text": "💬 Botdan foydalanishda duch keladigan **Istaklaringiz**  yoki **muammolar** haqida bizga xabar bering.",
     "bot_choose_cmd": "📖 Ushbu buyruqlardan birini tanlang:",
     "bot_choose_func": "🔖 Hohlangan funksiyani tanlang:",

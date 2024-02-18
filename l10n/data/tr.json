@@ -6,11 +6,7 @@
         "",
         "Daha fazla bilgi için /help kullanın."
     ],
-    "bot_help_text": [
-        "[‎](https://telegra.ph/Podrobnoe-opisanie-03-07)ℹ️ Bu bot @INCS2 kanalı tarafından geliştirilmiştir. Kaynak kodu şu adreste bulunabilir: [GitHub](https://github.com/aquaismissing/INCS2bot).",
-        "",
-        "telegra.ph/Podrobnoe-opisanie-03-07"
-    ],
+    "bot_help_text": "ℹ️ Bu bot @INCS2 kanalı tarafından geliştirilmiştir. Kaynak kodu şu adreste bulunabilir: [GitHub](https://github.com/aquaismissing/INCS2bot).",
     "bot_feedback_text": "💬 Lütfen botu kullanırken karşılaştığınız **dileklerinizi** veya **sorunlarınızı** bize bildirin.",
     "bot_choose_cmd": "📖 Aşağıdaki komutlardan birini kullanın:",
     "bot_choose_func": "🔖 İstediğiniz işlevi seçin:",

@@ -6,11 +6,7 @@
         "",
         "For more information type /help."
     ],
-    "bot_help_text": [
-        "[‎](https://telegra.ph/Detailed-description-03-07)ℹ️ This bot is developed by @INCS2. You can see the source code on [GitHub](https://github.com/aquaismissing/INCS2bot).",
-        "",
-        "telegra.ph/Detailed-description-03-07"
-    ],
+    "bot_help_text": "ℹ️ This bot is developed by @INCS2. You can see the source code on [GitHub](https://github.com/aquaismissing/INCS2bot).",
     "bot_feedback_text": "💬 Please, tell us about your **suggestions** or **problems** that you have encountered using our bot.",
     "bot_choose_cmd": "📖 Use one of the following commands:",
     "bot_choose_func": "🔖 Choose the desired function:",
