@@ -1,5 +1,4 @@
 import asyncio
-from asyncio.exceptions import TimeoutError
 import datetime as dt
 import json
 import traceback
@@ -12,7 +11,7 @@ from csxhair import Crosshair
 from pyrogram import filters
 from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
-from pyrogram.types import CallbackQuery, Message
+from pyrogram.types import BotCommand, CallbackQuery, Message
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 from telegraph.aio import Telegraph
@@ -34,7 +33,7 @@ from utypes.profiles import ErrorCode, ParseUserStatsError  # to clearly indicat
 
 GUNS_INFO = GunInfo.load()
 AVAILABLE_LANGUAGES = get_available_languages()
-ALL_COMMANDS = ('start', 'help', 'feedback')
+ALL_COMMANDS = ('start', 'help')
 ASK_TIMEOUT = 5 * 60
 
 logging.basicConfig(level=logging.INFO,
@@ -850,26 +849,9 @@ async def leave_feedback(client: BotClient, session: UserSession, message: Messa
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, session, message)
 
-    text = session.locale.bot_feedback_text + '\n\n' + session.locale.bot_use_cancel
-
-    try:
-        feedback = await client.ask_message(message.chat.id, text, timeout=ASK_TIMEOUT)
-    except TimeoutError:
-        await client.send_message(message.chat.id, 'Timed out.')  # todo: добавить строку локализации
-        session.current_menu_id = main_menu.id
-        return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
-
-    if feedback.text == '/cancel':
-        await feedback.delete()
-        return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
-
-    if not config.TEST_MODE:
-        await client.send_message(config.AQ,
-                                  f'🆔 [{feedback.from_user.id}](tg://user?id={feedback.from_user.id}):',
-                                  disable_notification=True)
-        await feedback.forward(config.AQ)
-
-    await feedback.reply(session.locale.bot_feedback_success)
+    await message.reply('You can report any bugs found in the bot '
+                        'or submit a suggestion on our '
+                        '[GitHub page](https://github.com/aquaismissing/INCS2bot/issues).')
 
     session.current_menu_id = main_menu.id
     return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
