@@ -213,7 +213,7 @@ class GameVersion:
 class ExchangeRate:
     __slots__ = ()
     GET_KEY_PRICES_API = f'https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/' \
-                         f'?appid={config.CS_APP_ID}&key={config.STEAM_API_KEY}'
+                         f'?appid=730&key={config.STEAM_API_KEY}'
     CURRENCIES_SYMBOLS = {"USD": "$", "GBP": "£", "EUR": "€", "RUB": "₽",
                           "BRL": "R$", "JPY": "¥", "NOK": "kr", "IDR": "Rp",
                           "MYR": "RM", "PHP": "₱", "SGD": "S$", "THB": "฿",
