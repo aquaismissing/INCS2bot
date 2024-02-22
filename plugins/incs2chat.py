@@ -1,7 +1,7 @@
 import asyncio
 
 from pyrogram import Client, filters
-from pyrogram.enums import ChatMembersFilter, MessageEntityType
+from pyrogram.enums import ChatMembersFilter
 from pyrogram.types import Message, MessageEntity
 
 # noinspection PyUnresolvedReferences
@@ -17,11 +17,16 @@ def correct_message_entity(entities: list[MessageEntity] | None,
         return
 
     length_diff = len(original_text) - len(new_text)
-    for entity in entities:
-        if entity.type == MessageEntityType.BOT_COMMAND:
-            del entity
-        else:
-            entity.offset -= length_diff
+
+    entities_i_to_remove = []
+    for i, entity in enumerate(entities):
+        entity.offset -= length_diff
+
+        if entity.offset < 0:
+            entities_i_to_remove.append(i)
+
+    for i in reversed(entities_i_to_remove):
+        entities.pop(i)
 
     return entities
 
