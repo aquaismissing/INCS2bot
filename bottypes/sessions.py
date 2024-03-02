@@ -6,8 +6,7 @@ import logging
 from pyrogram.types import Message, User
 from sqlalchemy.future import select
 
-from db import db_session
-from db.users import User as DBUser
+from db import db_session, User as DBUser
 
 
 __all__ = ('UserSession', 'UserSessions')

@@ -7,7 +7,6 @@ from typing import Type
 
 from pyrogram import Client
 from pyrogram.enums import ChatAction, ChatType, ParseMode
-from pyrogram.errors import MessageNotModified, UserIsBlocked
 from pyrogram.types import (CallbackQuery, InlineQuery, Message,
                             MessageEntity, InlineKeyboardMarkup,
                             ReplyKeyboardMarkup,
@@ -253,8 +252,8 @@ class BotClient(Client):
         session = await self.register_session(user, message)
 
         current_menu = self.get_menu(session.current_menu_id)
-        if current_menu and current_menu.has_message_process():  # handling message processes after reload
-            if session.last_bot_pm_id is None:
+        if isinstance(current_menu, NavMenu) and current_menu.has_message_process():
+            if session.last_bot_pm_id is None:  # handling message processes after reload
                 menu = self.get_wildcard_menu()
                 return await self.jump_to_menu(session, message, menu)
             bot_message = await self.get_messages(message.chat.id, session.last_bot_pm_id)
@@ -320,7 +319,7 @@ class BotClient(Client):
                 session.current_menu_id = self.get_wildcard_menu().id        # but there is no user data
                 return await self.get_menu_by_callback(session, callback_query)
 
-            if current_menu is not None and current_menu.has_callback_process():
+            if isinstance(current_menu, NavMenu) and current_menu.has_callback_process():
                 try:
                     return await current_menu.callback_process(self, session, callback_query)
                 except asyncio.exceptions.TimeoutError:
@@ -337,15 +336,7 @@ class BotClient(Client):
         try:
             if is_wildcard_menu:
                 return await self.jump_to_menu(session, bot_message, menu)
-            return await self.go_to_menu(session, bot_message, menu)
-        except MessageNotModified:
-            if not menu.ignore_message_not_modified:
-                raise
-            return
-        except UserIsBlocked:
-            return
-        except asyncio.exceptions.TimeoutError:
-            return
+            await self.go_to_menu(session, bot_message, menu)
         except Exception as e:
             self.rstats.exceptions_caught += 1
             await self._func_at_exception(self, session, bot_message, e)

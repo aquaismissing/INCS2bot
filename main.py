@@ -11,7 +11,7 @@ from csxhair import Crosshair
 from pyrogram import filters
 from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
-from pyrogram.types import BotCommand, CallbackQuery, Message
+from pyrogram.types import CallbackQuery, Message
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 from telegraph.aio import Telegraph
@@ -766,7 +766,7 @@ async def rifles_process(client: BotClient, session: UserSession, callback_query
     return await unknown_request(client, session, bot_message, keyboards.rifles_markup)
 
 
-async def send_gun_info(client: BotClient, session: UserSession, bot_message: Message, _from: callable,
+async def send_gun_info(client: BotClient, session: UserSession, bot_message: Message, _from: Callable,
                         gun_info: GunInfo, reply_markup: ExtendedIKM):
     """Send archived data about guns"""
 
@@ -835,11 +835,10 @@ async def welcome(client: BotClient, session: UserSession, message: Message):
         return await pm_only(client, session, message)
 
     text = session.locale.bot_start_text.format(message.from_user.first_name)
-
     await message.reply(text)
 
     session.current_menu_id = main_menu.id
-    await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
+    return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
 
 
 @bot.on_command('feedback')

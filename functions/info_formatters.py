@@ -76,7 +76,8 @@ def format_server_status(data: ServerStatusData, locale: Locale) -> str:
 
     text = (
         f'<blockquote>Currently we\'re unable to detect CS2\'s game coordinator status, '
-        f'because one of our dependencies is broken. Please, accept our apologies.</blockquote>'
+        f'because one of our dependencies is broken. Other trackers are working fine. '
+        f'Please accept our apologies.</blockquote>'
         f'\n\n'
         f'{locale.game_status_text.format(tick, *states)}'
         f'\n\n'
