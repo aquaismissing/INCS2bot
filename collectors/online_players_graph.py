@@ -1,11 +1,13 @@
-import datetime as dt
 import json
 import logging
 import time
 
 from apscheduler.schedulers.blocking import BlockingScheduler
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.cm import ScalarMappable
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FixedFormatter
 import pandas as pd
 from requests import JSONDecodeError
 import seaborn as sns
@@ -25,6 +27,17 @@ logging.basicConfig(level=logging.INFO,
 
 scheduler = BlockingScheduler()
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
+
+cmap = LinearSegmentedColormap.from_list('custom', [(1, 1, 0), (1, 0, 0)], N=100)
+norm = plt.Normalize(0, 2_000_000)
+mappable = ScalarMappable(norm=norm, cmap=cmap)
+
+ticks = [0, 250000, 500000, 750000, 1000000, 1250000, 1500000, 1750000, 2000000]
+colorbar_ticks_format = FixedFormatter(['0', '250K', '500K', '750K', '1M', '1.25M', '1.5M', '1.75M', '2M+'])
+fig_ticks_format = ['' for _ in ticks]
+
+x_major_locator = mdates.DayLocator()
+x_major_formatter = mdates.DateFormatter("%b %d")
 
 
 @scheduler.scheduled_job('cron', hour='*', minute='0,10,20,30,40,50', second='0')
@@ -54,45 +67,45 @@ def graph_maker():
 
         new_player_data.to_csv(config.PLAYER_CHART_FILE_PATH, index=False)
 
+        fig: plt.Figure
+        ax: plt.Axes
+
         sns.set_style('whitegrid')
 
         fig, ax = plt.subplots(figsize=(10, 2.5))
-        ax.plot('DateTime', 'Players',
-                data=new_player_data,
-                color='red', linewidth=0.7, marker='o', markevery=[-1])
+        ax.scatter('DateTime', 'Players',
+                   data=new_player_data,
+                   c='Players', cmap=cmap, s=10, norm=norm, linewidths=0.7)
         ax.fill_between(new_player_data['DateTime'],
-                        new_player_data['Players'],
-                        0,
-                        facecolor='red', color='red', alpha=0.4)
-
+                        new_player_data['Players'] - 20_000,
+                        color=cmap(0.5), alpha=0.4)
         ax.margins(x=0)
-        ax.grid(visible=True, axis="y", linestyle="--", alpha=0.3)
-        ax.grid(visible=False, axis="x")
-        ax.spines["bottom"].set_position("zero")
-        ax.spines["bottom"].set_color("black")
-        ax.set_ylabel("")
-        ax.set_xlabel("")
-        ax.xaxis.set_ticks_position("bottom")
-        ax.xaxis.set_major_locator(mdates.DayLocator())
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
-        ax.legend(loc="upper left")
-        ax.axhline(y=0, color="none")
-        ax.axhline(y=1400000, color="none")
 
-        plt.yticks(ticks=[0, 250000, 500000, 750000, 1000000, 1250000])
-        plt.subplots_adjust(top=1, bottom=0.077, left=0, right=1)
-        plt.text(0.989, 0.058, "0", transform=ax.transAxes, alpha=0.3)
-        plt.text(0.965, 0.215, "250k", transform=ax.transAxes, alpha=0.3)
-        plt.text(0.965, 0.377, "500k", transform=ax.transAxes, alpha=0.3)
-        plt.text(0.965, 0.54, "700k", transform=ax.transAxes, alpha=0.3)
-        plt.text(0.951, 0.705, "1 000k", transform=ax.transAxes, alpha=0.3)
-        plt.text(0.951, 0.865, "1 250k", transform=ax.transAxes, alpha=0.3)
-        plt.text(0.156, 0.874, "Made by @INCS2\nupd every 10 min",
-                 ha="center", transform=ax.transAxes, color="black",
-                 size="6")
+        ax.grid(visible=True, axis='y', linestyle='--', alpha=0.3)
+        ax.grid(visible=False, axis='x')
+        ax.spines['bottom'].set_position('zero')
+        ax.spines['bottom'].set_color('black')
+        ax.set(xlabel='', ylabel='')
+        ax.xaxis.set_ticks_position('bottom')
+        ax.xaxis.set_major_locator(x_major_locator)
+        ax.xaxis.set_major_formatter(x_major_formatter)
+        ax.legend(loc='upper left')
+        ax.text(0.20, 0.88,
+                'Made by @INCS2\n'
+                'updates every 10 min',
+                ha='center', transform=ax.transAxes, color='black', size='8')
+        ax.set_yticks(ticks, fig_ticks_format)
+
+        fig.colorbar(mappable, ax=ax,
+                     ticks=ticks,
+                     format=colorbar_ticks_format,
+                     pad=0.01)
+
+        fig.subplots_adjust(top=0.933, bottom=0.077, left=0.03, right=1.07)
+
+        fig.savefig(config.GRAPH_IMG_FILE_PATH, dpi=200)
         plt.close()
 
-        fig.savefig(config.GRAPH_IMG_FILE_PATH)
         try:
             image_path = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))[0]['src']
         except JSONDecodeError:  # SCREW YOU
