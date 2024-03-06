@@ -82,7 +82,7 @@ async def handle_callbacks(client: BotClient, callback_query: CallbackQuery):
 
 
 @bot.navmenu('main', ignore_message_not_modified=True)
-@bot.navmenu(bot.WILDCARD, session_timeout=True)
+@bot.navmenu(bot.WILDCARD, ignore_message_not_modified=True, session_timeout=True)
 async def main_menu(_, session: UserSession,
                     bot_message: Message, session_timeout: bool = False):
     text = session.locale.bot_choose_cmd

@@ -162,7 +162,7 @@ def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) 
         name = person.name.replace('`', r"'")  # escape for formatting
         name_span_limit = 19
         if len(name) > name_span_limit:
-            name = name[:name_span_limit - 2] = '...'
+            name = name[:name_span_limit - 2] + '...'
         text += f'`{person.rank:2d}.` `{name:<{name_span_limit}}` `{person.rating:>6,}` `{person.region}`\n'
 
     text += f'\n{link_text}'
@@ -182,7 +182,7 @@ def format_game_regional_leaderboard(region: str, data: list[LeaderboardStats], 
         name = person.name.replace('`', r"'")  # escape for formatting
         name_span_limit = 21
         if len(name) > name_span_limit:
-            name = name[:name_span_limit - 2] = '...'
+            name = name[:name_span_limit - 2] + '...'
         text += f'`{person.rank:2d}.` `{name:<{name_span_limit}}` `{person.rating:>6,}`\n'
 
     text += f'\n{link_text}'

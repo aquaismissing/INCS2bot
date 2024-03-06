@@ -17,6 +17,7 @@ import config
 from functions import utime
 
 MINUTE = 60
+MAX_ONLINE_MARKS = (MINUTE // 10) * 24 * 7 * 2  # = 2016 marks - every 10 minutes for the last two weeks
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(name)s: %(message)s",
@@ -33,44 +34,36 @@ def graph_maker():
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
+        old_player_data = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
+
+        marks_count = len(old_player_data.index)
+        if marks_count >= MAX_ONLINE_MARKS:
+            remove_marks = marks_count - MAX_ONLINE_MARKS
+            old_player_data.drop(range(remove_marks + 1), axis=0, inplace=True)
+
         player_count = cache.get('online_players', 0)
-
-        old_player_data = pd.read_csv(config.PLAYER_CHART_FILE_PATH,
-                                      parse_dates=['DateTime'])
-
-        if len(old_player_data.index) >= 10:
-            old_player_data.drop(0, axis=0, inplace=True)
+        if player_count < 50_000:  # potentially Steam maintenance
+            player_count = old_player_data.iloc[-1]['Players']
 
         temp_player_data = pd.DataFrame(
             [[f'{utime.utcnow():%Y-%m-%d %H:%M:%S}', player_count]],
             columns=["DateTime", "Players"],
         )
-        temp_player_data["Players"] = temp_player_data["Players"].astype("int64")
 
         new_player_data = pd.concat([old_player_data, temp_player_data])
 
         new_player_data.to_csv(config.PLAYER_CHART_FILE_PATH, index=False)
 
-        sns.set_style("whitegrid")
+        sns.set_style('whitegrid')
 
         fig, ax = plt.subplots(figsize=(10, 2.5))
-        ax.plot(
-            "DateTime",
-            "Players",
-            data=new_player_data,
-            color="red",
-            linewidth=0.7,
-            marker="o",
-            markevery=[-1],
-        )
-        ax.fill_between(
-            new_player_data["DateTime"],
-            new_player_data["Players"],
-            0,
-            facecolor="red",
-            color="red",
-            alpha=0.4,
-        )
+        ax.plot('DateTime', 'Players',
+                data=new_player_data,
+                color='red', linewidth=0.7, marker='o', markevery=[-1])
+        ax.fill_between(new_player_data['DateTime'],
+                        new_player_data['Players'],
+                        0,
+                        facecolor='red', color='red', alpha=0.4)
 
         ax.margins(x=0)
         ax.grid(visible=True, axis="y", linestyle="--", alpha=0.3)
@@ -113,7 +106,7 @@ def graph_maker():
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4)
     except Exception:
-        logging.exception(f"Caught exception in graph maker!")
+        logging.exception('Caught exception in graph maker!')
         time.sleep(MINUTE)
         return graph_maker()
 
