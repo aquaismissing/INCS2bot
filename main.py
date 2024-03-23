@@ -279,7 +279,6 @@ async def send_dc_south_korea(client: BotClient, session: UserSession, bot_messa
     await send_dc_state(client, session, bot_message, datacenter_handlers.south_korea, keyboards.dc_asia_markup)
 
 
-@ignore_message_not_modified
 async def send_dc_state(client: BotClient, session: UserSession, bot_message: Message,
                         dc_state_func: Callable[[Locale], str | State], reply_markup: ExtendedIKM):
     try:
@@ -293,6 +292,8 @@ async def send_dc_state(client: BotClient, session: UserSession, bot_message: Me
         state += f'{format_datetime(game_servers_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
 
         await bot_message.edit(state, reply_markup=reply_markup(session.locale))
+    except MessageNotModified:
+        pass
     except Exception as e:
         return await handle_exceptions_in_callback(client, session, bot_message, e)
 
