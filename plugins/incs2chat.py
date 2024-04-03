@@ -126,6 +126,18 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
         return await reply_to.reply_video(video, quote=should_reply, caption=caption, caption_entities=entities)
 
 
+@Client.on_message(filters.text & filters.chat(config.INCS2CHANNEL))
+async def echo(client, message):
+    payload = {"content": message.text}
+    headers = {"Content-Type": "application/json"}
+    r = requests.post(config.DS_WEBHOOK_URL, json=payload, headers=headers)
+    if r.status_code == 200:
+        pass            #place for logger
+
+    else:
+        pass            #place for logger
+
+
 @Client.on_message(filters.linked_channel & filters.chat(config.INCS2CHAT))
 async def cs_l10n_update(_, message: Message):
     if (message.sender_chat
