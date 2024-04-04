@@ -80,7 +80,7 @@ async def warn(client: Client, message: Message):
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command('echo'))
-async def echo(client: Client, message: Message):  # todo: more attachments?
+async def echo(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
     admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
     admins = {admin.user.id async for admin in admins}
@@ -119,6 +119,10 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
         audio = message.audio.file_id
         return await reply_to.reply_audio(audio, quote=should_reply, caption=caption, caption_entities=entities)
 
+    if message.document:
+        document = message.document.file_id
+        return await reply_to.reply_document(document, quote=should_reply, caption=caption, caption_entities=entities)
+
     if message.photo:
         photo = message.photo.file_id
         return await reply_to.reply_photo(photo, quote=should_reply, caption=caption, caption_entities=entities)
@@ -127,25 +131,36 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
         video = message.video.file_id
         return await reply_to.reply_video(video, quote=should_reply, caption=caption, caption_entities=entities)
 
+    if message.voice:
+        voice = message.voice.file_id
+        return await reply_to.reply_voice(voice, quote=should_reply, caption=caption, caption_entities=entities)
 
-@Client.on_message(filters.text & filters.chat(config.INCS2CHANNEL))
-async def redirect_to_discord(_, message: Message):
-    payload = {"content": message.text if message.text is not None else message.caption}
-    headers = {"Content-Type": "application/json"}
+
+@Client.on_message(filters.channel & filters.chat(config.INCS2CHANNEL))
+async def repost_to_discord(_, message: Message):
+    if message.text is None and message.caption is None:
+        return message.continue_propagation()
+
+    payload = {"content": message.text if message.text is not None else message.caption}  # todo: attachments support?
+    headers = {"Content-Type": "application/json"}                                        # todo: sending embeds?
 
     r = requests.post(config.DS_WEBHOOK_URL, json=payload, headers=headers)
-    if r.status_code != 200:
+    if r.status_code != 204:  # Discord uses 204 as a success code (yikes)
         logging.error('Failed to post to Discord webhook.')
-        logging.error(f'{message=!r}')
+        logging.error(f'{message=}')
         logging.error(f'{r.status_code=}, {r.reason=}')
+
+    message.continue_propagation()
 
 
 @Client.on_message(filters.linked_channel & filters.chat(config.INCS2CHAT))
 async def cs_l10n_update(_, message: Message):
-    if (message.sender_chat
-            and message.sender_chat.id == config.INCS2CHANNEL
-            and message.forward_from_chat.id == config.INCS2CHANNEL
-            and "Обновлены файлы локализации" in message.text):
+    is_sent_by_correct_chat = (message.sender_chat and message.sender_chat.id == config.INCS2CHANNEL)
+    is_forwarded_from_correct_chat = (message.forward_from_chat and message.forward_from_chat.id == config.INCS2CHANNEL)
+    has_the_l10n_line = ((message.text and "Обновлены файлы локализации" in message.text)
+                         or (message.caption and "Обновлены файлы локализации" in message.caption))
+
+    if is_sent_by_correct_chat and is_forwarded_from_correct_chat and has_the_l10n_line:
         await message.reply_sticker("CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ")
 
 
