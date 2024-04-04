@@ -1,5 +1,7 @@
 import asyncio
+import logging
 
+import requests
 from pyrogram import Client, filters
 from pyrogram.enums import ChatMembersFilter
 from pyrogram.types import Message, MessageEntity
@@ -127,15 +129,15 @@ async def echo(client: Client, message: Message):  # todo: more attachments?
 
 
 @Client.on_message(filters.text & filters.chat(config.INCS2CHANNEL))
-async def echo(client, message):
-    payload = {"content": message.text}
+async def redirect_to_discord(_, message: Message):
+    payload = {"content": message.text if message.text is not None else message.caption}
     headers = {"Content-Type": "application/json"}
-    r = requests.post(config.DS_WEBHOOK_URL, json=payload, headers=headers)
-    if r.status_code == 200:
-        pass            #place for logger
 
-    else:
-        pass            #place for logger
+    r = requests.post(config.DS_WEBHOOK_URL, json=payload, headers=headers)
+    if r.status_code != 200:
+        logging.error('Failed to post to Discord webhook.')
+        logging.error(f'{message=!r}')
+        logging.error(f'{r.status_code=}, {r.reason=}')
 
 
 @Client.on_message(filters.linked_channel & filters.chat(config.INCS2CHAT))
