@@ -76,7 +76,7 @@ async def warn(client: Client, message: Message):
 
     if message.reply_to_message:
         og_msg = message.reply_to_message
-        await og_msg.reply_animation('CgACAgQAAx0CZ6d55AACAhRmEFz5T0KPl2uh-czqXVSTxtdKwQACmwMAAu4uzFPtsDpH_v82ix4E')
+        await og_msg.reply_animation('CgACAgQAAx0CTFFE8AABCAWQZhBlULJVdtDBZfHrfrDasDc3TgEAApsDAALuLsxTbHEvGmmxl6geBA')
     await message.delete()
 
 
@@ -179,6 +179,6 @@ async def meow_meow_meow_meow(_, message: Message):
         await message.reply('мяу мяу мяу мяу')
 
 
-@Client.on_message(filters.chat(config.INCS2CHAT) & filters.animation)
-async def debugging_gifs(_, message: Message):
-    print(message.animation)
+# @Client.on_message(filters.chat(config.INCS2CHAT) & filters.animation)
+# async def debugging_gifs(_, message: Message):
+#     print(message.animation)
