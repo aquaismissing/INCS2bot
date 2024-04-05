@@ -76,7 +76,7 @@ async def warn(client: Client, message: Message):
 
     if message.reply_to_message:
         og_msg = message.reply_to_message
-        await og_msg.reply_animation('CgACAgQAAx0CZ6d55AACAgdmEFT79_sOmQcAAdWIh9ss5LRs-48AApsDAALuLsxT7bA6R_7_NoseBA')
+        await og_msg.reply_cached_media('CgACAgQAAxkBAAESQG9mEFfgdZpEgiU2N6pdiRa2NI650gACmwMAAu4uzFPUiDaV7ful2TQE')
     await message.delete()
 
 
@@ -177,7 +177,3 @@ async def meow_meow_meow_meow(_, message: Message):
 
     if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug' and chance < 5:
         await message.reply('мяу мяу мяу мяу')
-
-@Client.on_message(filters.chat(config.INCS2CHAT) & filters.animation)
-async def meow_meow_meow_meow(_, message: Message):
-    print(message.animation)
