@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 
 import requests
 from pyrogram import Client, filters
@@ -161,10 +162,18 @@ async def cs_l10n_update(_, message: Message):
                          or (message.caption and "Обновлены файлы локализации" in message.caption))
 
     if is_sent_by_correct_chat and is_forwarded_from_correct_chat and has_the_l10n_line:
-        await message.reply_sticker("CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ")
+        await message.reply_sticker('CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ')
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
 async def filter_forwards(_, message: Message):
     if message.forward_from_chat and message.forward_from_chat.id in config.FILTER_FORWARDS:
         await message.delete()
+
+
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.sticker)
+async def meow_meow_meow_meow(_, message: Message):
+    chance = random.randint(0, 100)
+
+    if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug' and chance < 5:
+        await message.reply('мяу мяу мяу мяу')
