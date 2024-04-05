@@ -76,7 +76,7 @@ async def warn(client: Client, message: Message):
 
     if message.reply_to_message:
         og_msg = message.reply_to_message
-        await og_msg.reply_cached_media('CgACAgQAAxkBAAESQG9mEFfgdZpEgiU2N6pdiRa2NI650gACmwMAAu4uzFPUiDaV7ful2TQE')
+        await og_msg.reply_animation(config.MEDIA_PATH / 'warn.gif.mp4')
     await message.delete()
 
 
