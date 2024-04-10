@@ -210,18 +210,26 @@ class UserGameStats(NamedTuple):
                    'galilar', 'aug', 'sg556', 'ssg08', 'scar20', 'g3sg1', 'nova', 'mag7', 'sawedoff',
                    'xm1014', 'negev', 'm249')
 
-        stats['total_time_played'] = round(stats['total_time_played'] / 3600, 2)
-        stats['kd_ratio'] = round(stats['total_kills'] / stats['total_deaths'], 2)
-        stats['matches_win_percentage'] = to_percentage(stats['total_matches_won'] / stats['total_matches_played'])
-        stats['hit_accuracy'] = to_percentage(stats['total_shots_hit'] / stats['total_shots_fired'])
-        stats['headshots_percentage'] = to_percentage(stats['total_kills_headshot'] / stats['total_kills'])
+        stats['total_time_played'] = round(stats.get('total_time_played', 0) / 3600, 2)
+        stats['kd_ratio'] = round(stats.get('total_kills', 0) / stats.get('total_deaths', 1), 2)
+        stats['matches_win_percentage'] = to_percentage(
+            stats.get('total_matches_won', 0) / stats.get('total_matches_played', 1)
+        )
+        stats['hit_accuracy'] = to_percentage(stats.get('total_shots_hit', 0) / stats.get('total_shots_fired', 1))
+        stats['headshots_percentage'] = to_percentage(
+            stats.get('total_kills_headshot', 0) / stats.get('total_kills', 1)
+        )
 
-        total_wins_map_stats = (stat for stat in stats if stat.startswith('total_wins_map_'))
-        best_map = max(total_wins_map_stats, key=lambda x: stats[x]).split('_')[-2:]
-        stats['best_map_name'] = best_map[-1].capitalize()
-        best_map_wins = stats[f'total_wins_map_{"_".join(best_map)}']
-        best_map_rounds = stats[f'total_rounds_map_{"_".join(best_map)}']
-        stats['best_map_win_percentage'] = to_percentage(best_map_wins / best_map_rounds)
+        total_wins_map_stats = [stat for stat in stats if stat.startswith('total_wins_map_')]
+        if total_wins_map_stats:
+            best_map = max(total_wins_map_stats, key=lambda x: stats[x]).split('_')[-2:]
+            stats['best_map_name'] = best_map[-1].capitalize()
+            best_map_wins = stats[f'total_wins_map_{"_".join(best_map)}']
+            best_map_rounds = stats[f'total_rounds_map_{"_".join(best_map)}']
+            stats['best_map_win_percentage'] = to_percentage(best_map_wins / best_map_rounds)
+        else:
+            stats['best_map_name'] = 'N/A'
+            stats['best_map_win_percentage'] = 0
 
         stats['taser_accuracy'] = to_percentage(stats.get('total_kills_taser', 0) / stats.get(f'total_shots_taser', 1))
 
