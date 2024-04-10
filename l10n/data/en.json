@@ -325,6 +325,8 @@
     "gun_origin_south_africa": "South Africa",
     "latest_data_update": "Last data update: {}",
     "data_not_found": "Data not found.",
+    "metrics_hours": "hours",
+    "metrics_hours_short": "h",
     "notifs_build_public": [
         "notifs_build_public"
     ],

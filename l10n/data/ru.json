@@ -326,6 +326,8 @@
     "gun_origin_south_africa": "Южная Африка",
     "latest_data_update": "Последнее обновление данных: {}",
     "data_not_found": "Данные не найдены.",
+    "metrics_hours": "часов",
+    "metrics_hours_short": "ч.",
     "notifs_build_public": [
         "⚡️ [Публичная сборка](https://t.me/cstracker/28) Counter-Strike была обновлена.",
         "",

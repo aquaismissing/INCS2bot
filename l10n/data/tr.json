@@ -326,6 +326,8 @@
     "gun_origin_south_africa": "Güney Afrika",
     "latest_data_update": "Son güncelleme verileri: {}",
     "data_not_found": "Data not found.",
+    "metrics_hours": "saat",
+    "metrics_hours_short": "saat",
     "notifs_build_public": [
         "notifs_build_public"
     ],

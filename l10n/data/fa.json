@@ -325,6 +325,8 @@
     "gun_origin_south_africa": "آفریقا جنوبی",
     "latest_data_update": "اخرین زمان بروزرسانی اطلاعات: {}",
     "data_not_found": "Data not found.",
+    "metrics_hours": "ساعت ها",
+    "metrics_hours_short": "ساعت ها",
     "notifs_build_public": [
         "notifs_build_public"
     ],

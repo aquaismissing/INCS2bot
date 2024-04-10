@@ -326,6 +326,8 @@
     "gun_origin_south_africa": "Паўднёвая Афрыка",
     "latest_data_update": "Апошняе абнаўленне дадзеных: {}",
     "data_not_found": "Дадзеныя не знойдзены.",
+    "metrics_hours": "гадзін",
+    "metrics_hours_short": "гадз.",
     "notifs_build_public": [
         "⚡️ [Публічная зборка](https://t.me/cstracker/28) Counter-Strike была абноўлена.",
         "",

@@ -270,6 +270,10 @@ class Locale(SLocale):
     latest_data_update: str
     data_not_found: str
 
+    # metrics (probably would be used in multiple places)
+    metrics_hours: str  # hours  # todo sl10n: plural support would be nice
+    metrics_hours_short: str  # h  # todo: for now in most translations it's a full word, remind translators to fix it
+
     # notifications (currently not used)
     notifs_build_public: str
     notifs_build_dpr: str

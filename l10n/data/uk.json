@@ -326,6 +326,8 @@
     "gun_origin_south_africa": "Південна Африка",
     "latest_data_update": "Останнє оновлення данних: {}",
     "data_not_found": "Данные не найдены.",
+    "metrics_hours": "годин",
+    "metrics_hours_short": "годин",
     "notifs_build_public": [
         "notifs_build_public"
     ],
