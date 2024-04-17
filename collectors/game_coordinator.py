@@ -107,7 +107,7 @@ class GCCollector(CS2GCClient):
             return
 
         if public_build_id != self.cache.get('public_build_id'):
-            t = asyncio.create_task(self.update_game_version())
+            _ = asyncio.create_task(self.update_game_version())
 
         self.update_cache({
             'public_build_id': public_build_id,
@@ -126,25 +126,23 @@ class GCCollector(CS2GCClient):
             try:
                 data = GameVersion.request()
 
-                # Made to ensure we will grab the latest public data if we *somehow* don't have anything cached
-                no_cached_data = (self.cache.get('cs2_client_version') is None)
+                no_version_data_cached = (data.cs2_client_version is None)
+                version_has_changed = (data.cs2_client_version != self.cache.get('cs2_client_version'))
 
-                # We also want to ensure that the data is up to date, so we check datetime
-                new_data_datetime = (dt.datetime.fromisoformat(data.cs2_version_timestamp)
-                                     .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
-                logging.info(f'{new_data_datetime=}')
-                is_up_to_date = utime.utcnow() - new_data_datetime < dt.timedelta(hours=12)
-                logging.info(f'{utime.utcnow()=}')
-                logging.info(f'{is_up_to_date=}')
+                # We also want the data to be up-to-date, so we check datetime
+                new_version_datetime = (dt.datetime.fromtimestamp(data.cs2_version_timestamp)
+                                        .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
 
-                if no_cached_data or (is_up_to_date and data.cs2_client_version != self.cache.get('cs2_client_version')):
+                is_up_to_date = utime.utcnow() - new_version_datetime < dt.timedelta(hours=12)
+
+                if no_version_data_cached or (version_has_changed and is_up_to_date):
                     self.update_cache(data.asdict())
                     return
             except Exception:
                 logging.exception('Caught an exception while trying to get new version!')
             await asyncio.sleep(45)
 
-        # sometimes steamdb updates the info much later (xPaw: Zzz...)
+        # sometimes SteamDB updates the info much later (xPaw: Zzz...)
         # because of this, we retry in an hour
         await asyncio.sleep(60 * 60)
         await self.update_game_version()

@@ -1,7 +1,6 @@
 from dataclasses import astuple, dataclass
 from enum import StrEnum
 import hashlib
-import logging
 import re
 from typing import NamedTuple, Self
 
@@ -16,11 +15,6 @@ __all__ = ('ErrorCode', 'ParseUserStatsError', 'ProfileInfo', 'UserGameStats')
 
 STEAM_PROFILE_LINK_PATTERN = re.compile(r'(?:https?://)?steamcommunity\.com/(?:profiles|id)/[a-zA-Z0-9]+(/?)\w')
 _csgofrcode_chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-
-
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s | %(name)s: %(message)s",
-                    datefmt="%H:%M:%S — %d/%m/%Y")
 
 api = SteamWebAPI(config.STEAM_API_KEY)
 
@@ -254,7 +248,6 @@ class UserGameStats(NamedTuple):
             if not response:
                 raise ParseUserStatsError(ErrorCode.PROFILE_IS_PRIVATE)
 
-            logging.info(response)
             if response.get('playerstats') is None or response['playerstats'].get('stats') is None:
                 raise ParseUserStatsError(ErrorCode.NO_STATS_AVAILABLE)
 
