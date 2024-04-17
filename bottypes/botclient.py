@@ -243,9 +243,9 @@ class BotClient(Client):
             return
 
         if message.chat.type != ChatType.PRIVATE:
-            if message.text.startswith(self.commands_prefix):
+            text = message.text
+            if text.startswith(self.commands_prefix) and self.has_a_command(text):
                 session = await self.register_session(user, message)  # early command handling in group chats
-                await self.log_message(session, message)              # since we don't want to store data
                 return await self.handle_command(session, message)    # of every single user of these
             return
 
@@ -267,16 +267,22 @@ class BotClient(Client):
     async def handle_command(self, session: UserSession, message: Message):
         prompt = message.text
 
+        if not self.has_a_command(prompt):
+            return
         if '@' in prompt:
             prompt, username = prompt.split('@', 2)
             if username != self.me.username:
                 return
-        if prompt not in self._commands:
-            return
 
         func, args, kwargs = self.get_func_by_command(prompt)
         await message.reply_chat_action(ChatAction.TYPING)
         return await func(self, session, message, *args, **kwargs)
+
+    def has_a_command(self, prompt: str):
+        if '@' in prompt:
+            prompt, _ = prompt.split('@', 2)
+
+        return prompt in self._commands
 
     async def handle_callback(self, callback_query: CallbackQuery):
         if callback_query.message.chat.type != ChatType.PRIVATE:
