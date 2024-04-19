@@ -10,6 +10,7 @@ from pyrogram.types import Message, MessageEntity
 # noinspection PyUnresolvedReferences
 import env
 import config
+import ujson
 
 
 def correct_message_entity(entities: list[MessageEntity] | None,
@@ -32,6 +33,30 @@ def correct_message_entity(entities: list[MessageEntity] | None,
         entities.pop(i)
 
     return entities
+
+
+def translate_text(text: str):
+    headers = {"Authorization": f"DeepL-Auth-Key {config.DEEPL_TOKEN}", 'Content-Type': 'application/json'}
+    data = {'text': [text], 'target_lang': 'EN', "source_lang": "RU"}
+
+    r = requests.post('https://api-free.deepl.com/v2/translate', headers=headers, json=data)
+    if r.status_code == 200:
+        content = ujson.loads(r.text)
+        return content['translations'][0]['text']
+
+    logging.error('Failed to translate text')
+    logging.error(f'{text=}')
+    logging.error(f'{r.status_code=}, {r.reason=}')
+
+
+def post_ds_webhook(text: str, url: str):
+    headers = {"Content-Type": "application/json"}
+    payload = {"content": text}
+    r = requests.post(url, json=payload, headers=headers)
+    if r.status_code != 204:  # Discord uses 204 as a success code (yikes)
+        logging.error('Failed to post to Discord webhook.')
+        logging.error(f'{text}')
+        logging.error(f'{r.status_code=}, {r.reason=}')
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("ban"))
@@ -138,18 +163,14 @@ async def echo(client: Client, message: Message):
 
 
 @Client.on_message(filters.channel & filters.chat(config.INCS2CHANNEL))
-async def repost_to_discord(_, message: Message):
-    if message.text is None and message.caption is None:
-        return message.continue_propagation()
+async def forward_to_discord(_, message: Message):
 
-    payload = {"content": message.text if message.text is not None else message.caption}  # todo: attachments support?
-    headers = {"Content-Type": "application/json"}                                        # todo: sending embeds?
+    text = message.text if message.text is not None else message.caption     # todo: attachments support? // idi nahooy
+    
+    if text:
+        post_ds_webhook(text, config.DS_WEBHOOK_URL)
 
-    r = requests.post(config.DS_WEBHOOK_URL, json=payload, headers=headers)
-    if r.status_code != 204:  # Discord uses 204 as a success code (yikes)
-        logging.error('Failed to post to Discord webhook.')
-        logging.error(f'{message=}')
-        logging.error(f'{r.status_code=}, {r.reason=}')
+        post_ds_webhook(translate_text(text), config.DS_WEBHOOK_URL_EN)
 
     message.continue_propagation()
 
