@@ -9,6 +9,7 @@ __pycache__/
 .venv/
 
 # secrets
+/_internal/
 /data/
 /config.py
 
