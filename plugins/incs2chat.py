@@ -80,7 +80,7 @@ def convert_message_to_markdown_text(message: Message) -> str:
     return ''.join(text)
 
 
-def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN'):
+def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN') -> str | None:
     headers = {'Authorization': f'DeepL-Auth-Key {config.DEEPL_TOKEN}', 'Content-Type': 'application/json'}
     data = {'text': [text], 'source_lang': source_lang, 'target_lang': target_lang}
 
@@ -102,6 +102,42 @@ def post_to_discord_webhook(url: str, text: str):  # todo: attachments support?
         logging.error('Failed to post to Discord webhook.')
         logging.error(f'{text=}')
         logging.error(f'{r.status_code=}, {r.reason=}')
+
+
+def process_ds_text(message: Message) -> list[str] | None:
+    logging.info(message)
+
+    text_list = [convert_message_to_markdown_text(message)]
+
+    # DS webhook limit 2000 symbols (ahui), hope tg limit is <4000 if more pls fix
+    if text_list[0]:
+        if len(text_list[0]) > 2000:
+            # splitting message into 2 similar-sized messages to save structure and beauty
+            last_newline_index = text_list[0][:len(text_list[0]) // 2].rfind('\n')
+            if last_newline_index != -1:
+                second_part = text_list[0][last_newline_index + 1:]
+                text_list.append(second_part)
+                text_list[0] = text_list[0][:last_newline_index]
+
+        return text_list
+
+
+def forward_to_discord(message: Message):
+    texts = process_ds_text(message)
+    logging.info(texts)
+
+    if texts:
+        for text in texts:
+            post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
+            post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
+
+
+async def cs_l10n_update(message: Message):
+    has_the_l10n_line = ((message.text and "Обновлены файлы локализации" in message.text)
+                         or (message.caption and "Обновлены файлы локализации" in message.caption))
+
+    if has_the_l10n_line:
+        await message.reply_sticker('CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ')
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("ban"))
@@ -207,27 +243,14 @@ async def echo(client: Client, message: Message):
         return await reply_to.reply_voice(voice, quote=should_reply, caption=caption, caption_entities=entities)
 
 
-@Client.on_message(filters.channel & filters.chat(config.INCS2CHANNEL))
-async def forward_to_discord(_, message: Message):
-    text = convert_message_to_markdown_text(message)
-    logging.info(text)
-
-    if text:
-        post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
-        post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
-
-    message.continue_propagation()
-
-
 @Client.on_message(filters.linked_channel & filters.chat(config.INCS2CHAT))
-async def cs_l10n_update(_, message: Message):
+async def handle_new_post(_, message: Message):
     is_sent_by_correct_chat = (message.sender_chat and message.sender_chat.id == config.INCS2CHANNEL)
     is_forwarded_from_correct_chat = (message.forward_from_chat and message.forward_from_chat.id == config.INCS2CHANNEL)
-    has_the_l10n_line = ((message.text and "Обновлены файлы локализации" in message.text)
-                         or (message.caption and "Обновлены файлы локализации" in message.caption))
 
-    if is_sent_by_correct_chat and is_forwarded_from_correct_chat and has_the_l10n_line:
-        await message.reply_sticker('CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ')
+    if is_sent_by_correct_chat and is_forwarded_from_correct_chat:
+        await cs_l10n_update(message)
+        forward_to_discord(message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
