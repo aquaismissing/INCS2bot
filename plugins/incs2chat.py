@@ -2,10 +2,11 @@ import asyncio
 import logging
 import random
 
-import requests
 from pyrogram import Client, filters
-from pyrogram.enums import ChatMembersFilter, MessageEntityType
+from pyrogram.enums import ChatMembersFilter
 from pyrogram.types import Message, MessageEntity
+import requests
+from tgentity import to_md
 
 # noinspection PyUnresolvedReferences
 import env
@@ -34,50 +35,13 @@ def correct_message_entities(entities: list[MessageEntity] | None,
     return entities
 
 
-def convert_message_to_markdown_text(message: Message) -> str:
-    """Convert Telegram formatting to Markdown (primarily for Discord)."""
+def to_discord_markdown(message: Message) -> str:
+    text = (to_md(message)
+            .replace('~', '~~')
+            .replace(r'\(', '(')  # god bless this feels awful
+            .replace(r'\)', ')'))
 
-    entity_type_to_markdown = {  # only includes simple closing entities
-        MessageEntityType.BOLD:      '**',
-        MessageEntityType.ITALIC:    '*',
-        MessageEntityType.UNDERLINE: '__',
-        MessageEntityType.STRIKETHROUGH: '~~',
-        MessageEntityType.SPOILER: '||',
-        MessageEntityType.CODE: '`'
-    }
-
-    text = message.text or message.caption or ''
-
-    if message.entities is None:
-        return text
-
-    text = list(text)
-    text_shift = 0
-    for entity in message.entities:
-        # special cases first
-        if entity.type is MessageEntityType.TEXT_LINK:
-            text.insert(entity.offset + text_shift, '[')
-            text.insert(entity.offset + entity.length + text_shift + 1, f']({entity.url})')
-            text_shift += 2
-        if entity.type is MessageEntityType.PRE:
-            text.insert(entity.offset + text_shift, f'```{entity.language}\n')
-            text.insert(entity.offset + entity.length + text_shift + 1, f'\n```')
-            text_shift += 2
-        if entity.type is MessageEntityType.BLOCKQUOTE:
-            text.insert(entity.offset + text_shift, '> ')
-            text_shift += 1
-
-        symbol = entity_type_to_markdown.get(entity.type)
-        if symbol:
-            previous_symbol = text[entity.offset + text_shift - 2]
-            if previous_symbol in entity_type_to_markdown.values():  # todo: still fails on 3+ styles in the same chunk
-                text.insert(entity.offset + text_shift - 1, symbol)
-                text.insert(entity.offset + entity.length + text_shift, symbol)
-            else:
-                text.insert(entity.offset + text_shift, symbol)
-                text.insert(entity.offset + entity.length + text_shift + 1, symbol)
-            text_shift += 2
-    return ''.join(text)
+    return text
 
 
 def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN') -> str | None:
@@ -104,32 +68,30 @@ def post_to_discord_webhook(url: str, text: str):  # todo: attachments support?
         logging.error(f'{r.status_code=}, {r.reason=}')
 
 
-def process_ds_text(message: Message) -> list[str] | None:
+def process_discord_text(message: Message) -> list[str]:
     logging.info(message)
 
-    text_list = [convert_message_to_markdown_text(message)]
+    text_list = [to_discord_markdown(message) if message.entities else message.text]
 
-    # DS webhook limit 2000 symbols (ahui), hope tg limit is <4000 if more pls fix
-    if text_list[0]:
-        if len(text_list[0]) > 2000:
-            # splitting message into 2 similar-sized messages to save structure and beauty
-            last_newline_index = text_list[0][:len(text_list[0]) // 2].rfind('\n')
-            if last_newline_index != -1:
-                second_part = text_list[0][last_newline_index + 1:]
-                text_list.append(second_part)
-                text_list[0] = text_list[0][:last_newline_index]
+    # Discord webhook limit is 2000 symbols (@akimerslys: ahui), hoping Telegram limit is <4000
+    if len(text_list[0]) > 2000:
+        # splitting message into 2 similar-sized messages to save structure and beauty
+        last_newline_index = text_list[0][:len(text_list[0]) // 2].rfind('\n')
+        if last_newline_index != -1:
+            second_part = text_list[0][last_newline_index + 1:]
+            text_list.append(second_part)
+            text_list[0] = text_list[0][:last_newline_index]
 
-        return text_list
+    return text_list
 
 
 def forward_to_discord(message: Message):
-    texts = process_ds_text(message)
+    texts = process_discord_text(message)
     logging.info(texts)
 
-    if texts:
-        for text in texts:
-            post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
-            post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
+    for text in texts:
+        post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
+        post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
 
 
 async def cs_l10n_update(message: Message):
