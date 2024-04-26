@@ -131,8 +131,6 @@ def forward_to_discord(message: Message):
             post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
             post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
 
-    message.continue_propagation()
-
 
 async def cs_l10n_update(message: Message):
     has_the_l10n_line = ((message.text and "Обновлены файлы локализации" in message.text)
