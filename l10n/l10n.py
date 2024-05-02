@@ -172,6 +172,7 @@ class Locale(SLocale):
     dc_india_mumbai: str  # Mumbai
     dc_india_bombay: str  # Bombay
     dc_india_chennai: str  # Chennai
+    dc_india_madras: str  # Madras
     dc_japan: str  # Japan
     dc_japan_title: str  # Japanʼs DC
     dc_japan_inline_title: str  # Japanese DC
