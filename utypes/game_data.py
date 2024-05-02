@@ -180,8 +180,7 @@ class GameVersion:
         cs2_client_version = int(options['ClientVersion']) - 2000000
         cs2_server_version = int(options['ServerVersion']) - 2000000
         cs2_patch_version = options['PatchVersion']
-        cs2_version_timestamp = version_datetime.timestamp()  # todo: maybe should use unix timestamp
-                                                              # todo: instead of this piece of crap?
+        cs2_version_timestamp = version_datetime.timestamp()
 
         return GameVersionData(cs2_client_version,
                                cs2_server_version,
@@ -199,11 +198,7 @@ class GameVersion:
         cs2_server_version = cache_file.get('cs2_client_version', 'unknown')
         cs2_patch_version = cache_file.get('cs2_patch_version', 'unknown')
 
-        # Timestamp could be saved as ISO-8601, so we need to address that
         cs2_version_timestamp = cache_file.get('cs2_version_timestamp', 0)
-        if isinstance(cs2_version_timestamp, str):
-            cs2_version_timestamp = dt.datetime.fromisoformat(cs2_version_timestamp).timestamp()
-
         return GameVersionData(cs2_client_version,
                                cs2_server_version,
                                cs2_patch_version,
@@ -296,15 +291,11 @@ class GameServers:
         if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
 
-        gc_state = States.sget(cache_file.get('game_coordinator'))
-        sl_state = States.sget(cache_file.get('sessions_logon'))
-        ms_state = States.sget(cache_file.get('matchmaking_scheduler'))
-        sc_state = States.sget(cache_file.get('steam_community'))
-        webapi_state = States.sget(cache_file.get('webapi'))
-        
-        now = utime.utcnow()
-        is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
-            and not (gc_state == States.NORMAL and sl_state == States.NORMAL)
+        gc_state = States.get_or_unknown(cache_file.get('game_coordinator_state'))
+        sl_state = States.get_or_unknown(cache_file.get('sessions_logon_state'))
+        ms_state = States.get_or_unknown(cache_file.get('matchmaking_scheduler_state'))
+        sc_state = States.get_or_unknown(cache_file.get('steam_community_state'))
+        webapi_state = States.get_or_unknown(cache_file.get('webapi_state'))
 
         return ServerStatusData(game_server_dt,
                                 gc_state, sl_state, ms_state, sc_state, webapi_state)
@@ -318,8 +309,8 @@ class GameServers:
         if game_server_dt is States.UNKNOWN:
             return States.UNKNOWN
         
-        gc_state = States.sget(cache_file.get('game_coordinator'))
-        sl_state = States.sget(cache_file.get('sessions_logon'))
+        gc_state = States.get_or_unknown(cache_file.get('game_coordinator_state'))
+        sl_state = States.get_or_unknown(cache_file.get('sessions_logon_state'))
 
         graph_url = cache_file.get('graph_url', '')
         online_players = cache_file.get('online_players', 0)
@@ -347,7 +338,7 @@ class GameServers:
         if cache_file.get('api_timestamp', 'unknown') == 'unknown':
             return States.UNKNOWN
 
-        return dt.datetime.fromtimestamp(cache_file.get('api_timestamp', 0), dt.UTC)
+        return dt.datetime.fromtimestamp(cache_file['api_timestamp'], dt.UTC)
 
 
 class LeaderboardStats(NamedTuple):

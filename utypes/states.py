@@ -32,18 +32,13 @@ class States:
     UNKNOWN = State('unknown', LK.states_unknown)
 
     @classmethod
-    def get(cls, data: str) -> State | None:
-        data = data.replace(' ', '_').upper()
-        try:
-            return getattr(cls, data)
-        except KeyError:
-            return
+    def get(cls, data, default=None) -> State | None:
+        data = str(data).replace(' ', '_').upper()
+
+        return getattr(cls, data, default)
 
     @classmethod
-    def sget(cls, data: str | None) -> State:
-        """Same as States.get(), but returns States.UNKNOWN if there's no such state or `data is None`."""
-        if data is None:
-            return States.UNKNOWN
-        st = cls.get(data)
+    def get_or_unknown(cls, data: str | None) -> State:
+        """Same as ``States.get()``, but returns ``States.UNKNOWN`` if there's no such state."""
 
-        return st if st is not None else States.UNKNOWN
+        return cls.get(data, States.UNKNOWN)
