@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import random
+import re
 
 from pyrogram import Client, filters
 from pyrogram.enums import ChatMembersFilter
@@ -37,9 +38,10 @@ def correct_message_entities(entities: list[MessageEntity] | None,
 
 def to_discord_markdown(message: Message) -> str:
     text = (to_md(message)
-            .replace('~', '~~')
+            .replace(r'\.', '.')
             .replace(r'\(', '(')  # god bless this feels awful
             .replace(r'\)', ')'))
+    text = re.sub(r'~([^~]+)~', r'~~\1~~', text)
 
     return text
 
