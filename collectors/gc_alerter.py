@@ -24,6 +24,7 @@ available_alerts = {'public_build_id': loc.notifs_build_public,
                     'dpr_build_id': loc.notifs_build_dpr,
                     'dprp_build_id': loc.notifs_build_dprp,
                     'dpr_build_sync_id': f'{loc.notifs_build_dpr} 🔃',
+                    'dprp_build_sync_id': f'{loc.notifs_build_dprp} 🔃',
                     'cs2_app_changenumber': loc.notifs_build_cs2_client,
                     'cs2_server_changenumber': loc.notifs_build_cs2_server}
 
@@ -40,7 +41,7 @@ bot = Client(config.BOT_GC_MODULE_NAME,
              workdir=config.SESS_FOLDER)
 
 
-@scheduler.scheduled_job('interval', seconds=45)
+@scheduler.scheduled_job('interval', seconds=30)
 async def scan_for_gc_update():
     # noinspection PyBroadException
     try:
@@ -53,14 +54,18 @@ async def scan_for_gc_update():
             new_value = cache[_id]
             if prev_cache.get(_id) != new_value:
                 prev_cache[_id] = new_value
-                if _id == 'dpr_build_id' and new_value == cache['public_build_id']:
-                    await send_alert('dpr_build_sync_id', new_value)
-                    continue
+                if new_value == cache['public_build_id']:
+                    if _id == 'dpr_build_id':
+                        await send_alert('dpr_build_sync_id', new_value)
+                        continue
+                    if _id == 'dprp_build_id':
+                        await send_alert('dprp_build_sync_id', new_value)
+                        continue
 
                 await send_alert(_id, new_value)
 
         with open(config.GC_PREV_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(prev_cache, f, indent=4)
+            json.dump(prev_cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught an exception while scanning GC info!')
 
@@ -76,10 +81,10 @@ async def send_alert(key: str, new_value: int):
 
     text = alert_sample.format(new_value)
 
-    if not config.TEST_MODE:
-        chat_list = [config.INCS2CHAT, config.CSTRACKER]
-    else:
+    if config.TEST_MODE:
         chat_list = [config.AQ]
+    else:
+        chat_list = [config.INCS2CHAT, config.CSTRACKER]
 
     for chat_id in chat_list:
         msg = await bot.send_message(chat_id, text, disable_web_page_preview=True)

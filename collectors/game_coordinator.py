@@ -174,7 +174,7 @@ class GCCollector(CS2GCClient):
         """Dumps ``self.cache`` to the cache file."""
 
         with open(self.cache_file_path, 'w', encoding='utf-8') as f:
-            json.dump(self.cache, f, indent=4)
+            json.dump(self.cache, f, indent=4, ensure_ascii=False)
 
     def update_cache(self, new_info: dict[str, ...]):
         """Loads the cache into ``self.cache``, updates it with new info and dumps back to the cache file."""
