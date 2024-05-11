@@ -59,7 +59,7 @@ telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 async def handle_exceptions_in_callback(client: BotClient, session: UserSession, bot_message: Message, exc: Exception):
     logging.exception('Caught exception!', exc_info=exc)
     await client.log(f'❗️ {"".join(traceback.format_exception(exc))}',
-                     disable_notification=True, parse_mode=ParseMode.DISABLED)
+                     disable_notification=False, parse_mode=ParseMode.DISABLED)
 
     return await something_went_wrong(client, session, bot_message)
 

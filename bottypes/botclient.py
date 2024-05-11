@@ -86,9 +86,7 @@ class BotClient(Client):
             task = asyncio.create_task(asyncio.sleep(self.MAINLOOP_TIMEOUT.total_seconds()))
             try:
                 await task
-                if not self.logger.is_queue_empty():
-                    await self.logger.process_queue()
-
+                await self.logger.process_queue()
             except asyncio.CancelledError:
                 self.is_in_mainloop = False
 
@@ -458,10 +456,10 @@ class BotClient(Client):
         """Sends log to the log channel."""
 
         if instant:  # made for specific log messages (e.g. "Bot is shutting down...")
-            await self.logger.log_instantly(self, text, disable_notification, reply_markup, parse_mode)
+            await self.logger.send_log(self, text, disable_notification, reply_markup, parse_mode)
             return
 
-        await self.logger.log(self, text, disable_notification, reply_markup, parse_mode)
+        await self.logger.schedule_system_log(self, text, disable_notification, reply_markup, parse_mode)
 
     async def log_message(self, session: UserSession, message: Message):
         """Sends message log to the log channel."""
@@ -469,7 +467,7 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        await self.logger.log_message(self, session, message)
+        await self.logger.schedule_message_log(self, session, message)
 
     async def log_callback(self, session: UserSession, callback_query: CallbackQuery):
         """Sends callback query log to the log channel."""
@@ -477,7 +475,7 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        await self.logger.log_callback(self, session, callback_query)
+        await self.logger.schedule_callback_log(self, session, callback_query)
 
     async def log_inline(self, session: UserSession, inline_query: InlineQuery):
         """Sends an inline query log to the log channel."""
@@ -485,4 +483,4 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        await self.logger.log_inline(self, session, inline_query)
+        await self.logger.schedule_inline_log(self, session, inline_query)
