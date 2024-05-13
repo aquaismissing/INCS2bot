@@ -163,8 +163,8 @@ TagsKeys = Tags.sample()
 
 
 def dump_tags() -> Tags:
-    """Dumps "tags.json" and returns Tags object, containing all defined tags lists.
-    """
+    """Dumps "tags.json" and returns Tags object, containing all defined tags lists."""
+
     path = Path(__file__).parent / 'data' / 'tags.json'
     if not path.exists():
         warnings.warn(f"Can't find tags.json, generating a file...", PrimaryTagsFileNotFound)
@@ -206,3 +206,7 @@ def dump_tags() -> Tags:
                 data[field].extend(og_tags)
 
     return Tags(**data)
+
+
+if __name__ == '__main__':
+    dump_tags()
