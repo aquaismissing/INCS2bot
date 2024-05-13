@@ -77,7 +77,6 @@ class ExchangeRateData(NamedTuple):
     THB: float
     VND: float
     KRW: float
-    TRY: float
     UAH: float
     MXN: float
     CAD: float
@@ -95,7 +94,6 @@ class ExchangeRateData(NamedTuple):
     HKD: float
     ZAR: float
     INR: float
-    ARS: float
     CRC: float
     ILS: float
     KWD: float
@@ -206,25 +204,27 @@ class GameVersion:
 
 
 class ExchangeRate:
-    __slots__ = ()
     GET_KEY_PRICES_API = f'https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/' \
                          f'?appid=730&key={config.STEAM_API_KEY}'
     CURRENCIES_SYMBOLS = {"USD": "$", "GBP": "£", "EUR": "€", "RUB": "₽",
                           "BRL": "R$", "JPY": "¥", "NOK": "kr", "IDR": "Rp",
                           "MYR": "RM", "PHP": "₱", "SGD": "S$", "THB": "฿",
-                          "VND": "₫", "KRW": "₩", "TRY": "₺", "UAH": "₴",
-                          "MXN": "Mex$", "CAD": "CDN$", "AUD": "A$",
-                          "NZD": "NZ$", "PLN": "zł", "CHF": "CHF", "AED": "AED",
-                          "CLP": "CLP$", "CNY": "¥", "COP": "COL$", "PEN": "S/.",
-                          "SAR": "SR", "TWD": "NT$", "HKD": "HK$", "ZAR": "R",
-                          "INR": "₹", "ARS": "ARS$", "CRC": "₡", "ILS": "₪",
-                          "KWD": "KD", "QAR": "QR", "UYU": "$U", "KZT": "₸"}
+                          "VND": "₫", "KRW": "₩", "UAH": "₴", "MXN": "Mex$",
+                          "CAD": "CDN$", "AUD": "A$", "NZD": "NZ$", "PLN": "zł",
+                          "CHF": "CHF", "AED": "AED", "CLP": "CLP$", "CNY": "¥",
+                          "COP": "COL$", "PEN": "S/.", "SAR": "SR", "TWD": "NT$",
+                          "HKD": "HK$", "ZAR": "R", "INR": "₹", "CRC": "₡",
+                          "ILS": "₪", "KWD": "KD", "QAR": "QR", "UYU": "$U",
+                          "KZT": "₸"}
+    UNDEFINED_CURRENCIES = ('Unknown', 'ARS', 'BYN', 'TRY')
 
     @classmethod
     def request(cls):
         r = requests.get(cls.GET_KEY_PRICES_API, timeout=15).json()['result']['assets']
         key_price = [item for item in r if item['classid'] == '1544098059'][0]['prices']
-        del key_price['Unknown'], key_price['BYN']  #, key_price['ARS'], key_price['TRY']  # undefined values
+
+        for currency in cls.UNDEFINED_CURRENCIES:
+            del key_price[currency]
 
         prices = {k: v / 100 for k, v in key_price.items()}
         formatted_prices = {k: f'{v:.0f}' if v % 1 == 0 else f'{v:.2f}'
@@ -241,6 +241,10 @@ class ExchangeRate:
 
         if key_prices is None:
             return {}
+
+        for cur in ('ARS', 'TRY'):   # these values could be left in the cache
+            if key_prices.get(cur):  # todo: remove later
+                del key_prices[cur]
 
         return ExchangeRateData(**key_prices)
     
@@ -377,7 +381,7 @@ class LeaderboardStats(NamedTuple):
                 losses = entry.val
             elif entry.tag == 19:
                 for map_id, map_name in MAPS.items():
-                    last_wins[map_name] = ((entry.val << (4 * map_id)) & 0xF0000000) >> 4*7
+                    last_wins[map_name] = ((entry.val << (4 * map_id)) & 0xF0000000) >> 4 * 7
             elif entry.tag == 20:
                 timestamp = entry.val
             elif entry.tag == 21:

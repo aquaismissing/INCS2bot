@@ -72,7 +72,6 @@ class Tags(NamedTuple):
     currencies_thb: list  # Thai Baht
     currencies_vnd: list  # Vietnamese Dong
     currencies_krw: list  # South Korean Won
-    currencies_try: list  # Turkish Lira
     currencies_uah: list  # Ukrainian Hryvnia
     currencies_mxn: list  # Mexican Peso
     currencies_cad: list  # Canadian Dollar
@@ -90,7 +89,6 @@ class Tags(NamedTuple):
     currencies_hkd: list  # Hong Kong Dollar
     currencies_zar: list  # South African Rand
     currencies_inr: list  # Indian Rupee
-    currencies_ars: list  # Argentine Peso
     currencies_crc: list  # Costa Rican Colon
     currencies_ils: list  # Israeli Shekel
     currencies_kwd: list  # Kuwaiti Dinar
