@@ -5,8 +5,6 @@ import traceback
 from pyrogram.enums import ParseMode
 from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 
-# noinspection PyUnresolvedReferences
-import env
 from bottypes import BotClient, UserSession
 import config
 from functions import datacenter_handlers, info_formatters

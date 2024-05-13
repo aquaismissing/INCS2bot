@@ -5,13 +5,20 @@ import re
 
 from pyrogram import Client, filters
 from pyrogram.enums import ChatMembersFilter
-from pyrogram.types import Message, MessageEntity
+from pyrogram.types import Chat, Message, MessageEntity, User
 import requests
 from tgentity import to_md
 
-# noinspection PyUnresolvedReferences
-import env
 import config
+
+
+DISCORD_MESSAGE_LENGTH_LIMIT = 2000
+
+
+async def is_administrator(chat: Chat, user: User) -> bool:
+    admins = {admin.user async for admin in chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)}
+
+    return user in admins
 
 
 def correct_message_entities(entities: list[MessageEntity] | None,
@@ -46,6 +53,45 @@ def to_discord_markdown(message: Message) -> str:
     return text
 
 
+def wrap_text(text: str, max_length: int) -> list[str]:
+    """
+    Wraps the given text into multiple sections with a length <= ``max_length``.
+
+    Prioritises wrapping by newlines, then spaces.
+    """
+
+    if len(text) <= max_length:
+        return [text]
+
+    text_parts = []
+    while len(text) > max_length:
+        longest_possible_part = text[:max_length]
+        last_char_index = longest_possible_part.rfind('\n')
+        if last_char_index == -1:
+            last_char_index = longest_possible_part.rfind(' ')
+        if last_char_index == -1:
+            last_char_index = max_length
+
+        new_part = text[:last_char_index]
+        text_parts.append(new_part)
+        if text[last_char_index].isspace():
+            last_char_index += 1
+        text = text[last_char_index:]
+
+    text_parts.append(text)
+
+    return text_parts
+
+
+def process_discord_text(message: Message) -> list[str]:
+    text = to_discord_markdown(message) if message.entities else message.text
+
+    # fixme: can break formatting if wrapping happens in the middle of formatted section
+    # fixme: (e.g. "**some [split] wise words**")
+    # fixme severity: low
+    return wrap_text(text, DISCORD_MESSAGE_LENGTH_LIMIT)
+
+
 def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN') -> str | None:
     headers = {'Authorization': f'DeepL-Auth-Key {config.DEEPL_TOKEN}', 'Content-Type': 'application/json'}
     data = {'text': [text], 'source_lang': source_lang, 'target_lang': target_lang}
@@ -68,23 +114,6 @@ def post_to_discord_webhook(url: str, text: str):  # todo: attachments support?
         logging.error('Failed to post to Discord webhook.')
         logging.error(f'{text=}')
         logging.error(f'{r.status_code=}, {r.reason=}')
-
-
-def process_discord_text(message: Message) -> list[str]:
-    logging.info(message)
-
-    text_list = [to_discord_markdown(message) if message.entities else message.text]
-
-    # Discord webhook limit is 2000 symbols (@akimerslys: ahui), hoping Telegram limit is <4000
-    if len(text_list[0]) > 2000:
-        # splitting message into 2 similar-sized messages to save structure and beauty
-        last_newline_index = text_list[0][:len(text_list[0]) // 2].rfind('\n')
-        if last_newline_index != -1:
-            second_part = text_list[0][last_newline_index + 1:]
-            text_list.append(second_part)
-            text_list[0] = text_list[0][:last_newline_index]
-
-    return text_list
 
 
 def forward_to_discord(message: Message):
@@ -115,33 +144,29 @@ async def ban(client: Client, message: Message):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.reply_to_message:
-        og_msg = message.reply_to_message
-        await chat.ban_member(og_msg.from_user.id)
-        await message.reply(f"{og_msg.from_user.first_name} получил(а) VAC бан.")
+        original_msg = message.reply_to_message
+        await chat.ban_member(original_msg.from_user.id)
+        await message.reply(f"{original_msg.from_user.first_name} получил(а) VAC бан.")
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("unban"))
 async def unban(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
-    admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
-    admins = {admin.user.id async for admin in admins}
 
-    if message.from_user.id not in admins:
+    if not await is_administrator(chat, message.from_user):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.reply_to_message:
-        og_msg = message.reply_to_message
-        await chat.unban_member(og_msg.from_user.id)
-        await message.reply(f"VAC бан у {og_msg.from_user.first_name} был удалён.")
+        original_msg = message.reply_to_message
+        await chat.unban_member(original_msg.from_user.id)
+        await message.reply(f"VAC бан у {original_msg.from_user.first_name} был удалён.")
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("warn"))
 async def warn(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
-    admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
-    admins = {admin.user.id async for admin in admins}
 
-    if message.from_user.id not in admins:
+    if not await is_administrator(chat, message.from_user):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.reply_to_message:
@@ -153,11 +178,9 @@ async def warn(client: Client, message: Message):
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command('echo'))
 async def echo(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
-    admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
-    admins = {admin.user.id async for admin in admins}
 
     await message.delete()
-    if message.from_user.id not in admins:
+    if not await is_administrator(chat, message.from_user):
         return
 
     if message.reply_to_message:
@@ -229,8 +252,3 @@ async def meow_meow_meow_meow(_, message: Message):
 
     if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug' and chance < 5:
         await message.reply('мяу мяу мяу мяу')
-
-
-# @Client.on_message(filters.chat(config.INCS2CHAT) & filters.animation)
-# async def debugging_gifs(_, message: Message):
-#     print(message.animation)

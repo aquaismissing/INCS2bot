@@ -13,8 +13,6 @@ from requests import JSONDecodeError
 import seaborn as sns
 from telegraph import Telegraph
 
-# noinspection PyUnresolvedReferences
-import env
 import config
 from functions import utime
 

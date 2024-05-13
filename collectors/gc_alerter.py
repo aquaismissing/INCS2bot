@@ -10,8 +10,6 @@ if platform.system() == 'Linux':
 
     uvloop.install()
 
-# noinspection PyUnresolvedReferences
-import env
 import config
 from functions import locale
 
