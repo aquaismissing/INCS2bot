@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-@dataclass(slots=True)
+@dataclass
 class BotRegularStats:
     callback_queries_handled = 0
     inline_queries_handled = 0
