@@ -305,7 +305,7 @@ async def profile_info(client: BotClient, session: UserSession, bot_message: Mes
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache_file = json.load(f)
 
-    if cache_file.get('webapi') != 'normal':
+    if cache_file.get('webapi_state') != 'normal':
         return await send_about_maintenance(client, session, bot_message)
 
     await bot_message.edit(session.locale.bot_choose_cmd,
@@ -932,18 +932,17 @@ async def main():
     scheduler.add_job(regular_stats_report, 'interval', hours=8,
                       args=(bot,))
 
-    scheduler.start()
-
     try:
         await db_session.init(config.USER_DB_FILE_PATH)
         await bot.start()
+        scheduler.start()
         await bot.log('Bot started.', instant=True)
         await bot.mainloop()
     except Exception as e:
         logging.exception('The bot got terminated because of exception!')
         await bot.log(f'Bot got terminated because of exception!\n'
                       f'\n'
-                      f'❗️ {e.__traceback__}', disable_notification=False)
+                      f'❗️ {e.__traceback__}', disable_notification=True, instant=True)
     finally:
         logging.info('Shutting down the bot...')
         await bot.log('Bot is shutting down...', instant=True)

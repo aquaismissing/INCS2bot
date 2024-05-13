@@ -57,6 +57,18 @@ DATACENTER_API_FIELDS = {
     ('japan', 'tokyo'): 'Japan',
 }
 
+UNUSED_FIELDS = ['csgo_client_version',
+                 'csgo_server_version',
+                 'csgo_patch_version',
+                 'csgo_version_timestamp',
+                 'sdk_build_id',
+                 'ds_build_id',
+                 'valve_ds_changenumber',
+                 'webapi',
+                 'sessions_logon',
+                 'steam_community',
+                 'matchmaking_scheduler']
+
 execution_start_dt = dt.datetime.now()
 
 execution_cron_hour = execution_start_dt.hour
@@ -78,6 +90,12 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
              bot_token=config.BOT_TOKEN,
              no_updates=True,
              workdir=config.SESS_FOLDER)
+
+
+def clear_from_unused_fields(cache: dict):
+    for field in UNUSED_FIELDS:
+        if cache.get(field):
+            del cache[field]
 
 
 def remap_dc(info: dict, dc: Datacenter):
@@ -129,6 +147,8 @@ async def update_cache_info():
     try:
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
+
+        clear_from_unused_fields(cache)
 
         overall_data = GameServers.request()
 

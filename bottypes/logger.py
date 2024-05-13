@@ -69,7 +69,7 @@ class BotLogger:
                     f'ℹ️: {userid}',
                     f'✈️: {user.language_code}',
                     f'⚙️: {session.locale.lang_code}',
-                    f'━━━━━━━━━━━━━━━━━━━━━━━━'] + [event.result_text for event in logged_events]
+                    f'━━━━━━━━━━━━━━━━━━━━━━━'] + [event.result_text for event in logged_events]
             return await self.send_log(client, '\n'.join(text), disable_notification=True)
 
     async def schedule_system_log(self, client: BotClient, text: str,
