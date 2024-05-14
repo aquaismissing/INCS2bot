@@ -133,6 +133,11 @@ async def cs_l10n_update(message: Message):
         await message.reply_sticker('CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ')
 
 
+async def filter_message(sender: Chat | User, message: Message):
+    if sender and sender.id in config.FILTERED_SENDERS:
+        await message.delete()
+
+
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("ban"))
 async def ban(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
@@ -242,8 +247,13 @@ async def handle_new_post(_, message: Message):
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
 async def filter_forwards(_, message: Message):
-    if message.forward_from_chat and message.forward_from_chat.id in config.FILTER_FORWARDS:
-        await message.delete()
+    forward_from = message.forward_from_chat if message.forward_from_chat else message.forward_from
+    await filter_message(forward_from, message)
+
+
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.via_bot)
+async def filter_via_bot(_, message: Message):
+    await filter_message(message.via_bot, message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.sticker)
