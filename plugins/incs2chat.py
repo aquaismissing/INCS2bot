@@ -1,7 +1,9 @@
 import asyncio
+import json
 import logging
 import random
 import re
+from io import BytesIO
 
 from pyrogram import Client, filters
 from pyrogram.enums import ChatMembersFilter
@@ -84,7 +86,10 @@ def wrap_text(text: str, max_length: int) -> list[str]:
 
 
 def process_discord_text(message: Message) -> list[str]:
-    text = to_discord_markdown(message) if message.entities else message.text
+    text = (to_discord_markdown(message) if message.entities
+            else message.caption if message.caption
+            else message.text if message.text
+            else '')
 
     # fixme: can break formatting if wrapping happens in the middle of formatted section
     # fixme: (e.g. "**some [split] wise words**")
@@ -105,24 +110,42 @@ def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN') 
     logging.error(f'{r.status_code=}, {r.reason=}')
 
 
-def post_to_discord_webhook(url: str, text: str):  # todo: attachments support?
-    headers = {'Content-Type': 'application/json'}
+def post_to_discord_webhook(url: str, text: str, attachment: BytesIO = None):  # todo: attachments support?
     payload = {'content': text}
-    r = requests.post(url, json=payload, headers=headers)
 
-    if r.status_code != 204:  # Discord uses 204 as a success code (yikes)
+    if attachment:
+        payload = {'payload_json': (None, json.dumps(payload)), 'files[0]': (attachment.name, attachment.getbuffer())}
+        r = requests.post(url, files=payload)
+    else:
+        headers = {'Content-Type': 'application/json'}
+        r = requests.post(url, payload, headers=headers)
+
+    if r.status_code not in [200, 204]:  # Discord uses 204 as a success code (yikes)
         logging.error('Failed to post to Discord webhook.')
-        logging.error(f'{text=}')
-        logging.error(f'{r.status_code=}, {r.reason=}')
+        logging.error(f'{payload=}')
+        logging.error(f'{r.status_code=}, {r.reason=}, {r.text=}')
 
 
-def forward_to_discord(message: Message):
+async def forward_to_discord(client: Client, message: Message):
     texts = process_discord_text(message)
     logging.info(texts)
 
+    attachment: BytesIO | None
+    try:
+        # fixme: for every attachment this ^ function will be called multiple times
+        # fixme: this could be fixed if we keep track of media groups but too lazy to implement it properly
+        attachment = await client.download_media(message, in_memory=True)
+    except ValueError:
+        attachment = None
+
     for text in texts:
-        post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
-        post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
+        if attachment:
+            post_to_discord_webhook(config.DS_WEBHOOK_URL, text, attachment)
+            post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'), attachment)
+            attachment = None
+        else:
+            post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
+            post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
 
 
 async def cs_l10n_update(message: Message):
@@ -236,13 +259,13 @@ async def echo(client: Client, message: Message):
 
 
 @Client.on_message(filters.linked_channel & filters.chat(config.INCS2CHAT))
-async def handle_new_post(_, message: Message):
+async def handle_new_post(client: Client, message: Message):
     is_sent_by_correct_chat = (message.sender_chat and message.sender_chat.id == config.INCS2CHANNEL)
     is_forwarded_from_correct_chat = (message.forward_from_chat and message.forward_from_chat.id == config.INCS2CHANNEL)
 
     if is_sent_by_correct_chat and is_forwarded_from_correct_chat:
         await cs_l10n_update(message)
-        forward_to_discord(message)
+        await forward_to_discord(client, message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
