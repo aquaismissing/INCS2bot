@@ -1,6 +1,4 @@
-import steam.monkey
-steam.monkey.patch_minimal()
-
+import asyncio
 import datetime as dt
 import json
 import logging
@@ -9,9 +7,10 @@ import sys
 import time
 from zoneinfo import ZoneInfo
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.gevent import GeventScheduler
 from csgo.client import CSGOClient
-import gevent
+from pyrogram import Client, idle
 from steam.client import SteamClient
 from steam.enums import EResult
 
@@ -25,19 +24,35 @@ if platform.system() == 'Linux':
 # noinspection PyUnresolvedReferences
 import env
 import config
-from functions import utime
+from functions import locale, utime
 from utypes import GameVersion, States
 
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
+loc = locale('ru')
+
+available_alerts = {'public_build_id': loc.notifs_build_public,
+                    'dpr_build_id': loc.notifs_build_dpr,
+                    'dprp_build_id': loc.notifs_build_dprp,
+                    'dpr_build_sync_id': f'{loc.notifs_build_dpr} 🔃',
+                    'dprp_build_sync_id': f'{loc.notifs_build_dprp} 🔃',
+                    'cs2_app_changenumber': loc.notifs_build_cs2_client,
+                    'cs2_server_changenumber': loc.notifs_build_cs2_server}
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s | GC: %(message)s',
                     datefmt='%H:%M:%S — %d/%m/%Y')
 
+bot = Client(config.BOT_GC_MODULE_NAME,
+             api_id=config.API_ID,
+             api_hash=config.API_HASH,
+             bot_token=config.BOT_TOKEN,
+             no_updates=True,
+             workdir=config.SESS_FOLDER)
 client = SteamClient()
 client.set_credential_location(config.STEAM_CREDS_PATH)
 cs = CSGOClient(client)
-scheduler = GeventScheduler()
+gevent_scheduler = GeventScheduler()
+async_scheduler = AsyncIOScheduler()
 
 
 @client.on('error')
@@ -75,7 +90,8 @@ def handle_disconnect():
 @client.on('logged_on')
 def handle_after_logon():
     cs.launch()
-    scheduler.start()
+    async_scheduler.start()
+    gevent_scheduler.start()
 
 
 @cs.on('ready')
@@ -101,8 +117,8 @@ def update_gc_status(status):
     logging.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
 
 
-@scheduler.scheduled_job('interval', seconds=45)
-def update_depots():
+@async_scheduler.scheduled_job('interval', seconds=45)
+async def update_depots():
     # noinspection PyBroadException
     try:
         data = client.get_product_info(apps=[730, 2275500, 2275530], timeout=15)['apps']
@@ -121,14 +137,24 @@ def update_depots():
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache = json.load(f)
 
-    cache['cs2_app_changenumber'] = cs2_app_change_number
-    cache['cs2_server_changenumber'] = cs2_server_change_number
-    cache['dprp_build_id'] = dprp_build_id
-    cache['dpr_build_id'] = dpr_build_id
+    new_data = {'cs2_app_changenumber': cs2_app_change_number,
+                'cs2_server_changenumber': cs2_server_change_number,
+                'dprp_build_id': dprp_build_id,
+                'dpr_build_id': dpr_build_id,
+                'public_build_id': public_build_id}
 
-    if public_build_id != cache.get('public_build_id'):
-        cache['public_build_id'] = public_build_id
-        gevent.spawn(update_game_version)
+    for _id, new_value in new_data.items():
+        if cache.get(_id) != new_value:
+            cache[_id] = new_value
+            if _id == 'dpr_build_id' and new_value == cache['public_build_id']:
+                await send_alert('dpr_build_sync_id', new_value)
+                continue
+            if _id == 'dprp_build_id' and new_value == cache['public_build_id']:
+                await send_alert('dprp_build_sync_id', new_value)
+                continue
+            if _id == 'public_build_id':
+                _ = asyncio.create_task(update_game_version)
+            await send_alert(_id, new_value)
 
     with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
         json.dump(cache, f, indent=4)
@@ -164,16 +190,16 @@ def update_game_version():
                 sys.exit()
         except Exception:
             logging.exception('Caught an exception while trying to get new version!')
-            gevent.sleep(45)
+            asyncio.sleep(45)
             continue
-        gevent.sleep(45)
+        asyncio.sleep(45)
     # xPaw: Zzz...
     # because of this, we retry in an hour
-    gevent.sleep(60 * 60)
+    asyncio.sleep(60 * 60)
     update_game_version()
 
 
-@scheduler.scheduled_job('interval', seconds=45)
+@gevent_scheduler.scheduled_job('interval', seconds=45)
 def online_players():
     value = client.get_player_count(730)
 
@@ -189,7 +215,29 @@ def online_players():
     logging.info(f'Successfully dumped player count: {value}')
 
 
-def main():
+async def send_alert(key: str, new_value: int):
+    logging.info(f'Found new change: {key}, sending alert...')
+
+    alert_sample = available_alerts.get(key)
+
+    if alert_sample is None:
+        logging.warning(f'Got wrong key to send alert: {key}')
+        return
+
+    text = alert_sample.format(new_value)
+
+    if not config.TEST_MODE:
+        chat_list = [config.INCS2CHAT, config.CSTRACKER]
+    else:
+        chat_list = [config.AQ]
+
+    for chat_id in chat_list:
+        msg = await bot.send_message(chat_id, text, disable_web_page_preview=True)
+        if chat_id == config.INCS2CHAT:
+            await msg.pin(disable_notification=True)
+
+
+async def main():
     try:
         logging.info('Logging in...')
         result = client.login(username=config.STEAM_USERNAME, password=config.STEAM_PASS)
@@ -199,7 +247,8 @@ def main():
             sys.exit(1)
 
         logging.info('Logged in successfully.')
-        client.run_forever()
+        await bot.start()
+        await idle()
     except KeyboardInterrupt:
         if client.connected:
             logging.info('Logout...')
@@ -207,4 +256,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
