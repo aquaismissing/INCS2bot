@@ -942,7 +942,7 @@ async def main():
         logging.exception('The bot got terminated because of exception!')
         await bot.log(f'Bot got terminated because of exception!\n'
                       f'\n'
-                      f'❗️ {e.__traceback__}', disable_notification=True, instant=True)
+                      f'❗️ {"".join(traceback.format_exception(e))}', disable_notification=True, instant=True)
     finally:
         logging.info('Shutting down the bot...')
         await bot.log('Bot is shutting down...', instant=True)
