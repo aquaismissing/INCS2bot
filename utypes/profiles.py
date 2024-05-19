@@ -1,10 +1,10 @@
 from dataclasses import astuple, dataclass
 from enum import StrEnum
-import hashlib
 import re
 from typing import NamedTuple, Self
 
-from steam import ID, InvalidID
+from steam import steamid
+from steam.steamid import SteamID
 import requests
 
 import config
@@ -242,9 +242,9 @@ class UserGameStats(NamedTuple):
     @classmethod
     async def get(cls, data) -> Self:
         try:
-            steamid = await parse_steamid(data)
+            _id = parse_steamid(data)
 
-            response = api.get_user_game_stats(steamid=steamid.id64, appid=730)
+            response = api.get_user_game_stats(steamid=_id.as_64, appid=730)
             if not response:
                 raise ParseUserStatsError(ErrorCode.PROFILE_IS_PRIVATE)
 
@@ -252,7 +252,7 @@ class UserGameStats(NamedTuple):
                 raise ParseUserStatsError(ErrorCode.NO_STATS_AVAILABLE)
 
             stats_dict = {stat['name']: stat['value'] for stat in response['playerstats']['stats']}
-            stats_dict['steamid'] = steamid.id64
+            stats_dict['steamid'] = _id.as_64
 
             return cls.from_dict(stats_dict)
         except requests.exceptions.HTTPError as e:
@@ -312,10 +312,10 @@ class ProfileInfo:
     @classmethod
     async def get(cls, data) -> Self:
         try:
-            steamid = await parse_steamid(data)
+            _id = parse_steamid(data)
 
-            bans = api.get_player_bans(steamids=str(steamid.id64))
-            user_data = api.get_player_summaries(steamids=str(steamid.id64))["response"]["players"][0]
+            bans = api.get_player_bans(steamids=str(_id.as_64))
+            user_data = api.get_player_summaries(steamids=str(_id.as_64))["response"]["players"][0]
 
             vanity = user_data['profileurl']
 
@@ -325,10 +325,10 @@ class ProfileInfo:
             account_created = user_data.get('timecreated')
 
             vanity_url = vanity.split('/')[-2]
-            if vanity_url == str(steamid.id64):
+            if vanity_url == str(_id.as_64):
                 vanity_url = None
 
-            faceit_api_link = f'https://api.faceit.com/search/v2/players?query={steamid.id64}'
+            faceit_api_link = f'https://api.faceit.com/search/v2/players?query={_id.as_64}'
             faceit_api_response = requests.get(faceit_api_link, timeout=15).json()['payload']['results']
             faceit_elo, faceit_lvl, faceit_url, faceit_ban = cls._extract_faceit_data(faceit_api_response)
 
@@ -345,12 +345,12 @@ class ProfileInfo:
             trade_ban = (bans_data['EconomyBan'] == 'banned')
 
             return cls(vanity_url,
-                       steamid.id64,
-                       steamid.id,
+                       _id.as_64,
+                       _id.id,
                        account_created,
-                       steamid.invite_url,
-                       steamid.invite_code,
-                       cls.get_csgo_friend_code(steamid),
+                       _id.invite_url,
+                       _id.as_invite_code,
+                       _id.as_csgo_friend_code,
                        faceit_url,
                        faceit_elo,
                        faceit_lvl,
@@ -369,54 +369,27 @@ class ProfileInfo:
                 raise ParseUserStatsError(ErrorCode.PROFILE_IS_PRIVATE)
             raise e
 
-    @staticmethod
-    def get_csgo_friend_code(steamid: ID) -> str | None:
-        hashed = int.from_bytes(
-            hashlib.md5(
-                (b"CSGO" + steamid.id.to_bytes(4, "big"))[::-1],
-            ).digest()[:4],
-            "little",
-        )
-        result = 0
-        for i in range(8):
-            id_nib = (steamid.id64 >> (i * 4)) & 0xF
-            hash_nib = (hashed >> i) & 0x1
-            a = (result << 4) | id_nib
-            result = ((result >> 28) << 32) | a
-            result = ((result >> 31) << 32) | ((a << 1) | hash_nib)
-        result = int.from_bytes(result.to_bytes(8, "big"), "little")
-        code: list[str] = []
-        for i in range(13):
-            if i in {4, 9}:
-                code.append("-")
-            code.append(_csgofrcode_chars[result & 31])
-            result >>= 5
-        return "".join(code[5:])
-
     def to_tuple(self) -> tuple:
         return astuple(self)
 
 
-async def parse_steamid(data: str) -> ID:
+def parse_steamid(data: str) -> SteamID:
     data = data.strip()
 
     if STEAM_PROFILE_LINK_PATTERN.match(data):
         if not data.startswith('http'):
             data = 'https://' + data
 
-        if (steamid := await ID.from_url(data)) is None:
+        if (_id := steamid.from_url(data)) is None:
             raise ParseUserStatsError(ErrorCode.INVALID_LINK)
 
-        return steamid
+        return _id
 
-    try:
-        if (steamid := ID(data)).is_valid():
-            return steamid
-    except InvalidID:
-        pass
+    if (_id := SteamID(data)).is_valid():
+        return _id
 
     data = f'https://steamcommunity.com/id/{data}'
-    if (steamid := await ID.from_url(data)) is None:
+    if (_id := steamid.from_url(data)) is None:
         raise ParseUserStatsError(ErrorCode.INVALID_REQUEST)
 
-    return steamid
+    return _id

@@ -57,6 +57,8 @@ DATACENTER_API_FIELDS = {
     ('japan', 'tokyo'): 'Japan',
 }
 
+execution_start_dt = dt.datetime.now()
+
 UNUSED_FIELDS = ['csgo_client_version',
                  'csgo_server_version',
                  'csgo_patch_version',
@@ -182,7 +184,7 @@ async def update_cache_info():
     except Exception:
         logging.exception('Caught exception in the main thread!')
 
-
+        
 @scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute)
 async def unique_monthly():
     # noinspection PyBroadException

@@ -75,10 +75,6 @@ def format_server_status(data: ServerStatusData, locale: Locale) -> str:
     game_servers_dt = f'{format_datetime(game_servers_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
 
     text = (
-        f'<blockquote>Currently we\'re unable to detect CS2\'s game coordinator status, '
-        f'because one of our dependencies is broken. Other trackers are working fine. '
-        f'Please accept our apologies.</blockquote>'
-        f'\n\n'
         f'{locale.game_status_text.format(tick, *states)}'
         f'\n\n'
         f'{locale.latest_data_update.format(game_servers_dt)}'
