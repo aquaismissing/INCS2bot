@@ -38,7 +38,7 @@ VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 SLD = ScoreLeaderboardData()
 MAPS = {1: 'ancient',
         2: 'nuke',
-        3: 'overpass',
+        3: 'dust2',
         4: 'vertigo',
         5: 'mirage',
         6: 'inferno',
