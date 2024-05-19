@@ -2,7 +2,6 @@ import asyncio
 import datetime as dt
 import json
 import logging
-from pathlib import Path
 import platform
 import sys
 import time
@@ -14,7 +13,6 @@ from csgo.client import CSGOClient
 from pyrogram import Client, idle
 from steam.client import SteamClient
 from steam.enums import EResult
-
 
 if platform.system() == 'Linux':
     # noinspection PyPackageRequirements
@@ -107,8 +105,8 @@ def update_gc_status(status):
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache = json.load(f)
 
-    if game_coordinator != cache.get('game_coordinator'):
-        cache['game_coordinator'] = game_coordinator.literal
+    if game_coordinator != cache.get('game_coordinator_state'):
+        cache['game_coordinator_state'] = game_coordinator.literal
 
     with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
         json.dump(cache, f, indent=4)

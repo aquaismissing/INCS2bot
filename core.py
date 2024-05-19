@@ -57,7 +57,6 @@ DATACENTER_API_FIELDS = {
     ('japan', 'tokyo'): 'Japan',
 }
 
-execution_start_dt = dt.datetime.now()
 
 UNUSED_FIELDS = ['csgo_client_version',
                  'csgo_server_version',
@@ -69,7 +68,9 @@ UNUSED_FIELDS = ['csgo_client_version',
                  'webapi',
                  'sessions_logon',
                  'steam_community',
-                 'matchmaking_scheduler']
+                 'matchmaking_scheduler',
+                 'game_coordinator']
+
 
 execution_start_dt = dt.datetime.now()
 
