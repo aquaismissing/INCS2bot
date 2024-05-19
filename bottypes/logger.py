@@ -47,30 +47,35 @@ class BotLogger:
         self._logs_queue[_id].append(payload)
 
     async def process_queue(self):
-        if not self.is_queue_empty():
-            userid = tuple(self._logs_queue)[0]
-            logged_events = self._logs_queue[userid]
+        if self.is_queue_empty():
+            return
 
-            if userid == SYSTEM:  # invoked by system, not user
-                system_log = logged_events.pop(0)
-                return await self.send_log(system_log.client,
-                                           system_log.text,
-                                           system_log.disable_notification,
-                                           system_log.reply_markup,
-                                           system_log.parse_mode)
+        userid = tuple(self._logs_queue)[0]
+        logged_events = self._logs_queue[userid]
 
-            del self._logs_queue[userid]
-            client = logged_events[-1].client
-            user = logged_events[-1].user
-            session = logged_events[-1].session
-            display_name = f'@{user.username}' if user.username is not None else f'{user.mention} (username hidden)'
+        if not logged_events:  # I have no idea how is it possible,
+            return             # but it's possible
 
-            text = [f'👤: {display_name}',
-                    f'ℹ️: {userid}',
-                    f'✈️: {user.language_code}',
-                    f'⚙️: {session.locale.lang_code}',
-                    f'━━━━━━━━━━━━━━━━━━━━━━━'] + [event.result_text for event in logged_events]
-            return await self.send_log(client, '\n'.join(text), disable_notification=True)
+        if userid == SYSTEM:  # invoked by system, not user
+            system_log = logged_events.pop(0)
+            return await self.send_log(system_log.client,
+                                       system_log.text,
+                                       system_log.disable_notification,
+                                       system_log.reply_markup,
+                                       system_log.parse_mode)
+
+        del self._logs_queue[userid]
+        client = logged_events[-1].client
+        user = logged_events[-1].user
+        session = logged_events[-1].session
+        display_name = f'@{user.username}' if user.username is not None else f'{user.mention} (username hidden)'
+
+        text = [f'👤: {display_name}',
+                f'ℹ️: {userid}',
+                f'✈️: {user.language_code}',
+                f'⚙️: {session.locale.lang_code}',
+                f'━━━━━━━━━━━━━━━━━━━━━━━'] + [event.result_text for event in logged_events]
+        return await self.send_log(client, '\n'.join(text), disable_notification=True)
 
     async def schedule_system_log(self, client: BotClient, text: str,
                                   disable_notification: bool = True,
