@@ -21,8 +21,6 @@ if platform.system() == 'Linux':
 
     uvloop.install()
 
-# noinspection PyUnresolvedReferences
-import env
 import config
 from functions import locale, utime
 from utypes import GameVersion, States

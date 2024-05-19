@@ -7,8 +7,6 @@ from pyrogram import Client, filters
 from pyrogram.enums import ChatMembersFilter, MessageEntityType
 from pyrogram.types import Message, MessageEntity
 
-# noinspection PyUnresolvedReferences
-import env
 import config
 
 
