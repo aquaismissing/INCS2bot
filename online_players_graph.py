@@ -115,7 +115,7 @@ def graph_maker():
             cache['graph_url'] = image_url
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4)
+            json.dump(cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught exception in graph maker!')
         time.sleep(MINUTE)

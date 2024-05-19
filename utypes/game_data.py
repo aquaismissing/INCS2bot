@@ -77,7 +77,6 @@ class ExchangeRateData(NamedTuple):
     THB: float
     VND: float
     KRW: float
-    TRY: float
     UAH: float
     MXN: float
     CAD: float
@@ -95,7 +94,6 @@ class ExchangeRateData(NamedTuple):
     HKD: float
     ZAR: float
     INR: float
-    ARS: float
     CRC: float
     ILS: float
     KWD: float
@@ -180,8 +178,7 @@ class GameVersion:
         cs2_client_version = int(options['ClientVersion']) - 2000000
         cs2_server_version = int(options['ServerVersion']) - 2000000
         cs2_patch_version = options['PatchVersion']
-        cs2_version_timestamp = version_datetime.timestamp()  # todo: maybe should use unix timestamp
-                                                              # todo: instead of this piece of crap?
+        cs2_version_timestamp = version_datetime.timestamp()
 
         return GameVersionData(cs2_client_version,
                                cs2_server_version,
@@ -199,11 +196,7 @@ class GameVersion:
         cs2_server_version = cache_file.get('cs2_client_version', 'unknown')
         cs2_patch_version = cache_file.get('cs2_patch_version', 'unknown')
 
-        # Timestamp could be saved as ISO-8601, so we need to address that
         cs2_version_timestamp = cache_file.get('cs2_version_timestamp', 0)
-        if isinstance(cs2_version_timestamp, str):
-            cs2_version_timestamp = dt.datetime.fromisoformat(cs2_version_timestamp).timestamp()
-
         return GameVersionData(cs2_client_version,
                                cs2_server_version,
                                cs2_patch_version,
@@ -211,25 +204,27 @@ class GameVersion:
 
 
 class ExchangeRate:
-    __slots__ = ()
     GET_KEY_PRICES_API = f'https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/' \
                          f'?appid=730&key={config.STEAM_API_KEY}'
     CURRENCIES_SYMBOLS = {"USD": "$", "GBP": "£", "EUR": "€", "RUB": "₽",
                           "BRL": "R$", "JPY": "¥", "NOK": "kr", "IDR": "Rp",
                           "MYR": "RM", "PHP": "₱", "SGD": "S$", "THB": "฿",
-                          "VND": "₫", "KRW": "₩", "TRY": "₺", "UAH": "₴",
-                          "MXN": "Mex$", "CAD": "CDN$", "AUD": "A$",
-                          "NZD": "NZ$", "PLN": "zł", "CHF": "CHF", "AED": "AED",
-                          "CLP": "CLP$", "CNY": "¥", "COP": "COL$", "PEN": "S/.",
-                          "SAR": "SR", "TWD": "NT$", "HKD": "HK$", "ZAR": "R",
-                          "INR": "₹", "ARS": "ARS$", "CRC": "₡", "ILS": "₪",
-                          "KWD": "KD", "QAR": "QR", "UYU": "$U", "KZT": "₸"}
+                          "VND": "₫", "KRW": "₩", "UAH": "₴", "MXN": "Mex$",
+                          "CAD": "CDN$", "AUD": "A$", "NZD": "NZ$", "PLN": "zł",
+                          "CHF": "CHF", "AED": "AED", "CLP": "CLP$", "CNY": "¥",
+                          "COP": "COL$", "PEN": "S/.", "SAR": "SR", "TWD": "NT$",
+                          "HKD": "HK$", "ZAR": "R", "INR": "₹", "CRC": "₡",
+                          "ILS": "₪", "KWD": "KD", "QAR": "QR", "UYU": "$U",
+                          "KZT": "₸"}
+    UNDEFINED_CURRENCIES = ('Unknown', 'ARS', 'BYN', 'TRY')
 
     @classmethod
     def request(cls):
         r = requests.get(cls.GET_KEY_PRICES_API, timeout=15).json()['result']['assets']
         key_price = [item for item in r if item['classid'] == '1544098059'][0]['prices']
-        del key_price['Unknown'], key_price['BYN']  #, key_price['ARS'], key_price['TRY']  # undefined values
+
+        for currency in cls.UNDEFINED_CURRENCIES:
+            del key_price[currency]
 
         prices = {k: v / 100 for k, v in key_price.items()}
         formatted_prices = {k: f'{v:.0f}' if v % 1 == 0 else f'{v:.2f}'
@@ -246,6 +241,10 @@ class ExchangeRate:
 
         if key_prices is None:
             return {}
+
+        for cur in ('ARS', 'TRY'):   # these values could be left in the cache
+            if key_prices.get(cur):  # todo: remove later
+                del key_prices[cur]
 
         return ExchangeRateData(**key_prices)
     
@@ -296,15 +295,11 @@ class GameServers:
         if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
 
-        gc_state = States.sget(cache_file.get('game_coordinator'))
-        sl_state = States.sget(cache_file.get('sessions_logon'))
-        ms_state = States.sget(cache_file.get('matchmaking_scheduler'))
-        sc_state = States.sget(cache_file.get('steam_community'))
-        webapi_state = States.sget(cache_file.get('webapi'))
-        
-        now = utime.utcnow()
-        is_maintenance = ((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)) \
-            and not (gc_state == States.NORMAL and sl_state == States.NORMAL)
+        gc_state = States.get_or_unknown(cache_file.get('game_coordinator_state'))
+        sl_state = States.get_or_unknown(cache_file.get('sessions_logon_state'))
+        ms_state = States.get_or_unknown(cache_file.get('matchmaking_scheduler_state'))
+        sc_state = States.get_or_unknown(cache_file.get('steam_community_state'))
+        webapi_state = States.get_or_unknown(cache_file.get('webapi_state'))
 
         return ServerStatusData(game_server_dt,
                                 gc_state, sl_state, ms_state, sc_state, webapi_state)
@@ -318,8 +313,8 @@ class GameServers:
         if game_server_dt is States.UNKNOWN:
             return States.UNKNOWN
         
-        gc_state = States.sget(cache_file.get('game_coordinator'))
-        sl_state = States.sget(cache_file.get('sessions_logon'))
+        gc_state = States.get_or_unknown(cache_file.get('game_coordinator_state'))
+        sl_state = States.get_or_unknown(cache_file.get('sessions_logon_state'))
 
         graph_url = cache_file.get('graph_url', '')
         online_players = cache_file.get('online_players', 0)
@@ -347,7 +342,7 @@ class GameServers:
         if cache_file.get('api_timestamp', 'unknown') == 'unknown':
             return States.UNKNOWN
 
-        return dt.datetime.fromtimestamp(cache_file.get('api_timestamp', 0), dt.UTC)
+        return dt.datetime.fromtimestamp(cache_file['api_timestamp'], dt.UTC)
 
 
 class LeaderboardStats(NamedTuple):
@@ -386,7 +381,7 @@ class LeaderboardStats(NamedTuple):
                 losses = entry.val
             elif entry.tag == 19:
                 for map_id, map_name in MAPS.items():
-                    last_wins[map_name] = ((entry.val << (4 * map_id)) & 0xF0000000) >> 4*7
+                    last_wins[map_name] = ((entry.val << (4 * map_id)) & 0xF0000000) >> 4 * 7
             elif entry.tag == 20:
                 timestamp = entry.val
             elif entry.tag == 21:

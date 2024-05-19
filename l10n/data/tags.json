@@ -489,13 +489,6 @@
         "von",
         "وان"
     ],
-    "currencies_try": [
-        "try",
-        "lira",
-        "лира",
-        "ліра",
-        "لیر"
-    ],
     "currencies_uah": [
         "uah",
         "hrywna",
@@ -628,13 +621,6 @@
         "rupisi",
         "روپیه",
         "rupia"
-    ],
-    "currencies_ars": [
-        "ars",
-        "peso",
-        "песо",
-        "песа",
-        "نکو"
     ],
     "currencies_crc": [
         "crc",

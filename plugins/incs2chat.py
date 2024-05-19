@@ -1,13 +1,26 @@
 import asyncio
+import json
 import logging
 import random
+import re
+from io import BytesIO
 
-import requests
 from pyrogram import Client, filters
-from pyrogram.enums import ChatMembersFilter, MessageEntityType
-from pyrogram.types import Message, MessageEntity
+from pyrogram.enums import ChatMembersFilter
+from pyrogram.types import Chat, Message, MessageEntity, User
+import requests
+from tgentity import to_md
 
 import config
+
+
+DISCORD_MESSAGE_LENGTH_LIMIT = 2000
+
+
+async def is_administrator(chat: Chat, user: User) -> bool:
+    admins = {admin.user async for admin in chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)}
+
+    return user in admins
 
 
 def correct_message_entities(entities: list[MessageEntity] | None,
@@ -32,53 +45,59 @@ def correct_message_entities(entities: list[MessageEntity] | None,
     return entities
 
 
-def convert_message_to_markdown_text(message: Message) -> str:
-    """Convert Telegram formatting to Markdown (primarily for Discord)."""
+def to_discord_markdown(message: Message) -> str:
+    text = (to_md(message)
+            .replace(r'\.', '.')
+            .replace(r'\(', '(')  # god bless this feels awful
+            .replace(r'\)', ')'))
+    text = re.sub(r'~([^~]+)~', r'~~\1~~', text)
 
-    entity_type_to_markdown = {  # only includes simple closing entities
-        MessageEntityType.BOLD:      '**',
-        MessageEntityType.ITALIC:    '*',
-        MessageEntityType.UNDERLINE: '__',
-        MessageEntityType.STRIKETHROUGH: '~~',
-        MessageEntityType.SPOILER: '||',
-        MessageEntityType.CODE: '`'
-    }
-
-    text = message.text or message.caption or ''
-
-    if message.entities is None:
-        return text
-
-    text = list(text)
-    text_shift = 0
-    for entity in message.entities:
-        # special cases first
-        if entity.type is MessageEntityType.TEXT_LINK:
-            text.insert(entity.offset + text_shift, '[')
-            text.insert(entity.offset + entity.length + text_shift + 1, f']({entity.url})')
-            text_shift += 2
-        if entity.type is MessageEntityType.PRE:
-            text.insert(entity.offset + text_shift, f'```{entity.language}\n')
-            text.insert(entity.offset + entity.length + text_shift + 1, f'\n```')
-            text_shift += 2
-        if entity.type is MessageEntityType.BLOCKQUOTE:
-            text.insert(entity.offset + text_shift, '> ')
-            text_shift += 1
-
-        symbol = entity_type_to_markdown.get(entity.type)
-        if symbol:
-            previous_symbol = text[entity.offset + text_shift - 2]
-            if previous_symbol in entity_type_to_markdown.values():  # todo: still fails on 3+ styles in the same chunk
-                text.insert(entity.offset + text_shift - 1, symbol)
-                text.insert(entity.offset + entity.length + text_shift, symbol)
-            else:
-                text.insert(entity.offset + text_shift, symbol)
-                text.insert(entity.offset + entity.length + text_shift + 1, symbol)
-            text_shift += 2
-    return ''.join(text)
+    return text
 
 
-def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN'):
+def wrap_text(text: str, max_length: int) -> list[str]:
+    """
+    Wraps the given text into multiple sections with a length <= ``max_length``.
+
+    Prioritises wrapping by newlines, then spaces.
+    """
+
+    if len(text) <= max_length:
+        return [text]
+
+    text_parts = []
+    while len(text) > max_length:
+        longest_possible_part = text[:max_length]
+        last_char_index = longest_possible_part.rfind('\n')
+        if last_char_index == -1:
+            last_char_index = longest_possible_part.rfind(' ')
+        if last_char_index == -1:
+            last_char_index = max_length
+
+        new_part = text[:last_char_index]
+        text_parts.append(new_part)
+        if text[last_char_index].isspace():
+            last_char_index += 1
+        text = text[last_char_index:]
+
+    text_parts.append(text)
+
+    return text_parts
+
+
+def process_discord_text(message: Message) -> list[str]:
+    text = (to_discord_markdown(message) if message.entities
+            else message.caption if message.caption
+            else message.text if message.text
+            else '')
+
+    # fixme: can break formatting if wrapping happens in the middle of formatted section
+    # fixme: (e.g. "**some [split] wise words**")
+    # fixme severity: low
+    return wrap_text(text, DISCORD_MESSAGE_LENGTH_LIMIT)
+
+
+def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN') -> str | None:
     headers = {'Authorization': f'DeepL-Auth-Key {config.DEEPL_TOKEN}', 'Content-Type': 'application/json'}
     data = {'text': [text], 'source_lang': source_lang, 'target_lang': target_lang}
 
@@ -91,15 +110,55 @@ def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN'):
     logging.error(f'{r.status_code=}, {r.reason=}')
 
 
-def post_to_discord_webhook(url: str, text: str):  # todo: attachments support?
-    headers = {'Content-Type': 'application/json'}
+def post_to_discord_webhook(url: str, text: str, attachment: BytesIO = None):  # todo: attachments support?
     payload = {'content': text}
-    r = requests.post(url, json=payload, headers=headers)
 
-    if r.status_code != 204:  # Discord uses 204 as a success code (yikes)
+    if attachment:
+        payload = {'payload_json': (None, json.dumps(payload)), 'files[0]': (attachment.name, attachment.getbuffer())}
+        r = requests.post(url, files=payload)
+    else:
+        headers = {'Content-Type': 'application/json'}
+        r = requests.post(url, payload, headers=headers)
+
+    if r.status_code not in [200, 204]:  # Discord uses 204 as a success code (yikes)
         logging.error('Failed to post to Discord webhook.')
-        logging.error(f'{text=}')
-        logging.error(f'{r.status_code=}, {r.reason=}')
+        logging.error(f'{payload=}')
+        logging.error(f'{r.status_code=}, {r.reason=}, {r.text=}')
+
+
+async def forward_to_discord(client: Client, message: Message):
+    texts = process_discord_text(message)
+    logging.info(texts)
+
+    attachment: BytesIO | None
+    try:
+        # fixme: for every attachment this ^ function will be called multiple times
+        # fixme: this could be fixed if we keep track of media groups but too lazy to implement it properly
+        attachment = await client.download_media(message, in_memory=True)
+    except ValueError:
+        attachment = None
+
+    for text in texts:
+        if attachment:
+            post_to_discord_webhook(config.DS_WEBHOOK_URL, text, attachment)
+            post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'), attachment)
+            attachment = None
+        else:
+            post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
+            post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
+
+
+async def cs_l10n_update(message: Message):
+    has_the_l10n_line = ((message.text and "Обновлены файлы локализации" in message.text)
+                         or (message.caption and "Обновлены файлы локализации" in message.caption))
+
+    if has_the_l10n_line:
+        await message.reply_sticker('CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ')
+
+
+async def filter_message(sender: Chat | User, message: Message):
+    if sender and sender.id in config.FILTERED_SENDERS:
+        await message.delete()
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("ban"))
@@ -113,33 +172,29 @@ async def ban(client: Client, message: Message):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.reply_to_message:
-        og_msg = message.reply_to_message
-        await chat.ban_member(og_msg.from_user.id)
-        await message.reply(f"{og_msg.from_user.first_name} получил(а) VAC бан.")
+        original_msg = message.reply_to_message
+        await chat.ban_member(original_msg.from_user.id)
+        await message.reply(f"{original_msg.from_user.first_name} получил(а) VAC бан.")
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("unban"))
 async def unban(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
-    admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
-    admins = {admin.user.id async for admin in admins}
 
-    if message.from_user.id not in admins:
+    if not await is_administrator(chat, message.from_user):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.reply_to_message:
-        og_msg = message.reply_to_message
-        await chat.unban_member(og_msg.from_user.id)
-        await message.reply(f"VAC бан у {og_msg.from_user.first_name} был удалён.")
+        original_msg = message.reply_to_message
+        await chat.unban_member(original_msg.from_user.id)
+        await message.reply(f"VAC бан у {original_msg.from_user.first_name} был удалён.")
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("warn"))
 async def warn(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
-    admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
-    admins = {admin.user.id async for admin in admins}
 
-    if message.from_user.id not in admins:
+    if not await is_administrator(chat, message.from_user):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.reply_to_message:
@@ -151,11 +206,9 @@ async def warn(client: Client, message: Message):
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command('echo'))
 async def echo(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
-    admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
-    admins = {admin.user.id async for admin in admins}
 
     await message.delete()
-    if message.from_user.id not in admins:
+    if not await is_administrator(chat, message.from_user):
         return
 
     if message.reply_to_message:
@@ -205,33 +258,25 @@ async def echo(client: Client, message: Message):
         return await reply_to.reply_voice(voice, quote=should_reply, caption=caption, caption_entities=entities)
 
 
-@Client.on_message(filters.channel & filters.chat(config.INCS2CHANNEL))
-async def forward_to_discord(_, message: Message):
-    text = convert_message_to_markdown_text(message)
-    logging.info(text)
-
-    if text:
-        post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
-        post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
-
-    message.continue_propagation()
-
-
 @Client.on_message(filters.linked_channel & filters.chat(config.INCS2CHAT))
-async def cs_l10n_update(_, message: Message):
+async def handle_new_post(client: Client, message: Message):
     is_sent_by_correct_chat = (message.sender_chat and message.sender_chat.id == config.INCS2CHANNEL)
     is_forwarded_from_correct_chat = (message.forward_from_chat and message.forward_from_chat.id == config.INCS2CHANNEL)
-    has_the_l10n_line = ((message.text and "Обновлены файлы локализации" in message.text)
-                         or (message.caption and "Обновлены файлы локализации" in message.caption))
 
-    if is_sent_by_correct_chat and is_forwarded_from_correct_chat and has_the_l10n_line:
-        await message.reply_sticker('CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ')
+    if is_sent_by_correct_chat and is_forwarded_from_correct_chat:
+        await cs_l10n_update(message)
+        await forward_to_discord(client, message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
 async def filter_forwards(_, message: Message):
-    if message.forward_from_chat and message.forward_from_chat.id in config.FILTER_FORWARDS:
-        await message.delete()
+    forward_from = message.forward_from_chat if message.forward_from_chat else message.forward_from
+    await filter_message(forward_from, message)
+
+
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.via_bot)
+async def filter_via_bot(_, message: Message):
+    await filter_message(message.via_bot, message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.sticker)
@@ -240,8 +285,3 @@ async def meow_meow_meow_meow(_, message: Message):
 
     if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug' and chance < 5:
         await message.reply('мяу мяу мяу мяу')
-
-
-# @Client.on_message(filters.chat(config.INCS2CHAT) & filters.animation)
-# async def debugging_gifs(_, message: Message):
-#     print(message.animation)

@@ -46,6 +46,7 @@ DATACENTER_API_FIELDS = {
     ('india', 'mumbai'): 'India Mumbai',
     ('india', 'chennai'): 'India Chennai',
     ('india', 'bombay'): 'India Bombay',
+    ('india', 'madras'): 'India Madras',
     ('china', 'shanghai'): 'China Shanghai',
     ('china', 'tianjin'): 'China Tianjin',
     ('china', 'guangzhou'): 'China Guangzhou',
@@ -57,6 +58,27 @@ DATACENTER_API_FIELDS = {
 }
 
 execution_start_dt = dt.datetime.now()
+
+UNUSED_FIELDS = ['csgo_client_version',
+                 'csgo_server_version',
+                 'csgo_patch_version',
+                 'csgo_version_timestamp',
+                 'sdk_build_id',
+                 'ds_build_id',
+                 'valve_ds_changenumber',
+                 'webapi',
+                 'sessions_logon',
+                 'steam_community',
+                 'matchmaking_scheduler']
+
+execution_start_dt = dt.datetime.now()
+
+execution_cron_hour = execution_start_dt.hour
+execution_cron_minute = execution_start_dt.minute + 1
+if execution_cron_minute >= 60:
+    execution_cron_hour += 1
+    execution_cron_minute %= 60
+
 loc = locale('ru')
 
 logging.basicConfig(level=logging.INFO,
@@ -70,6 +92,12 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
              bot_token=config.BOT_TOKEN,
              no_updates=True,
              workdir=config.SESS_FOLDER)
+
+
+def clear_from_unused_fields(cache: dict):
+    for field in UNUSED_FIELDS:
+        if cache.get(field):
+            del cache[field]
 
 
 def remap_dc(info: dict, dc: Datacenter):
@@ -122,6 +150,8 @@ async def update_cache_info():
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
+        clear_from_unused_fields(cache)
+
         overall_data = GameServers.request()
 
         for key, value in overall_data.asdict().items():
@@ -150,12 +180,12 @@ async def update_cache_info():
             cache['player_24h_peak'] = player_24h_peak
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4)
+            json.dump(cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught exception in the main thread!')
 
-
-@scheduler.scheduled_job('cron', hour=execution_start_dt.hour, minute=execution_start_dt.minute + 1)
+        
+@scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute)
 async def unique_monthly():
     # noinspection PyBroadException
     try:
@@ -173,14 +203,14 @@ async def unique_monthly():
             cache['monthly_unique_players'] = data
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4)
+            json.dump(cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught exception while gathering monthly players!')
         time.sleep(45)
         return await unique_monthly()
 
 
-@scheduler.scheduled_job('cron', hour=execution_start_dt.hour, minute=execution_start_dt.minute + 1)
+@scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute)
 async def check_currency():
     # noinspection PyBroadException
     try:
@@ -193,14 +223,14 @@ async def check_currency():
             cache['key_price'] = new_prices
 
         with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4)
+            json.dump(cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught exception while gathering key price!')
         time.sleep(45)
         return await check_currency()
 
 
-@scheduler.scheduled_job('cron', hour=execution_start_dt.hour, minute=execution_start_dt.minute + 2)
+@scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute, second=30)
 async def fetch_leaderboard():
     # noinspection PyBroadException
     try:
@@ -248,10 +278,10 @@ async def send_alert(key, new_value):
         logging.warning(f'Got wrong key to send alert: {key}')
         return
 
-    if not config.TEST_MODE:
-        chat_list = [config.INCS2CHAT, config.CSTRACKER]
-    else:
+    if config.TEST_MODE:
         chat_list = [config.AQ]
+    else:
+        chat_list = [config.INCS2CHAT, config.CSTRACKER]
 
     for chat_id in chat_list:
         msg = await bot.send_message(chat_id, text)

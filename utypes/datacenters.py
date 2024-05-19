@@ -278,17 +278,21 @@ class DatacenterAtlas:
         "india",
         [
             Datacenter(
-                "mumbai",
-                l10n_key_title=LK.dc_india_mumbai
+                "bombay",
+                l10n_key_title=LK.dc_india_bombay
             ),
             Datacenter(
                 "chennai",
                 l10n_key_title=LK.dc_india_chennai
             ),
             Datacenter(
-                "bombay",
-                l10n_key_title=LK.dc_india_bombay
-            )
+                "madras",
+                l10n_key_title=LK.dc_india_madras
+            ),
+            Datacenter(
+                "mumbai",
+                l10n_key_title=LK.dc_india_mumbai
+            ),
         ],
         "🇮🇳",
         LK.dc_india, 
