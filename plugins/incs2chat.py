@@ -18,9 +18,9 @@ DISCORD_MESSAGE_LENGTH_LIMIT = 2000
 
 
 async def is_administrator(chat: Chat, user: User) -> bool:
-    admins = {admin.user async for admin in chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)}
+    admins = {admin.user.id async for admin in chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)}
 
-    return user in admins
+    return user.id in admins
 
 
 def correct_message_entities(entities: list[MessageEntity] | None,
