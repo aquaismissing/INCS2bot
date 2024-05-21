@@ -1,10 +1,15 @@
-import json
-from typing import NamedTuple
+from __future__ import annotations
 
-import config
+import json
+from typing import NamedTuple, TYPE_CHECKING
+
 from .states import State, States
 # noinspection PyPep8Naming
 from l10n import LocaleKeys as LK
+
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 __all__ = ('DatacenterAtlas',
@@ -20,11 +25,13 @@ class Datacenter(NamedTuple):
     l10n_key_name: str = ""
     l10n_key_title: str = ""
 
+    def cached_state(self, filename: Path) -> DatacenterState:
+        with open(filename, encoding='utf-8') as f:
+            cache_file = json.load(f)
 
-class DatacenterState(NamedTuple):
-    dc: Datacenter
-    capacity: State
-    load: State
+        data = cache_file['datacenters'][self.id]
+        capacity, load = States.get(data['capacity']), States.get(data['load'])
+        return DatacenterState(self, capacity, load)
 
 
 class DatacenterRegion(NamedTuple):
@@ -34,16 +41,56 @@ class DatacenterRegion(NamedTuple):
     l10n_key_name: str = ""
     l10n_key_title: str = ""
 
+    def cached_state(self, filename: Path) -> DatacenterRegionState:
+        with open(filename, encoding='utf-8') as f:
+            cache_file = json.load(f)
 
-class DatacenterRegionState(NamedTuple):
-    region: DatacenterRegion
-    states: list[DatacenterState]
+        obj_data = cache_file['datacenters'][self.id]
+        states = []
+
+        for dc in self.datacenters:
+            data = obj_data[dc.id]
+            capacity, load = States.get(data['capacity']), States.get(data['load'])
+            states.append(DatacenterState(dc, capacity, load))
+
+        return DatacenterRegionState(self, states)
 
 
 class DatacenterGroup(NamedTuple):
     id: str
     regions: list[DatacenterRegion]
     l10n_key_title: str
+
+    def cached_state(self, filename: Path) -> DatacenterGroupState:
+        with open(filename, encoding='utf-8') as f:
+            cache_file = json.load(f)
+
+        obj_data = cache_file['datacenters'][self.id]
+        region_states = []
+
+        for region in self.regions:
+            region_data = obj_data[region.id]
+
+            states = []
+            for datacenter in region.datacenters:
+                data = region_data[datacenter.id]
+                capacity, load = States.get(data['capacity']), States.get(data['load'])
+
+                states.append(DatacenterState(datacenter, capacity, load))
+            region_states.append(DatacenterRegionState(region, states))
+
+        return DatacenterGroupState(self, region_states)
+
+
+class DatacenterState(NamedTuple):
+    datacenter: Datacenter
+    capacity: State
+    load: State
+
+
+class DatacenterRegionState(NamedTuple):
+    region: DatacenterRegion
+    states: list[DatacenterState]
 
 
 class DatacenterGroupState(NamedTuple):
@@ -369,44 +416,6 @@ class DatacenterAtlas:
         LK.dc_japan, 
         LK.dc_japan_title
     )
-
-    @staticmethod
-    def get_state(_obj: DatacenterVariation) -> DatacenterStateVariation:
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache_file = json.load(f)
-            
-        if isinstance(_obj, Datacenter):
-            data = cache_file['datacenters'][_obj.id]
-            capacity, load = States.get(data['capacity']), States.get(data['load'])
-            return DatacenterState(_obj, capacity, load)
-        
-        if isinstance(_obj, DatacenterRegion):
-            obj_data = cache_file['datacenters'][_obj.id]
-            states = []
-
-            for dc in _obj.datacenters:
-                data = obj_data[dc.id]
-                capacity, load = States.get(data['capacity']), States.get(data['load'])
-                states.append(DatacenterState(dc, capacity, load))
-
-            return DatacenterRegionState(_obj, states)
-        
-        if isinstance(_obj, DatacenterGroup):
-            obj_data = cache_file['datacenters'][_obj.id]
-            region_states = []
-
-            for region in _obj.regions:
-                region_data = obj_data[region.id]
-
-                states = []
-                for dc in region.datacenters:
-                    data = region_data[dc.id]
-                    capacity, load = States.get(data['capacity']), States.get(data['load'])
-
-                    states.append(DatacenterState(dc, capacity, load))
-                region_states.append(DatacenterRegionState(region, states))
-
-            return DatacenterGroupState(_obj, region_states)
     
     @classmethod
     def available_dcs(cls):
@@ -417,5 +426,5 @@ class DatacenterAtlas:
 class DatacenterInlineResult(NamedTuple):
     title: str
     thumbnail: str
-    summary_from: callable
+    state: DatacenterStateVariation
     tags: set

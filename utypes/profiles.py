@@ -292,7 +292,7 @@ class ProfileInfo:
             if faceit_result:
                 user = faceit_result[0]
                 elo_api_link = f'https://api.faceit.com/users/v1/users/{user["id"]}'
-                elo_api_response = requests.get(elo_api_link, timeout=15).json()
+                elo_api_response = api.session.get(elo_api_link, timeout=15).json()
 
                 if elo_api_response.get('payload'):
                     elo_data = elo_api_response['payload']['games']['cs2']
@@ -327,7 +327,7 @@ class ProfileInfo:
                 vanity_url = None
 
             faceit_api_link = f'https://api.faceit.com/search/v2/players?query={_id.as_64}'
-            faceit_api_response = requests.get(faceit_api_link, timeout=15).json()['payload']['results']
+            faceit_api_response = api.session.get(faceit_api_link, timeout=15).json()['payload']['results']
             faceit_elo, faceit_lvl, faceit_url, faceit_ban = ProfileInfo._extract_faceit_data(faceit_api_response)
 
             bans_data = bans['players'][0]

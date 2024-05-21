@@ -4,32 +4,32 @@ import dataclasses
 from dataclasses import dataclass
 import datetime as dt
 import json
-from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-import requests
-
-import config
 from functions import utime
-from .states import State, States
+from .states import States
+from .steam_webapi import SteamWebAPI
 from .protobufs import ScoreLeaderboardData
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    import requests
+
+    from .states import State
 
 __all__ = ('GameVersion', 'GameVersionData',
            'ExchangeRate', 'ExchangeRateData',
            'GameServers', 'OverallGameServersData', 'ServerStatusData', 'MatchmakingStatsData',
            'LeaderboardStats',
-           'get_monthly_unique_players', 'drop_cap_reset_timer', 'LEADERBOARD_API_REGIONS')
+           'drop_cap_reset_timer', 'LEADERBOARD_API_REGIONS')
 
 
-MONTHLY_UNIQUE_PLAYERS_API = 'https://api.steampowered.com/ICSGOServers_730/GetMonthlyPlayerCount/v1'
 CS2_LEADERBOARD_API = 'https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1/' \
                       '?lbname=official_leaderboard_premier_season1'
 
 LEADERBOARD_API_REGIONS = ('northamerica', 'southamerica', 'europe', 'asia', 'australia', 'china', 'africa')
-
-HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"}
-# todo: extract the headers into config file
 
 MINUTE = 60
 HOUR = 60 * MINUTE
@@ -165,13 +165,11 @@ class GameVersion:
     CS2_VERSION_DATA_URL = 'https://raw.githubusercontent.com/SteamDatabase/GameTracking-CS2/master/game/csgo/steam.inf'
 
     @classmethod
-    def request(cls):
-        options = {}
-
-        # cs2
-        cs2_data = requests.get(cls.CS2_VERSION_DATA_URL, headers=HEADERS, timeout=15).text
+    def request(cls, session: requests.Session):
+        cs2_data = session.get(cls.CS2_VERSION_DATA_URL).text
         config_entries = (line for line in cs2_data.split('\n') if line)
 
+        options = {}
         for entry in config_entries:
             key, val = entry.split('=')
             options[key] = val
@@ -208,8 +206,6 @@ class GameVersion:
 
 
 class ExchangeRate:
-    GET_KEY_PRICES_API = f'https://api.steampowered.com/ISteamEconomy/GetAssetPrices/v1/' \
-                         f'?appid=730&key={config.STEAM_API_KEY}'
     CURRENCIES_SYMBOLS = {"USD": "$", "GBP": "£", "EUR": "€", "RUB": "₽",
                           "BRL": "R$", "JPY": "¥", "NOK": "kr", "IDR": "Rp",
                           "MYR": "RM", "PHP": "₱", "SGD": "S$", "THB": "฿",
@@ -223,12 +219,13 @@ class ExchangeRate:
     UNDEFINED_CURRENCIES = ('Unknown', 'ARS', 'BYN', 'TRY')
 
     @classmethod
-    def request(cls):
-        r = requests.get(cls.GET_KEY_PRICES_API, timeout=15).json()['result']['assets']
+    def request(cls, webapi: SteamWebAPI):
+        r = webapi.get_asset_prices(730)['result']['assets']
         key_price = [item for item in r if item['classid'] == '1544098059'][0]['prices']
 
         for currency in cls.UNDEFINED_CURRENCIES:
-            del key_price[currency]
+            if currency in key_price:
+                del key_price[currency]
 
         prices = {k: v / 100 for k, v in key_price.items()}
         formatted_prices = {k: f'{v:.0f}' if v % 1 == 0 else f'{v:.2f}'
@@ -254,14 +251,9 @@ class ExchangeRate:
     
 
 class GameServers:
-    GAME_SERVERS_STATUS_API = f'https://api.steampowered.com/ICSGOServers_730/GetGameServersStatus/v1' \
-                              f'?key={config.STEAM_API_KEY}'
-
     @classmethod
-    def request(cls):
-        response = requests.get(cls.GAME_SERVERS_STATUS_API, timeout=15)  # todo: maybe use a pre-made requests.Session
-        if response.status_code != 200:                                   # todo: instance? for less coupling and
-            return                                                        # todo: a little bit better performance
+    def request(cls, webapi: SteamWebAPI):
+        response = webapi.csgo_get_game_servers_status()
 
         result = response.json()['result']
         services = result['services']
@@ -394,17 +386,17 @@ class LeaderboardStats(NamedTuple):
         return cls(rank, rating, name, wins, ties, losses, last_wins, timestamp, region)
 
     @staticmethod
-    def request_world():
-        world_leaderboard_data = requests.get(CS2_LEADERBOARD_API, headers=HEADERS, timeout=15).json()
+    def request_world(session: requests.Session):
+        world_leaderboard_data = session.get(CS2_LEADERBOARD_API).json()
         world_leaderboard_data = world_leaderboard_data['result']['entries']
         world_leaderboard_data = world_leaderboard_data[:10]
 
         return [LeaderboardStats.from_json(person).asdict() for person in world_leaderboard_data]
 
     @staticmethod
-    def request_regional(region: str):
+    def request_regional(session: requests.Session, region: str):
         api_link = CS2_LEADERBOARD_API + f'_{region}'
-        regional_leaderboard_data = requests.get(api_link, headers=HEADERS, timeout=15).json()
+        regional_leaderboard_data = session.get(api_link).json()
         regional_leaderboard_data = regional_leaderboard_data['result']['entries']
         regional_leaderboard_data = regional_leaderboard_data[:10]
 
@@ -428,11 +420,6 @@ class LeaderboardStats(NamedTuple):
 
     def asdict(self):
         return self._asdict()
-
-
-def get_monthly_unique_players() -> int:
-    response = requests.get(MONTHLY_UNIQUE_PLAYERS_API, headers=HEADERS, timeout=15).json()
-    return int(response['result']['players'])
 
 
 def is_pdt(_datetime: dt.datetime) -> bool:

@@ -18,7 +18,7 @@ from functions import utime
 from l10n import locale
 from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServers,
-                    LeaderboardStats, State, get_monthly_unique_players,
+                    LeaderboardStats, State, SteamWebAPI,
                     LEADERBOARD_API_REGIONS)
 
 
@@ -93,6 +93,7 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
              bot_token=config.BOT_TOKEN,
              no_updates=True,
              workdir=config.SESS_FOLDER)
+steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
 
 
 def clear_from_unused_fields(cache: dict):
@@ -153,7 +154,7 @@ async def update_cache_info():
 
         clear_from_unused_fields(cache)
 
-        overall_data = GameServers.request()
+        overall_data = GameServers.request(steam_webapi)
 
         for key, value in overall_data.asdict().items():
             if key == 'datacenters':
@@ -190,7 +191,7 @@ async def update_cache_info():
 async def unique_monthly():
     # noinspection PyBroadException
     try:
-        data = get_monthly_unique_players()
+        data = steam_webapi.csgo_get_monthly_player_count()
 
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
@@ -215,7 +216,7 @@ async def unique_monthly():
 async def check_currency():
     # noinspection PyBroadException
     try:
-        new_prices = ExchangeRate.request().asdict()
+        new_prices = ExchangeRate.request(steam_webapi).asdict()
 
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
@@ -235,7 +236,7 @@ async def check_currency():
 async def fetch_leaderboard():
     # noinspection PyBroadException
     try:
-        world_leaderboard_stats = LeaderboardStats.request_world()
+        world_leaderboard_stats = LeaderboardStats.request_world(steam_webapi.session)
 
         with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
@@ -244,7 +245,7 @@ async def fetch_leaderboard():
             cache['world_leaderboard_stats'] = world_leaderboard_stats
 
         for region in LEADERBOARD_API_REGIONS:
-            regional_leaderboard_stats = LeaderboardStats.request_regional(region)
+            regional_leaderboard_stats = LeaderboardStats.request_regional(steam_webapi.session, region)
 
             if regional_leaderboard_stats != cache.get(f'regional_leaderboard_stats_{region}'):
                 cache[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
@@ -296,6 +297,8 @@ def main():
         bot.run()
     except TypeError:  # catching TypeError because Pyrogram propogates it at stop for some reason
         logging.info('Shutting down the bot...')
+    finally:
+        steam_webapi.close()
 
 
 if __name__ == '__main__':

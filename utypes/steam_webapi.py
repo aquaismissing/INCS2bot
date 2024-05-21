@@ -7,7 +7,7 @@ class SteamWebAPI:
     # todo: maybe even without API methods for partners (since we can't test them properly anyway)
 
     BASE_URL = 'api.steampowered.com'
-    DEFAULT_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"}
+    DEFAULT_HEADERS = {}
     DEFAULT_TIMEOUT = 15
 
     def __init__(self, api_key: str, *, headers: dict = None, timeout: int = None):
@@ -20,12 +20,17 @@ class SteamWebAPI:
         params = params.copy() if params else {}
         params['key'] = self.api_key
 
-        return self.session.get(
+        response = self.session.get(
             f'https://{self.BASE_URL}/{interface}/{method}/v{version}/',
             params=params,
             headers=self.headers,
             timeout=self.timeout
-        ).json()
+        )
+
+        return response.json()
+
+    def close(self):
+        self.session.close()
 
     def get_player_bans(self, steamids: list | tuple | str):
         if isinstance(steamids, (list, tuple)):
@@ -57,7 +62,8 @@ class SteamWebAPI:
                             {'appid': appid})
 
     def csgo_get_monthly_player_count(self):
-        return self._method('ICSGOServers_730', 'GetMonthlyPlayerCount', 1)
+        response = self._method('ICSGOServers_730', 'GetMonthlyPlayerCount', 1)
+        return int(response['result']['players'])
 
     def csgo_get_game_servers_status(self):
         return self._method('ICSGOServers_730', 'GetGameServersStatus', 1)

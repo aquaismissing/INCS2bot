@@ -3,12 +3,14 @@ from pathlib import Path
 import re
 from zoneinfo import ZoneInfo
 
-from babel.dates import format_datetime
+from babel.dates import format_datetime as babel_format_datetime
 from jinja2 import Environment, FileSystemLoader
 
 from l10n import Locale
 from .locale import get_refined_lang_code
-from utypes import GameVersionData, ServerStatusData, MatchmakingStatsData, States, LeaderboardStats
+from utypes import (DatacenterState, DatacenterRegionState, DatacenterGroupState,
+                    DatacenterStateVariation, GameVersionData, ServerStatusData,
+                    MatchmakingStatsData, States, LeaderboardStats)
 
 
 MINUTE = 60
@@ -35,6 +37,11 @@ WEB_LEADERBOARD_REGIONS = {'africa': 'af',
                            'southamerica': 'sa'}
 
 
+def format_datetime(datetime: dt.datetime, locale: Locale):
+    lang_code = get_refined_lang_code(locale)
+    return f'{babel_format_datetime(datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()} ({datetime:%Z})'
+
+
 def format_timedelta(td: dt.timedelta) -> str:
     time_elapsed = int(td.total_seconds())
 
@@ -58,11 +65,13 @@ def format_timedelta(td: dt.timedelta) -> str:
     return f'{"~" if elapsed_years or elapsed_months else ""}{", ".join(time_elapsed_strf)}'
 
 
+def format_latest_info_updated(latest_info_update_at: dt.datetime, locale: Locale):
+    return locale.latest_data_update.format(format_datetime(latest_info_update_at, locale))
+
+
 def format_server_status(data: ServerStatusData, locale: Locale) -> str:
     if data is States.UNKNOWN:
         return locale.error_internal
-
-    lang_code = get_refined_lang_code(locale)
 
     tick = '✅' if (data.game_coordinator_state == data.sessions_logon_state
                    == data.matchmaking_scheduler_state == States.NORMAL) else '❌'
@@ -71,8 +80,7 @@ def format_server_status(data: ServerStatusData, locale: Locale) -> str:
                                                             data.matchmaking_scheduler_state,
                                                             data.steam_community_state))
 
-    game_servers_dt = data.info_requested_datetime
-    game_servers_dt = f'{format_datetime(game_servers_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
+    game_servers_dt = format_datetime(data.info_requested_datetime, locale)
 
     text = (
         f'{locale.game_status_text.format(tick, *states)}'
@@ -90,10 +98,7 @@ def format_matchmaking_stats(data: MatchmakingStatsData, locale: Locale) -> str:
     if data is States.UNKNOWN:
         return locale.error_internal
 
-    lang_code = get_refined_lang_code(locale)
-
-    game_servers_dt = data.info_requested_datetime
-    game_servers_dt = f'{format_datetime(game_servers_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
+    game_servers_dt = format_datetime(data.info_requested_datetime, locale)
 
     packed = (data.graph_url, data.online_servers, data.online_players,
               data.active_players, data.searching_players, data.average_search_time)
@@ -111,24 +116,55 @@ def format_matchmaking_stats(data: MatchmakingStatsData, locale: Locale) -> str:
     return text
 
 
-def format_game_version_info(data: GameVersionData, locale: Locale) -> str:
-    lang_code = get_refined_lang_code(locale)
+def format_datacenter_state(state: DatacenterStateVariation, locale: Locale, latest_info_update_at: dt.datetime):
+    if isinstance(state, DatacenterState):
+        header = locale.dc_status_text_title.format(state.datacenter.symbol,
+                                                    locale.get(state.datacenter.l10n_key_title))
+        summary = locale.dc_status_text_summary_city.format(locale.get(state.load.l10n_key),
+                                                            locale.get(state.capacity.l10n_key))
+        return '\n\n'.join((header, summary, format_latest_info_updated(latest_info_update_at, locale)))
 
+    if isinstance(state, DatacenterRegionState):
+        header = locale.dc_status_text_title.format(state.region.symbol,
+                                                    locale.get(state.region.l10n_key_title))
+        summaries = []
+        for dc_state in state.states:
+            summary = locale.dc_status_text_summary.format(locale.get(dc_state.datacenter.l10n_key_title),
+                                                           locale.get(dc_state.load.l10n_key),
+                                                           locale.get(dc_state.capacity.l10n_key))
+            summaries.append(summary)
+        return '\n\n'.join((header, '\n\n'.join(summaries), format_latest_info_updated(latest_info_update_at, locale)))
+
+    if isinstance(state, DatacenterGroupState):
+        infos = []
+        for region_state in state.region_states:
+            header = locale.dc_status_text_title.format(region_state.region.symbol,
+                                                        locale.get(region_state.region.l10n_key_title))
+            summaries = []
+            for dc_state in region_state.states:
+                summary = locale.dc_status_text_summary.format(locale.get(dc_state.datacenter.l10n_key_title),
+                                                               locale.get(dc_state.load.l10n_key),
+                                                               locale.get(dc_state.capacity.l10n_key))
+                summaries.append(summary)
+            infos.append(header + '\n\n' + '\n\n'.join(summaries))
+
+        infos.append(format_latest_info_updated(latest_info_update_at, locale))
+        return '\n\n'.join(infos)
+
+
+def format_game_version_info(data: GameVersionData, locale: Locale) -> str:
     cs2_version_dt = (dt.datetime.fromtimestamp(data.cs2_version_timestamp)
                       .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
 
-    cs2_version_dt = f'{format_datetime(cs2_version_dt, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
+    cs2_version_dt = format_datetime(cs2_version_dt, locale)
 
     return locale.game_version_text.format(data.cs2_patch_version, data.cs2_client_version, cs2_version_dt)
 
 
 def format_valve_hq_time(locale: Locale) -> str:
-    lang_code = get_refined_lang_code(locale)
-
     valve_hq_datetime = dt.datetime.now(tz=VALVE_TIMEZONE)
 
-    valve_hq_dt_formatted = f'{format_datetime(valve_hq_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()} ' \
-                            f'({valve_hq_datetime:%Z})'
+    valve_hq_dt_formatted = format_datetime(valve_hq_datetime, locale)
 
     return locale.valve_hqtime_text.format(CLOCKS[valve_hq_datetime.hour % 12], valve_hq_dt_formatted)
 

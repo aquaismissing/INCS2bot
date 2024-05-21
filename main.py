@@ -21,14 +21,15 @@ from telegraph.aio import Telegraph
 from bottypes import BotClient, BotLogger, ExtendedIKB, ExtendedIKM
 import config
 from db import db_session
-from functions import datacenter_handlers, info_formatters, utime
+from functions import info_formatters, utime
 from functions.decorators import ignore_message_not_modified
-from functions.locale import get_available_languages, get_refined_lang_code
+from functions.locale import get_available_languages
 import keyboards
 # noinspection PyPep8Naming
 from l10n import LocaleKeys as LK
-from utypes import (ExchangeRate, GameServers, GameVersion,
-                    LeaderboardStats, ProfileInfo,
+from utypes import (DatacenterAtlas, DatacenterVariation, ExchangeRate,
+                    GameServers, GameVersion, LeaderboardStats,
+                    ProfileInfo,
                     States, UserGameStats, drop_cap_reset_timer)
 from utypes.gun_info import load_gun_infos
 from utypes.profiles import ErrorCode, ParseUserStatsError  # to clearly indicate relation
@@ -37,8 +38,7 @@ if TYPE_CHECKING:
     from typing import Callable
 
     from bottypes import UserSession
-    from l10n import Locale
-    from utypes import GunInfo, State
+    from utypes import GunInfo
 
 
 GUNS_INFO = load_gun_infos(config.GUN_DATA_FILE_PATH)
@@ -153,12 +153,12 @@ async def datacenters(_, session: UserSession, bot_message: Message):
 
 @bot.funcmenu(LK.regions_africa, came_from=datacenters)
 async def send_dc_africa(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.africa, keyboards.dc_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.AFRICA, keyboards.dc_markup)
 
 
 @bot.funcmenu(LK.regions_australia, came_from=datacenters)
 async def send_dc_australia(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.australia, keyboards.dc_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.AUSTRALIA, keyboards.dc_markup)
 
 
 @bot.navmenu(LK.regions_europe, came_from=datacenters, ignore_message_not_modified=True)
@@ -169,37 +169,37 @@ async def dc_europe(_, session: UserSession, bot_message: Message):
 
 @bot.funcmenu(LK.dc_austria, came_from=dc_europe)
 async def send_dc_austria(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.austria, keyboards.dc_eu_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.AUSTRIA, keyboards.dc_eu_markup)
 
 
 @bot.funcmenu(LK.dc_finland, came_from=dc_europe)
 async def send_dc_finland(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.finland, keyboards.dc_eu_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.FINLAND, keyboards.dc_eu_markup)
 
 
 @bot.funcmenu(LK.dc_germany, came_from=dc_europe)
 async def send_dc_germany(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.germany, keyboards.dc_eu_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.GERMANY, keyboards.dc_eu_markup)
 
 
 @bot.funcmenu(LK.dc_netherlands, came_from=dc_europe)
 async def send_dc_netherlands(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.netherlands, keyboards.dc_eu_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.NETHERLANDS, keyboards.dc_eu_markup)
 
 
 @bot.funcmenu(LK.dc_poland, came_from=dc_europe)
 async def send_dc_poland(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.poland, keyboards.dc_eu_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.POLAND, keyboards.dc_eu_markup)
 
 
 @bot.funcmenu(LK.dc_spain, came_from=dc_europe)
 async def send_dc_spain(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.spain, keyboards.dc_eu_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.SPAIN, keyboards.dc_eu_markup)
 
 
 @bot.funcmenu(LK.dc_sweden, came_from=dc_europe)
 async def send_dc_sweden(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.sweden, keyboards.dc_eu_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.SWEDEN, keyboards.dc_eu_markup)
 
 
 @bot.navmenu(LK.dc_us, came_from=datacenters, ignore_message_not_modified=True)
@@ -210,12 +210,12 @@ async def dc_us(_, session: UserSession, bot_message: Message):
 
 @bot.funcmenu(LK.dc_us_east, came_from=dc_us)
 async def send_dc_us_east(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.us_east, keyboards.dc_us_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.US_EAST, keyboards.dc_us_markup)
 
 
 @bot.funcmenu(LK.dc_us_west, came_from=dc_us)
 async def send_dc_us_west(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.us_west, keyboards.dc_us_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.US_WEST, keyboards.dc_us_markup)
 
 
 @bot.navmenu(LK.regions_southamerica, came_from=datacenters, ignore_message_not_modified=True)
@@ -226,26 +226,22 @@ async def dc_southamerica(_, session: UserSession, bot_message: Message):
 
 @bot.funcmenu(LK.dc_argentina, came_from=dc_southamerica)
 async def send_dc_argentina(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message,
-                        datacenter_handlers.argentina, keyboards.dc_southamerica_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.ARGENTINA, keyboards.dc_southamerica_markup)
 
 
 @bot.funcmenu(LK.dc_brazil, came_from=dc_southamerica)
 async def send_dc_brazil(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message,
-                        datacenter_handlers.brazil, keyboards.dc_southamerica_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.BRAZIL, keyboards.dc_southamerica_markup)
 
 
 @bot.funcmenu(LK.dc_chile, came_from=dc_southamerica)
 async def send_dc_chile(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message,
-                        datacenter_handlers.chile, keyboards.dc_southamerica_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.CHILE, keyboards.dc_southamerica_markup)
 
 
 @bot.funcmenu(LK.dc_peru, came_from=dc_southamerica)
 async def send_dc_peru(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message,
-                        datacenter_handlers.peru, keyboards.dc_southamerica_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.PERU, keyboards.dc_southamerica_markup)
 
 
 @bot.navmenu(LK.regions_asia, came_from=datacenters, ignore_message_not_modified=True)
@@ -256,52 +252,50 @@ async def dc_asia(_, session: UserSession, bot_message: Message):
 
 @bot.funcmenu(LK.dc_india, came_from=dc_asia)
 async def send_dc_india(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.india, keyboards.dc_asia_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.INDIA, keyboards.dc_asia_markup)
 
 
 @bot.funcmenu(LK.dc_japan, came_from=dc_asia)
 async def send_dc_japan(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.japan, keyboards.dc_asia_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.JAPAN, keyboards.dc_asia_markup)
 
 
 @bot.funcmenu(LK.regions_china, came_from=dc_asia)
 async def send_dc_china(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.china, keyboards.dc_asia_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.CHINA, keyboards.dc_asia_markup)
 
 
 @bot.funcmenu(LK.dc_emirates, came_from=dc_asia)
 async def send_dc_emirates(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.emirates, keyboards.dc_asia_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.EMIRATES, keyboards.dc_asia_markup)
 
 
 @bot.funcmenu(LK.dc_singapore, came_from=dc_asia)
 async def send_dc_singapore(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.singapore, keyboards.dc_asia_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.SINGAPORE, keyboards.dc_asia_markup)
 
 
 @bot.funcmenu(LK.dc_hongkong, came_from=dc_asia)
 async def send_dc_hongkong(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.hongkong, keyboards.dc_asia_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.HONGKONG, keyboards.dc_asia_markup)
 
 
 @bot.funcmenu(LK.dc_southkorea, came_from=dc_asia)
 async def send_dc_south_korea(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, datacenter_handlers.south_korea, keyboards.dc_asia_markup)
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.SOUTH_KOREA, keyboards.dc_asia_markup)
 
 
 async def send_dc_state(client: BotClient, session: UserSession, bot_message: Message,
-                        dc_state_func: Callable[[Locale], str | State], reply_markup: ExtendedIKM):
+                        datacenter: DatacenterVariation, reply_markup: ExtendedIKM):
     try:
         game_servers_datetime = GameServers.latest_info_update(config.CACHE_FILE_PATH)
         if game_servers_datetime is States.UNKNOWN:
             return await something_went_wrong(client, session, bot_message)
 
-        state = dc_state_func(session.locale)
-        lang_code = get_refined_lang_code(session.locale)
-        state += '\n\n'
-        state += f'{format_datetime(game_servers_datetime, "HH:mm:ss, dd MMM", locale=lang_code).title()} (UTC)'
+        state = datacenter.cached_state(config.CACHE_FILE_PATH)
+        text = info_formatters.format_datacenter_state(state, session.locale, game_servers_datetime)
 
-        await bot_message.edit(state, reply_markup=reply_markup(session.locale))
+        await bot_message.edit(text, reply_markup=reply_markup(session.locale))
     except MessageNotModified:
         pass
     except Exception as e:
