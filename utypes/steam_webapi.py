@@ -3,6 +3,8 @@ import requests
 
 class SteamWebAPI:
     """Made because `steamio` doesn't have any Steam WebAPI support."""
+    # todo: deprecate and finish making it into seperate package
+    # todo: maybe even without API methods for partners (since we can't test them properly anyway)
 
     BASE_URL = 'api.steampowered.com'
     DEFAULT_HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"}
@@ -14,7 +16,7 @@ class SteamWebAPI:
         self.timeout = timeout or self.DEFAULT_TIMEOUT
         self.session = requests.Session()
 
-    def _method(self, interface: str, method: str, version: int, params: dict = None):
+    def _method(self, interface: str, method: str, version: int, params: dict = None):  # only supports GET methods btw
         params = params.copy() if params else {}
         params['key'] = self.api_key
 

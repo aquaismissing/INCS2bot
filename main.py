@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import datetime as dt
 import json
 import traceback
-from typing import Callable
+from typing import TYPE_CHECKING
 import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -16,7 +18,7 @@ from pyrogram.types import CallbackQuery, Message
 from pyropatch import pyropatch  # do not delete!!
 from telegraph.aio import Telegraph
 
-from bottypes import BotClient, BotLogger, ExtendedIKB, ExtendedIKM, UserSession
+from bottypes import BotClient, BotLogger, ExtendedIKB, ExtendedIKM
 import config
 from db import db_session
 from functions import datacenter_handlers, info_formatters, utime
@@ -24,14 +26,22 @@ from functions.decorators import ignore_message_not_modified
 from functions.locale import get_available_languages, get_refined_lang_code
 import keyboards
 # noinspection PyPep8Naming
-from l10n import Locale, LocaleKeys as LK
+from l10n import LocaleKeys as LK
 from utypes import (ExchangeRate, GameServers, GameVersion,
-                    GunInfo, LeaderboardStats, ProfileInfo, State,
+                    LeaderboardStats, ProfileInfo,
                     States, UserGameStats, drop_cap_reset_timer)
+from utypes.gun_info import load_gun_infos
 from utypes.profiles import ErrorCode, ParseUserStatsError  # to clearly indicate relation
 
+if TYPE_CHECKING:
+    from typing import Callable
 
-GUNS_INFO = GunInfo.load()
+    from bottypes import UserSession
+    from l10n import Locale
+    from utypes import GunInfo, State
+
+
+GUNS_INFO = load_gun_infos(config.GUN_DATA_FILE_PATH)
 AVAILABLE_LANGUAGES = get_available_languages()
 ALL_COMMANDS = ('start', 'help')
 ASK_TIMEOUT = 5 * 60
@@ -772,7 +782,7 @@ async def send_gun_info(client: BotClient, session: UserSession, bot_message: Me
     """Send archived data about guns"""
 
     try:
-        gun_info_dict = gun_info.as_dict()
+        gun_info_dict = gun_info.asdict()
         gun_info_dict['origin'] = session.locale.get(gun_info.origin)
         del gun_info_dict['id'], gun_info_dict['team']
 

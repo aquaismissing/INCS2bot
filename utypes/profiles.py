@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from dataclasses import astuple, dataclass
-from enum import StrEnum
+from enum import auto, StrEnum
 import re
-from typing import NamedTuple, Self
+from typing import NamedTuple
 
 from steam import steamid
 from steam.steamid import SteamID
@@ -26,11 +28,11 @@ def to_percentage(x: int | float, /, round_to: int = 2):
 
 
 class ErrorCode(StrEnum):
-    INVALID_REQUEST = 'INVALID_REQUEST'
-    INVALID_LINK = 'INVALID_LINK'
-    PROFILE_IS_PRIVATE = 'PROFILE_IS_PRIVATE'
-    UNKNOWN_ERROR = 'UNKNOWN_ERROR'
-    NO_STATS_AVAILABLE = 'NO_STATS_AVAILABLE'
+    INVALID_REQUEST = auto()
+    INVALID_LINK = auto()
+    PROFILE_IS_PRIVATE = auto()
+    UNKNOWN_ERROR = auto()
+    NO_STATS_AVAILABLE = auto()
 
 
 class ParseUserStatsError(Exception):
@@ -197,8 +199,8 @@ class UserGameStats(NamedTuple):
     total_kills_m249: int
     m249_accuracy: float
 
-    @classmethod
-    def from_dict(cls, stats: dict) -> Self:
+    @staticmethod
+    def from_dict(stats: dict[str, str | int | float]) -> UserGameStats:
         weapons = ('ak47', 'm4a1', 'awp', 'glock', 'hkp2000', 'p250', 'elite', 'fiveseven',
                    'tec9', 'deagle', 'mac10', 'mp7', 'mp9', 'ump45', 'bizon', 'p90', 'famas',
                    'galilar', 'aug', 'sg556', 'ssg08', 'scar20', 'g3sg1', 'nova', 'mag7', 'sawedoff',
@@ -225,22 +227,18 @@ class UserGameStats(NamedTuple):
             stats['best_map_name'] = 'N/A'
             stats['best_map_win_percentage'] = 0
 
-        stats['taser_accuracy'] = to_percentage(stats.get('total_kills_taser', 0) / stats.get(f'total_shots_taser', 1))
+        stats['taser_accuracy'] = to_percentage(stats.get('total_kills_taser', 0) / stats.get('total_shots_taser', 1))
 
         for weapon in weapons:
             stats[f'{weapon}_accuracy'] = (
                 to_percentage(stats.get(f'total_hits_{weapon}', 0) / stats.get(f'total_shots_{weapon}', 1))
             )
 
-        stats = {k: v for k, v in stats.items() if k in cls._fields}
-        for field in cls._fields:
-            if stats.get(field) is None:
-                stats[field] = 0
+        stats = {key: stats.get(key, 0) for key in UserGameStats._fields}
+        return UserGameStats(**stats)
 
-        return cls(**stats)
-
-    @classmethod
-    async def get(cls, data) -> Self:
+    @staticmethod
+    async def get(data: str) -> UserGameStats:
         try:
             _id = parse_steamid(data)
 
@@ -254,8 +252,8 @@ class UserGameStats(NamedTuple):
             stats_dict = {stat['name']: stat['value'] for stat in response['playerstats']['stats']}
             stats_dict['steamid'] = _id.as_64
 
-            return cls.from_dict(stats_dict)
-        except requests.exceptions.HTTPError as e:
+            return UserGameStats.from_dict(stats_dict)
+        except requests.exceptions.HTTPError as e:  # maybe should only wrap the request itself with these?
             status_code = e.response.status_code
 
             if status_code == 400:
@@ -309,8 +307,8 @@ class ProfileInfo:
 
         return faceit_elo, faceit_lvl, faceit_url, faceit_ban
 
-    @classmethod
-    async def get(cls, data) -> Self:
+    @staticmethod
+    async def get(data: str) -> ProfileInfo:
         try:
             _id = parse_steamid(data)
 
@@ -330,7 +328,7 @@ class ProfileInfo:
 
             faceit_api_link = f'https://api.faceit.com/search/v2/players?query={_id.as_64}'
             faceit_api_response = requests.get(faceit_api_link, timeout=15).json()['payload']['results']
-            faceit_elo, faceit_lvl, faceit_url, faceit_ban = cls._extract_faceit_data(faceit_api_response)
+            faceit_elo, faceit_lvl, faceit_url, faceit_ban = ProfileInfo._extract_faceit_data(faceit_api_response)
 
             bans_data = bans['players'][0]
 
@@ -344,22 +342,22 @@ class ProfileInfo:
             community_ban = bans_data['CommunityBanned']
             trade_ban = (bans_data['EconomyBan'] == 'banned')
 
-            return cls(vanity_url,
-                       _id.as_64,
-                       _id.id,
-                       account_created,
-                       _id.invite_url,
-                       _id.as_invite_code,
-                       _id.as_csgo_friend_code,
-                       faceit_url,
-                       faceit_elo,
-                       faceit_lvl,
-                       faceit_ban,
-                       game_bans,
-                       vac_bans,
-                       days_since_last_ban,
-                       community_ban,
-                       trade_ban)
+            return ProfileInfo(vanity_url,
+                               _id.as_64,
+                               _id.id,
+                               account_created,
+                               _id.invite_url,
+                               _id.as_invite_code,
+                               _id.as_csgo_friend_code,
+                               faceit_url,
+                               faceit_elo,
+                               faceit_lvl,
+                               faceit_ban,
+                               game_bans,
+                               vac_bans,
+                               days_since_last_ban,
+                               community_ban,
+                               trade_ban)
         except requests.exceptions.HTTPError as e:
             status_code = e.response.status_code
 
@@ -388,8 +386,7 @@ def parse_steamid(data: str) -> SteamID:
     if (_id := SteamID(data)).is_valid():
         return _id
 
-    data = f'https://steamcommunity.com/id/{data}'
-    if (_id := steamid.from_url(data)) is None:
+    if (_id := steamid.from_url(f'https://steamcommunity.com/id/{data}')) is None:
         raise ParseUserStatsError(ErrorCode.INVALID_REQUEST)
 
     return _id

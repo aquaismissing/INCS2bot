@@ -29,6 +29,7 @@ CS2_LEADERBOARD_API = 'https://api.steampowered.com/ICSGOServers_730/GetLeaderbo
 LEADERBOARD_API_REGIONS = ('northamerica', 'southamerica', 'europe', 'asia', 'australia', 'china', 'africa')
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:80.0) Gecko/20100101 Firefox/80.0"}
+# todo: extract the headers into config file
 
 MINUTE = 60
 HOUR = 60 * MINUTE
@@ -113,8 +114,11 @@ class BasicServerStatusData:
 
     def is_maintenance(self):
         now = utime.utcnow()
-        return (((now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4))
-                and not (self.game_coordinator_state is States.NORMAL and self.sessions_logon_state is States.NORMAL))
+
+        between_tuesday_and_wednesday = (now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)
+        game_coordinator_is_fine = (self.game_coordinator_state is States.NORMAL)
+        sessions_logon_is_fine = (self.sessions_logon_state is States.NORMAL)
+        return between_tuesday_and_wednesday and not (game_coordinator_is_fine and sessions_logon_is_fine)
 
     def asdict(self):
         return dataclasses.asdict(self)
@@ -255,9 +259,9 @@ class GameServers:
 
     @classmethod
     def request(cls):
-        response = requests.get(cls.GAME_SERVERS_STATUS_API, timeout=15)
-        if response.status_code != 200:
-            return
+        response = requests.get(cls.GAME_SERVERS_STATUS_API, timeout=15)  # todo: maybe use a pre-made requests.Session
+        if response.status_code != 200:                                   # todo: instance? for less coupling and
+            return                                                        # todo: a little bit better performance
 
         result = response.json()['result']
         services = result['services']

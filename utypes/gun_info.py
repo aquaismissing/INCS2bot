@@ -1,12 +1,17 @@
+from __future__ import annotations
+
 from dataclasses import asdict, dataclass
 import json
+from typing import TYPE_CHECKING
 
-import config
+if TYPE_CHECKING:
+    from pathlib import Path
+
 # noinspection PyPep8Naming
 from l10n import LocaleKeys as LK
 
 
-__all__ = ('GunInfo',)
+__all__ = ['load_gun_infos', 'GunInfo']
 
 
 gun_origins = {'Germany': LK.gun_origin_germany, 'Austria': LK.gun_origin_austria, 'Italy': LK.gun_origin_italy,
@@ -16,7 +21,16 @@ gun_origins = {'Germany': LK.gun_origin_germany, 'Austria': LK.gun_origin_austri
                'United Kingdom': LK.gun_origin_uk, 'South Africa': LK.gun_origin_south_africa}
 
 
-@dataclass(slots=True)
+def load_gun_infos(filename: Path):
+    with open(filename, encoding='utf-8') as f:
+        data = json.load(f)
+
+    for gun_info in data:
+        gun_info['origin'] = gun_origins[gun_info['origin']]
+    return {g_info['id']: GunInfo(**g_info) for g_info in data}
+
+
+@dataclass(slots=True, frozen=True)
 class GunInfo:
     id: str
     name: str
@@ -50,14 +64,5 @@ class GunInfo:
     armored_damage_legs: int
     unarmored_damage_legs: int
     
-    def as_dict(self):
+    def asdict(self):
         return asdict(self)
-    
-    @staticmethod
-    def load():
-        with open(config.GUN_DATA_FILE_PATH) as f:
-            data = json.load(f)
-
-        for g_info in data:
-            g_info['origin'] = gun_origins[g_info['origin']]
-        return {g_info['id']: GunInfo(**g_info) for g_info in data}
