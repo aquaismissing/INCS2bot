@@ -166,7 +166,7 @@ async def update_cache_info():
 
         if cache['online_players'] > cache.get('player_alltime_peak', 0):
             if scheduler.get_job('players_peak') is None:
-                scheduler.add_job(update_players_peak,
+                scheduler.add_job(update_players_peak, id='players_peak',  # to collect new peak for 15 minutes and then post the highest one
                                   next_run_time=dt.datetime.now() + dt.timedelta(minutes=15), coalesce=True)
             cache['player_alltime_peak'] = cache['online_players']
 
