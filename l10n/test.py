@@ -2,7 +2,7 @@ import json
 
 from sl10n.pimpl import JSONImpl
 
-from l10n import SL10n, Locale, dump_tags
+from l10n import SL10n, Locale, load_tags
 
 
 def test_l10n(recwarn):
@@ -23,7 +23,7 @@ def test_tags(recwarn):
     Test to check any missing or unexpected tags keys.
     """
 
-    dump_tags()
+    load_tags()
 
     for r in recwarn:
         print(f'{r.category.__name__}: {r.message}')

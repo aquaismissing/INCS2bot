@@ -5,7 +5,7 @@ from typing import NamedTuple
 import warnings
 
 
-__all__ = ('Tags', 'TagsKeys', 'dump_tags')
+__all__ = ('Tags', 'TagsKeys', 'load_tags')
 
 # todo: probably rewrite it cuz it's basically a L10n clone
 
@@ -23,78 +23,78 @@ class PrimaryTagsFileNotFound(UserWarning):
 
 
 class Tags(NamedTuple):
-    """Object containing all the tags required by Telegram API. Tags
+    """Object containing all the tags required for inline search. Tags
        can be accessed as object attributes or by string keys using
        get(key) method. Can be converted to dict using to_dict() method."""
 
-    dc_africa: list  # South Africa
-    dc_australia: list  # Australia
+    dc_africa: set  # South Africa
+    dc_australia: set  # Australia
 
-    dc_southamerica: list  # South America
-    dc_southamerica_argentina: list  # Argentina
-    dc_southamerica_brazil: list  # Brazil
-    dc_southamerica_chile: list  # Chile
-    dc_southamerica_peru: list  # Peru
+    dc_southamerica: set  # South America
+    dc_southamerica_argentina: set  # Argentina
+    dc_southamerica_brazil: set  # Brazil
+    dc_southamerica_chile: set  # Chile
+    dc_southamerica_peru: set  # Peru
 
-    dc_europe: list  # Europe
-    dc_europe_austria: list  # Austria
-    dc_europe_finland: list  # Finland
-    dc_europe_germany: list  # Germany
-    dc_europe_netherlands: list  # Netherlands
-    dc_europe_poland: list  # Poland
-    dc_europe_spain: list  # Spain
-    dc_europe_sweden: list  # Sweden
+    dc_europe: set  # Europe
+    dc_europe_austria: set  # Austria
+    dc_europe_finland: set  # Finland
+    dc_europe_germany: set  # Germany
+    dc_europe_netherlands: set  # Netherlands
+    dc_europe_poland: set  # Poland
+    dc_europe_spain: set  # Spain
+    dc_europe_sweden: set  # Sweden
 
-    dc_us: list  # USA
-    dc_us_east: list  # East
-    dc_us_west: list  # West
+    dc_us: set  # USA
+    dc_us_east: set  # East
+    dc_us_west: set  # West
 
-    dc_asia: list  # Asia
-    dc_asia_india: list  # India
-    dc_asia_japan: list  # Japan
-    dc_asia_china: list  # China
-    dc_asia_emirates: list  # Emirates
-    dc_asia_singapore: list  # Singapore
-    dc_asia_hongkong: list  # Hong Kong
-    dc_asia_southkorea: list  # South Korea
+    dc_asia: set  # Asia
+    dc_asia_india: set  # India
+    dc_asia_japan: set  # Japan
+    dc_asia_china: set  # China
+    dc_asia_emirates: set  # Emirates
+    dc_asia_singapore: set  # Singapore
+    dc_asia_hongkong: set  # Hong Kong
+    dc_asia_southkorea: set  # South Korea
 
-    currencies_usd: list  # U.S. Dollar
-    currencies_gbp: list  # British Pound
-    currencies_eur: list  # Euro
-    currencies_rub: list  # Russian Ruble
-    currencies_brl: list  # Brazilian Real
-    currencies_jpy: list  # Japanese Yen
-    currencies_nok: list  # Norwegian Krone
-    currencies_idr: list  # Indonesian Rupiah
-    currencies_myr: list  # Malaysian Ringgit
-    currencies_php: list  # Philippine Peso
-    currencies_sgd: list  # Singapore Dollar
-    currencies_thb: list  # Thai Baht
-    currencies_vnd: list  # Vietnamese Dong
-    currencies_krw: list  # South Korean Won
-    currencies_uah: list  # Ukrainian Hryvnia
-    currencies_mxn: list  # Mexican Peso
-    currencies_cad: list  # Canadian Dollar
-    currencies_aud: list  # Australian Dollar
-    currencies_nzd: list  # New Zealand Dollar
-    currencies_pln: list  # Polish Zloty
-    currencies_chf: list  # Swiss Franc
-    currencies_aed: list  # U.A.E. Dirham
-    currencies_clp: list  # Chilean Peso
-    currencies_cny: list  # Chinese Yuan
-    currencies_cop: list  # Colombian Peso
-    currencies_pen: list  # Peruvian Sol
-    currencies_sar: list  # Saudi Riyal
-    currencies_twd: list  # Taiwan Dollar
-    currencies_hkd: list  # Hong Kong Dollar
-    currencies_zar: list  # South African Rand
-    currencies_inr: list  # Indian Rupee
-    currencies_crc: list  # Costa Rican Colon
-    currencies_ils: list  # Israeli Shekel
-    currencies_kwd: list  # Kuwaiti Dinar
-    currencies_qar: list  # Qatari Riyal
-    currencies_uyu: list  # Uruguayan Peso
-    currencies_kzt: list  # Kazakhstani Tenge
+    currencies_usd: set  # U.S. Dollar
+    currencies_gbp: set  # British Pound
+    currencies_eur: set  # Euro
+    currencies_rub: set  # Russian Ruble
+    currencies_brl: set  # Brazilian Real
+    currencies_jpy: set  # Japanese Yen
+    currencies_nok: set  # Norwegian Krone
+    currencies_idr: set  # Indonesian Rupiah
+    currencies_myr: set  # Malaysian Ringgit
+    currencies_php: set  # Philippine Peso
+    currencies_sgd: set  # Singapore Dollar
+    currencies_thb: set  # Thai Baht
+    currencies_vnd: set  # Vietnamese Dong
+    currencies_krw: set  # South Korean Won
+    currencies_uah: set  # Ukrainian Hryvnia
+    currencies_mxn: set  # Mexican Peso
+    currencies_cad: set  # Canadian Dollar
+    currencies_aud: set  # Australian Dollar
+    currencies_nzd: set  # New Zealand Dollar
+    currencies_pln: set  # Polish Zloty
+    currencies_chf: set  # Swiss Franc
+    currencies_aed: set  # U.A.E. Dirham
+    currencies_clp: set  # Chilean Peso
+    currencies_cny: set  # Chinese Yuan
+    currencies_cop: set  # Colombian Peso
+    currencies_pen: set  # Peruvian Sol
+    currencies_sar: set  # Saudi Riyal
+    currencies_twd: set  # Taiwan Dollar
+    currencies_hkd: set  # Hong Kong Dollar
+    currencies_zar: set  # South African Rand
+    currencies_inr: set  # Indian Rupee
+    currencies_crc: set  # Costa Rican Colon
+    currencies_ils: set  # Israeli Shekel
+    currencies_kwd: set  # Kuwaiti Dinar
+    currencies_qar: set  # Qatari Riyal
+    currencies_uyu: set  # Uruguayan Peso
+    currencies_kzt: set  # Kazakhstani Tenge
 
     def to_dict(self) -> dict[str, list]:
         """Returns a dict converted from a Tags object."""
@@ -162,8 +162,8 @@ class Tags(NamedTuple):
 TagsKeys = Tags.sample()
 
 
-def dump_tags() -> Tags:
-    """Dumps "tags.json" and returns Tags object, containing all defined tags lists."""
+def load_tags() -> Tags:
+    """Loads "tags.json" and returns Tags object, containing all defined tags lists."""
 
     path = Path(__file__).parent / 'data' / 'tags.json'
     if not path.exists():
@@ -200,13 +200,16 @@ def dump_tags() -> Tags:
     for field in unexpected_fields:
         del data[field]
 
-    for og_field, og_tags in data.items():
+    # Turn arrays into sets
+    data = {field: set(value) for field, value in data.items()}
+
+    for parent_field, parent_tags in data.items():
         for field, tags in data.items():
-            if og_field != field and field.startswith(og_field):
-                data[field].extend(og_tags)
+            if parent_field != field and field.startswith(parent_field):
+                data[field].update(parent_tags)
 
     return Tags(**data)
 
 
 if __name__ == '__main__':
-    dump_tags()
+    load_tags()

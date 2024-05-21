@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import logging
 import re
 import traceback
+from typing import TYPE_CHECKING
 
 from pyrogram.enums import ParseMode
 from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
@@ -9,13 +12,17 @@ from bottypes import BotClient, UserSession
 import config
 from functions import datacenter_handlers, info_formatters
 import keyboards
-from l10n import dump_tags
+from l10n import load_tags
 from utypes import (DatacenterInlineResult, ExchangeRate,
                     GameServers, GameVersion,
                     drop_cap_reset_timer)
 
+if TYPE_CHECKING:
+    from keyboards import ExtendedIKM
+    from l10n import Locale
 
-TAGS = dump_tags()
+
+TAGS = load_tags()
 
 
 def log_exception_inline(func):
@@ -45,11 +52,36 @@ def is_user_stats_page(query: InlineQuery):
 
 
 def get_triggered_tags(query: str):
-    data = query.strip().lower()
+    triggered_tags = set()
     for tags in TAGS.to_dict().values():
+        if query in tags:
+            triggered_tags.add(query)
+            continue
+
         for tag in tags:
-            if any(t.startswith(data) for t in tag.split()):
-                yield tag
+            if any(t.startswith(query) for t in tag.split()):
+                triggered_tags.add(tag)
+
+    return triggered_tags
+
+
+def dc_articles_factory(dcs: list[DatacenterInlineResult],
+                        locale: Locale,
+                        reply_markup: ExtendedIKM) -> list[InlineQueryResultArticle]:
+    result = []
+    for i, dc in enumerate(dcs):
+        result.append(
+            InlineQueryResultArticle(
+                dc.title,
+                InputTextMessageContent(dc.summary_from(locale)),
+                f'{i}',
+                description=locale.dc_status_inline_description,
+                reply_markup=reply_markup,
+                thumb_url=dc.thumbnail
+            )
+        )
+
+    return result
 
 
 @BotClient.on_inline_query()
@@ -229,41 +261,16 @@ async def inline_datacenters(_, session: UserSession, inline_query: InlineQuery)
 
     inline_btn = keyboards.markup_inline_button(session.locale)
 
-    resulted_dcs = []
-    resulted_articles = []
-
     try:
-        query = inline_query.query.split()[1]
-    except IndexError:
-        for i, _dc in enumerate(dcs):
-            resulted_articles.append(
-                InlineQueryResultArticle(
-                    _dc.title,
-                    InputTextMessageContent(_dc.summary_from(session.locale)),
-                    f'{i}',
-                    description=session.locale.dc_status_inline_description,
-                    reply_markup=inline_btn,
-                    thumb_url=_dc.thumbnail
-                )
-            )
+        query = inline_query.query.split()[1].strip().lower()
+    except IndexError:  # no query, return all DCs
+        resulted_articles = dc_articles_factory(dcs, session.locale, inline_btn)
         return await inline_query.answer(resulted_articles, cache_time=5)
 
-    i = 0
-    for tag in get_triggered_tags(query):
-        for _dc in dcs:
-            if tag in _dc.tags and _dc not in resulted_dcs:
-                resulted_dcs.append(_dc)
-                res = InlineQueryResultArticle(
-                        _dc.title,
-                        InputTextMessageContent(_dc.summary_from(session.locale)),
-                        f'{i}',
-                        description=session.locale.dc_status_inline_description,
-                        reply_markup=inline_btn,
-                        thumb_url=_dc.thumbnail
-                )
-                resulted_articles.append(res)
-                i += 1
+    triggered_tags = get_triggered_tags(query)
+    resulted_dcs = [dc for dc in dcs if dc.tags & triggered_tags]
 
+    resulted_articles = dc_articles_factory(resulted_dcs, session.locale, inline_btn)
     await inline_query.answer(resulted_articles, cache_time=10)
 
 

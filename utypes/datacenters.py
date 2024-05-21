@@ -418,4 +418,4 @@ class DatacenterInlineResult(NamedTuple):
     title: str
     thumbnail: str
     summary_from: callable
-    tags: list
+    tags: set
