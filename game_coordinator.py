@@ -11,6 +11,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.gevent import GeventScheduler
 from csgo.client import CSGOClient
 from pyrogram import Client, idle
+import requests
 from steam.client import SteamClient
 from steam.enums import EResult
 
@@ -81,7 +82,7 @@ def handle_disconnect():
         logging.info('Reconnecting...')
         client.reconnect(maxdelay=30)    # todo: could be broken - needs to be tested somehow
 
-    # sys.exit()
+    sys.exit()
 
 
 @client.on('logged_on')
@@ -165,7 +166,8 @@ def update_game_version():
     while time.time() < timeout_start + timeout:
         # noinspection PyBroadException
         try:
-            data = GameVersion.request()
+            with requests.Session() as session:
+                data = GameVersion.request(session)
 
             with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
                 cache = json.load(f)
