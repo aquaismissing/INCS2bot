@@ -151,7 +151,7 @@ async def update_depots():
                 await send_alert('dprp_build_sync_id', new_value)
                 continue
             if _id == 'public_build_id':
-                _ = asyncio.create_task(update_game_version)
+                _ = asyncio.create_task(update_game_version())
             await send_alert(_id, new_value)
 
     with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
@@ -160,7 +160,7 @@ async def update_depots():
     logging.info('Successfully dumped game build IDs.')
 
 
-def update_game_version():
+async def update_game_version():
     timeout = 30 * 60
     timeout_start = time.time()
     while time.time() < timeout_start + timeout:
@@ -189,13 +189,13 @@ def update_game_version():
                 sys.exit()
         except Exception:
             logging.exception('Caught an exception while trying to get new version!')
-            asyncio.sleep(45)
+            await asyncio.sleep(45)
             continue
-        asyncio.sleep(45)
+        await asyncio.sleep(45)
     # xPaw: Zzz...
     # because of this, we retry in an hour
-    asyncio.sleep(60 * 60)
-    update_game_version()
+    await asyncio.sleep(60 * 60)
+    await update_game_version()
 
 
 @gevent_scheduler.scheduled_job('interval', seconds=45)
