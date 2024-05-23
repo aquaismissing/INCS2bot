@@ -255,7 +255,7 @@ class GameServers:
     def request(cls, webapi: SteamWebAPI):
         response = webapi.csgo_get_game_servers_status()
 
-        result = response.json()['result']
+        result = response['result']
         services = result['services']
         matchmaking = result['matchmaking']
 

@@ -111,7 +111,7 @@ def remap_dc_region(info: dict, region: DatacenterRegion):
     result = {}
     for dc in region.datacenters:
         api_info_field = DATACENTER_API_FIELDS[region.id, dc.id]
-        result[dc.id] = info[api_info_field]
+        result[dc.id] = info.get(api_info_field, {"capacity": "unknown", "load": "unknown"})
 
     return result
 
