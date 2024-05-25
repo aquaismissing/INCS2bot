@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.gevent import GeventScheduler
 from csgo.client import CSGOClient
+import gevent
 from pyrogram import Client, idle
 import requests
 from steam.client import SteamClient
@@ -119,7 +120,7 @@ def update_gc_status(status):
 async def update_depots():
     # noinspection PyBroadException
     try:
-        data = client.get_product_info(apps=[730, 2275500, 2275530], timeout=15)['apps']
+        data = gevent.spawn(client.get_product_info, apps=[730, 2275500, 2275530], timeout=15).get()['apps']
         main_data = data[730]
 
         public_build_id = int(main_data['depots']['branches']['public']['buildid'])
