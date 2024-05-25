@@ -168,18 +168,18 @@ class DatacenterAtlas:
         LK.dc_germany_title
     )
 
-    NETHERLANDS = DatacenterRegion(
-        "netherlands",
-        [
-            Datacenter(
-                "amsterdam",
-                l10n_key_title=LK.dc_netherlands_amsterdam
-            ),
-        ],
-        "🇳🇱",
-        LK.dc_netherlands,
-        LK.dc_netherlands_title
-    )
+    # NETHERLANDS = DatacenterRegion(
+    #     "netherlands",
+    #     [
+    #         Datacenter(
+    #             "amsterdam",
+    #             l10n_key_title=LK.dc_netherlands_amsterdam
+    #         ),
+    #     ],
+    #     "🇳🇱",
+    #     LK.dc_netherlands,
+    #     LK.dc_netherlands_title
+    # )
 
     POLAND = DatacenterRegion(
         "poland",
@@ -231,10 +231,10 @@ class DatacenterAtlas:
                 "sterling",
                 l10n_key_title=LK.dc_us_sterling
             ),
-            Datacenter(
-                "new_york",
-                l10n_key_title=LK.dc_us_new_york
-            ),
+            # Datacenter(
+            #     "new_york",
+            #     l10n_key_title=LK.dc_us_new_york
+            # ),
             Datacenter(
                 "atlanta",
                 l10n_key_title=LK.dc_us_atlanta
@@ -324,18 +324,18 @@ class DatacenterAtlas:
     INDIA = DatacenterRegion(
         "india",
         [
-            Datacenter(
-                "bombay",
-                l10n_key_title=LK.dc_india_bombay
-            ),
+            # Datacenter(
+            #     "bombay",
+            #     l10n_key_title=LK.dc_india_bombay
+            # ),
             Datacenter(
                 "chennai",
                 l10n_key_title=LK.dc_india_chennai
             ),
-            Datacenter(
-                "madras",
-                l10n_key_title=LK.dc_india_madras
-            ),
+            # Datacenter(
+            #     "madras",
+            #     l10n_key_title=LK.dc_india_madras
+            # ),
             Datacenter(
                 "mumbai",
                 l10n_key_title=LK.dc_india_mumbai

@@ -29,12 +29,12 @@ DATACENTER_API_FIELDS = {
     ('germany', 'frankfurt'): 'EU Germany',
     ('finland', 'helsinki'): 'EU Finland',
     ('spain', 'madrid'): 'EU Spain',
-    ('netherlands', 'amsterdam'): 'EU Holland',
+    ('netherlands', 'amsterdam'): 'EU Holland',  # unknown
     ('austria', 'vienna'): 'EU Austria',
     ('poland', 'warsaw'): 'EU Poland',
     ('us_east', 'chicago'): 'US Chicago',
     ('us_east', 'sterling'): 'US Virginia',
-    ('us_east', 'new_york'): 'US NewYork',
+    ('us_east', 'new_york'): 'US NewYork',  # unknown
     ('us_east', 'atlanta'): 'US Atlanta',
     ('us_west', 'seattle'): 'US Seattle',
     ('us_west', 'los_angeles'): 'US California',
@@ -45,8 +45,8 @@ DATACENTER_API_FIELDS = {
     'hongkong': 'Hong Kong',
     ('india', 'mumbai'): 'India Mumbai',
     ('india', 'chennai'): 'India Chennai',
-    ('india', 'bombay'): 'India Bombay',
-    ('india', 'madras'): 'India Madras',
+    ('india', 'bombay'): 'India Bombay',  # unknown
+    ('india', 'madras'): 'India Madras',  # unknown
     ('china', 'shanghai'): 'China Shanghai',
     ('china', 'tianjin'): 'China Tianjin',
     ('china', 'guangzhou'): 'China Guangzhou',
@@ -70,6 +70,8 @@ UNUSED_FIELDS = ['csgo_client_version',
                  'steam_community',
                  'matchmaking_scheduler',
                  'game_coordinator']
+
+UNKNOWN_DC_STATE = {"capacity": "unknown", "load": "unknown"}
 
 
 execution_start_dt = dt.datetime.now()
@@ -104,14 +106,14 @@ def clear_from_unused_fields(cache: dict):
 
 def remap_dc(info: dict, dc: Datacenter):
     api_info_field = DATACENTER_API_FIELDS[dc.id]
-    return info[api_info_field]
+    return info.get(api_info_field, UNKNOWN_DC_STATE)
 
 
 def remap_dc_region(info: dict, region: DatacenterRegion):
     result = {}
     for dc in region.datacenters:
         api_info_field = DATACENTER_API_FIELDS[region.id, dc.id]
-        result[dc.id] = info.get(api_info_field, {"capacity": "unknown", "load": "unknown"})
+        result[dc.id] = info.get(api_info_field, UNKNOWN_DC_STATE)
 
     return result
 
@@ -122,7 +124,7 @@ def remap_dc_group(info: dict, group: DatacenterGroup):
         result[region.id] = {}
         for dc in region.datacenters:
             api_info_field = DATACENTER_API_FIELDS[group.id, region.id, dc.id]
-            result[region.id][dc.id] = info[api_info_field]
+            result[region.id][dc.id] = info.get(api_info_field, UNKNOWN_DC_STATE)
 
     return result
 

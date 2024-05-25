@@ -110,15 +110,14 @@ dc_asia_markup = ExtendedIKM([
 _austria = ExtendedIKB(LK.dc_austria)
 _finland = ExtendedIKB(LK.dc_finland)
 _germany = ExtendedIKB(LK.dc_germany)
-_netherlands = ExtendedIKB(LK.dc_netherlands)
+# _netherlands = ExtendedIKB(LK.dc_netherlands)
 _poland = ExtendedIKB(LK.dc_poland)
 _spain = ExtendedIKB(LK.dc_spain)
 _sweden = ExtendedIKB(LK.dc_sweden)
 
 dc_eu_markup = ExtendedIKM([
     [_austria, _finland, _germany],
-    [_poland, _netherlands],
-    [_spain, _sweden],
+    [_poland, _spain, _sweden],
     [back_button]
 ])
 

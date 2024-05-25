@@ -182,9 +182,9 @@ async def send_dc_germany(client: BotClient, session: UserSession, bot_message: 
     await send_dc_state(client, session, bot_message, DatacenterAtlas.GERMANY, keyboards.dc_eu_markup)
 
 
-@bot.funcmenu(LK.dc_netherlands, came_from=dc_europe)
-async def send_dc_netherlands(client: BotClient, session: UserSession, bot_message: Message):
-    await send_dc_state(client, session, bot_message, DatacenterAtlas.NETHERLANDS, keyboards.dc_eu_markup)
+# @bot.funcmenu(LK.dc_netherlands, came_from=dc_europe)
+# async def send_dc_netherlands(client: BotClient, session: UserSession, bot_message: Message):
+#     await send_dc_state(client, session, bot_message, DatacenterAtlas.NETHERLANDS, keyboards.dc_eu_markup)
 
 
 @bot.funcmenu(LK.dc_poland, came_from=dc_europe)
