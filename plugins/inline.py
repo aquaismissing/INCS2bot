@@ -6,7 +6,7 @@ import re
 import traceback
 from typing import TYPE_CHECKING
 
-from pyrogram.enums import ParseMode
+from pyrogram.enums import ChatType, ParseMode
 from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 
 from bottypes import BotClient, UserSession
@@ -104,6 +104,8 @@ async def sync_user_data_inline(client: BotClient, inline_query: InlineQuery):
         return await inline_exchange_rate(client, session, inline_query)
     if query.startswith('dc'):
         return await inline_datacenters(client, session, inline_query)
+    if inline_query.chat_type == ChatType.PRIVATE and query.lower() == 'deadlock':
+        return await inline_deadlock(client, session, inline_query)
     return await default_inline(client, session, inline_query)
 
 
@@ -276,6 +278,15 @@ async def inline_datacenters(_, session: UserSession, inline_query: InlineQuery)
 
     resulted_articles = dc_articles_factory(resulted_dcs, session.locale, latest_info_update_at, inline_btn)
     await inline_query.answer(resulted_articles, cache_time=10)
+
+
+@log_exception_inline
+async def inline_deadlock(_, __, inline_query: InlineQuery):
+    r = InlineQueryResultArticle('Deadlock?',
+                                 InputTextMessageContent(f'Here is how to get access to Deadlock: '
+                                                         f'{config.DEADLOCK_ACCESS_GUIDE}',
+                                                         disable_web_page_preview=True))
+    await inline_query.answer([r], cache_time=5)
 
 
 @log_exception_inline
