@@ -270,6 +270,9 @@ async def handle_new_post(client: Client, message: Message):
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
 async def filter_forwards(_, message: Message):
+    if message.via_bot:
+        return await filter_via_bot(_, message)
+
     forward_from = message.forward_from_chat if message.forward_from_chat else message.forward_from
     await filter_message(forward_from, message)
 
