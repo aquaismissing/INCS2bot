@@ -26,6 +26,7 @@ from db import db_session
 from functions import caching, info_formatters, utime
 from functions.decorators import ignore_message_not_modified
 from functions.locale import get_available_languages
+from functions.ulogging import setup_logging
 import keyboards
 # noinspection PyPep8Naming
 from l10n import LocaleKeys as LK, locale as lc
@@ -56,9 +57,8 @@ ASK_TIMEOUT = 5 * 60
 ENGLISH_LOCALE = lc('en')
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s | %(threadName)s: %(message)s",
-                    datefmt="%H:%M:%S — %d/%m/%Y")
+logger = logging.getLogger('INCS2bot')
+setup_logging(logger, config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 bot = BotClient(config.BOT_NAME,
                 api_id=config.API_ID,

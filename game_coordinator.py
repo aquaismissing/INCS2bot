@@ -1,6 +1,6 @@
 import asyncio
 import datetime as dt
-import logging
+from logging import getLogger
 import platform
 import sys
 import time
@@ -23,6 +23,7 @@ if platform.system() == 'Linux':
 
 import config
 from functions import caching, locale, utime
+from functions.ulogging import setup_logging
 from utypes import GameVersion, States, GameVersionData
 
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
@@ -45,9 +46,8 @@ AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
                     'branch_deleted': loc.notifs_branch_deleted}
 MAIN_BRANCHES = {'public', 'dpr', 'dprp', '<null>'}  # <null> is for other important things
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s | GC: %(message)s',
-                    datefmt='%H:%M:%S — %d/%m/%Y')
+logger = getLogger('GC')
+setup_logging(logger, config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 
 class PatchedSteamClient(SteamClient):
@@ -95,7 +95,7 @@ def is_backup_branch(name: str) -> bool:
 
 @client.on('error')
 def handle_error(result):
-    logging.info(f'Logon result: {result!r}')
+    logger.error(f'Logon result: {result!r}')
 
 
 @client.on('channel_secured')
@@ -106,20 +106,20 @@ def send_relogin():
 
 @client.on('connected')
 def log_connect():
-    logging.info(f'Connected to {client.current_server_addr}')
+    logger.info(f'Connected to {client.current_server_addr}')
 
 
 @client.on('reconnect')
 def handle_reconnect(delay):
-    logging.info(f'Reconnect in {delay}s...')
+    logger.info(f'Reconnect in {delay}s...')
 
 
 @client.on('disconnected')
 def handle_disconnect():
-    logging.info('Disconnected.')
+    logger.warning('Disconnected.')
 
     # if client.relogin_available:
-    #     logging.info('Reconnecting...')
+    #     logger.info('Reconnecting...')
     #     client.reconnect(maxdelay=30)    # todo: could be broken - needs to be tested somehow
 
     sys.exit()
@@ -134,7 +134,7 @@ def handle_after_logon():
 
 @cs.on('ready')
 def cs_launched():
-    logging.info('CS launched.')
+    logger.info('CS launched.')
 
 
 @cs.on('connection_status')
@@ -145,7 +145,7 @@ def update_gc_status(status):
 
     caching.dump_cache_changes(config.GC_CACHE_FILE_PATH, {'game_coordinator_state': game_coordinator_state})
 
-    logging.info(f'Successfully dumped game coordinator status: {game_coordinator_state}')
+    logger.info(f'Successfully dumped game coordinator status: {game_coordinator_state}')
 
 
 @async_scheduler.scheduled_job('interval', seconds=45)
@@ -160,11 +160,11 @@ async def update_depots():
         cs2_app_change_number = data[2275500]['_change_number']
         cs2_server_change_number = data[2275530]['_change_number']
     except Exception:
-        logging.exception('Caught an exception while trying to fetch depots!')
+        logger.exception('Caught an exception while trying to fetch depots!')
         return
     except gevent.Timeout:  # just crash and restart the entire thing
         going_to_shutdown = True
-        logging.exception('Caught gevent.Timeout, we\'re going to shutdown...')
+        logger.exception('Caught gevent.Timeout, we\'re going to shutdown...')
         return
 
     cache = caching.load_cache(config.GC_CACHE_FILE_PATH)
@@ -193,7 +193,7 @@ async def update_depots():
 
     caching.dump_cache(config.GC_CACHE_FILE_PATH, cache)
 
-    logging.info('Successfully dumped game version data.')
+    logger.info('Successfully dumped game version data.')
 
 
 async def check_for_new_branches(cached_branches: dict, current_branches: dict):
@@ -264,11 +264,11 @@ async def get_game_version_loop(cs2_client_version: int | None) -> GameVersionDa
             data = await get_game_version(session, cs2_client_version)
             if data:
                 return data
-            logging.warning('Failed to pull the game version data, retry in 45 seconds...')
+            logger.warning('Failed to pull the game version data, retry in 45 seconds...')
             await asyncio.sleep(45)
     # xPaw: Zzz...
     # because of this, we retry in an hour
-    logging.warning('Reached a timeout while trying to pull the game version data, retry in an hour...')
+    logger.warning('Reached a timeout while trying to pull the game version data, retry in an hour...')
     await asyncio.sleep(60 * 60)
     await get_game_version_loop(cs2_client_version)
 
@@ -279,7 +279,7 @@ async def get_game_version(session: requests.Session, cs2_client_version: int | 
         data = GameVersion.request(session)
 
         if cs2_client_version is None:  # *somehow* don't have anything cached
-            logging.info('Successfully pulled the game version data.')
+            logger.info('Successfully pulled the game version data.')
             return data
 
         # Ensure that the data is up-to-date, so we check datetime
@@ -288,10 +288,10 @@ async def get_game_version(session: requests.Session, cs2_client_version: int | 
         is_up_to_date = (utime.utcnow() - new_data_datetime < dt.timedelta(hours=12))
 
         if is_up_to_date and data.cs2_client_version != cs2_client_version:
-            logging.info('Successfully pulled the game version data.')
+            logger.info('Successfully pulled the game version data.')
             return data
     except Exception:
-        logging.exception('Caught an exception while trying to get new version!')
+        logger.exception('Caught an exception while trying to get new version!')
 
 
 @gevent_scheduler.scheduled_job('interval', seconds=45)
@@ -300,16 +300,16 @@ def online_players():
 
     caching.dump_cache_changes(config.GC_CACHE_FILE_PATH, {'online_players': player_count})
 
-    logging.info(f'Successfully dumped player count: {player_count}')
+    logger.info(f'Successfully dumped player count: {player_count}')
 
 
 async def send_branch_alert(branch: str, event: str, new_buildid: str = None):
-    logging.info(f'Detected {branch} branch "{event}" event, sending alert...')
+    logger.info(f'Detected {branch} branch "{event}" event, sending alert...')
 
     alert_sample = AVAILABLE_ALERTS.get(event)
 
     if alert_sample is None:
-        logging.warning(f'Got wrong event name to send alert: {event}')
+        logger.warning(f'Got wrong event name to send alert: {event}')
         return
 
     if branch in MAIN_BRANCHES:
@@ -342,7 +342,7 @@ async def mainloop():
     task = None
 
     def signal_handler(signum, __):
-        logging.info(f'Stop signal received ({signals[signum]}). Exiting...')
+        logger.info(f'Stop signal received ({signals[signum]}). Exiting...')
         task.cancel()
 
     for s in (SIGINT, SIGTERM, SIGABRT):
@@ -361,19 +361,19 @@ async def mainloop():
 
 async def main():
     try:
-        logging.info('Logging in...')
+        logger.info('Logging in...')
         result = client.login(username=config.STEAM_USERNAME, password=config.STEAM_PASS)
 
         if result != EResult.OK:
-            logging.error(f"Failed to login: {result!r}")
+            logger.error(f"Failed to login: {result!r}")
             sys.exit(1)
 
-        logging.info('Logged in successfully.')
+        logger.info('Logged in successfully.')
         await bot.start()
         await mainloop()
     except KeyboardInterrupt:
         if client.connected:
-            logging.info('Logout...')
+            logger.info('Logout...')
             client.logout()
         raise
 

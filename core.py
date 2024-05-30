@@ -1,6 +1,6 @@
 import asyncio
 import datetime as dt
-import logging
+from logging import getLogger
 import platform
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -15,6 +15,7 @@ if platform.system() == 'Linux':
 import config
 from dcatlas import DatacenterAtlas
 from functions import caching, utime
+from functions.ulogging import setup_logging
 from l10n import locale
 from utypes import (ExchangeRate, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServers,
@@ -73,9 +74,8 @@ if execution_cron_minute >= 60:
 
 loc = locale('ru')
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s | %(message)s",
-                    datefmt="%H:%M:%S — %d/%m/%Y")
+logger = getLogger('Core')
+setup_logging(logger, config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 scheduler = AsyncIOScheduler()
 bot = Client(config.BOT_CORE_MODULE_NAME,
@@ -166,7 +166,7 @@ async def update_cache_info():
 
         caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
     except Exception:
-        logging.exception('Caught exception in the main thread!')
+        logger.exception('Caught exception while updating the cache!')
 
         
 @scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute)
@@ -187,7 +187,7 @@ async def unique_monthly():
 
         caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
     except Exception:
-        logging.exception('Caught exception while gathering monthly players!')
+        logger.exception('Caught exception while gathering monthly players!')
         await asyncio.sleep(45)
         return await unique_monthly()
 
@@ -200,7 +200,7 @@ async def check_currency():
 
         caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, {'key_price': new_prices})
     except Exception:
-        logging.exception('Caught exception while gathering key price!')
+        logger.exception('Caught exception while gathering key price!')
         await asyncio.sleep(45)
         return await check_currency()
 
@@ -218,7 +218,7 @@ async def fetch_leaderboard():
 
         caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, new_data)
     except Exception:
-        logging.exception('Caught exception fetching leaderboards!')
+        logger.exception('Caught exception fetching leaderboards!')
         await asyncio.sleep(45)
         return await fetch_leaderboard()
 
@@ -230,7 +230,7 @@ async def alert_players_peak():
 
         await send_alert('online_players', cache['player_alltime_peak'])
     except Exception:
-        logging.exception('Caught exception while alerting players peak!')
+        logger.exception('Caught exception while alerting players peak!')
         await asyncio.sleep(45)
         return await alert_players_peak()
 
@@ -241,7 +241,7 @@ async def send_alert(key, new_value):
     elif key == 'monthly_unique_players':
         text = loc.notifs_new_monthlyunique.format(*new_value)
     else:
-        logging.warning(f'Got wrong key to send alert: {key}')
+        logger.warning(f'Got wrong key to send alert: {key}')
         return
 
     if bot.test_mode:
@@ -260,7 +260,7 @@ def main():
         scheduler.start()
         bot.run()
     except TypeError:  # catching TypeError because Pyrogram propogates it at stop for some reason
-        logging.info('Shutting down the bot...')
+        logger.info('Shutting down the bot...')
     finally:
         steam_webapi.close()
 

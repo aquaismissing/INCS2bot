@@ -14,13 +14,13 @@ import seaborn as sns
 
 import config
 from functions import utime
+from functions.ulogging import setup_logging
 
 MINUTE = 60
 MAX_ONLINE_MARKS = (MINUTE // 10) * 24 * 7 * 2  # = 2016 marks - every 10 minutes for the last two weeks
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s | %(name)s: %(message)s",
-                    datefmt="%H:%M:%S — %d/%m/%Y")
+logger = logging.getLogger('player_count_graph')
+setup_logging(logger, config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 scheduler = BlockingScheduler()
 
@@ -124,8 +124,9 @@ def graph_maker():
 
         with open(config.GRAPH_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4, ensure_ascii=False)
+        logger.info('Successfully plotted the player count graph.')
     except Exception:
-        logging.exception('Caught exception in graph maker!')
+        logger.exception('Caught exception in graph maker!')
         time.sleep(MINUTE)
         return graph_maker()
 
