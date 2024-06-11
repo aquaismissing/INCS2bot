@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.gevent import GeventScheduler
 from csgo.client import CSGOClient
+import gevent
 from pyrogram import Client, idle
 import requests
 from steam.client import SteamClient
@@ -44,6 +45,7 @@ bot = Client(config.BOT_GC_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,
              bot_token=config.BOT_TOKEN,
+             test_mode=config.TEST_MODE,
              no_updates=True,
              workdir=config.SESS_FOLDER)
 client = SteamClient()
@@ -131,6 +133,8 @@ async def update_depots():
     except Exception:
         logging.exception('Caught an exception while trying to fetch depots!')
         return
+    except gevent.Timeout:  # just crash and restart the thing
+        sys.exit()
 
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache = json.load(f)
@@ -225,10 +229,10 @@ async def send_alert(key: str, new_value: int):
 
     text = alert_sample.format(new_value)
 
-    if not config.TEST_MODE:
-        chat_list = [config.INCS2CHAT, config.CSTRACKER]
-    else:
+    if bot.test_mode:
         chat_list = [config.AQ]
+    else:
+        chat_list = [config.INCS2CHAT, config.CSTRACKER]
 
     for chat_id in chat_list:
         msg = await bot.send_message(chat_id, text, disable_web_page_preview=True)
