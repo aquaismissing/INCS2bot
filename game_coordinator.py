@@ -134,7 +134,7 @@ async def update_depots():
         logging.exception('Caught an exception while trying to fetch depots!')
         return
     except gevent.Timeout:  # just crash and restart the thing
-        sys.exit()
+        sys.exit()  # later on we'll add some logs to tell if it disappeared
 
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache = json.load(f)
@@ -190,7 +190,7 @@ async def update_game_version():
 
                 with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
                     json.dump(cache, f, indent=4, ensure_ascii=False)
-                sys.exit()
+                return
         except Exception:
             logging.exception('Caught an exception while trying to get new version!')
             await asyncio.sleep(45)
