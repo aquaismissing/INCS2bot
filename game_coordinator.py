@@ -54,6 +54,8 @@ cs = CSGOClient(client)
 gevent_scheduler = GeventScheduler()
 async_scheduler = AsyncIOScheduler()
 
+going_to_shutdown = False  # can be used in jobs to safely call sys.exit() afterwards
+
 
 @client.on('error')
 def handle_error(result):
@@ -119,6 +121,8 @@ def update_gc_status(status):
 
 @async_scheduler.scheduled_job('interval', seconds=45)
 async def update_depots():
+    global going_to_shutdown
+
     # noinspection PyBroadException
     try:
         data = client.get_product_info(apps=[730, 2275500, 2275530], timeout=15)['apps']
@@ -134,7 +138,9 @@ async def update_depots():
         logging.exception('Caught an exception while trying to fetch depots!')
         return
     except gevent.Timeout:  # just crash and restart the thing
-        sys.exit()  # later on we'll add some logs to tell if it disappeared
+        going_to_shutdown = True
+        logging.exception('Caught gevent.Timeout, we\'re going to shutdown...')
+        return
 
     with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
         cache = json.load(f)
@@ -240,6 +246,33 @@ async def send_alert(key: str, new_value: int):
             await msg.pin(disable_notification=True)
 
 
+async def mainloop():
+    # ESSENTIALS FOR MAINLOOP
+    import signal
+    from signal import signal as signal_fn, SIGINT, SIGTERM, SIGABRT
+
+    signals = {k: v for v, k in signal.__dict__.items()
+               if v.startswith('SIG') and not v.startswith('SIG_')}
+    task = None
+
+    def signal_handler(signum, __):
+        logging.info(f'Stop signal received ({signals[signum]}). Exiting...')
+        task.cancel()
+
+    for s in (SIGINT, SIGTERM, SIGABRT):
+        signal_fn(s, signal_handler)
+    # ESSENTIALS FOR MAINLOOP END
+
+    while True:
+        task = asyncio.create_task(asyncio.sleep(10))
+        try:
+            await task
+            if going_to_shutdown:
+                sys.exit()
+        except asyncio.CancelledError:
+            break
+
+
 async def main():
     try:
         logging.info('Logging in...')
@@ -251,11 +284,12 @@ async def main():
 
         logging.info('Logged in successfully.')
         await bot.start()
-        await idle()
+        await mainloop()
     except KeyboardInterrupt:
         if client.connected:
             logging.info('Logout...')
             client.logout()
+        raise
 
 
 if __name__ == '__main__':
