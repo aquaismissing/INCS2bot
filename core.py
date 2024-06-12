@@ -214,7 +214,7 @@ async def unique_monthly():
         return await unique_monthly()
 
 
-@scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute)
+@scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute, second=15)
 async def check_currency():
     # noinspection PyBroadException
     try:
