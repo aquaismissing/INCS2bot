@@ -211,9 +211,13 @@ class UserGameStats(NamedTuple):
         stats['matches_win_percentage'] = to_percentage(
             stats.get('total_matches_won', 0) / stats.get('total_matches_played', 1)
         )
-        stats['hit_accuracy'] = to_percentage(stats.get('total_shots_hit', 0) / stats.get('total_shots_fired', 1))
-        stats['headshots_percentage'] = to_percentage(
-            stats.get('total_kills_headshot', 0) / stats.get('total_kills', 1)
+        stats['hit_accuracy'] = max(
+            to_percentage(stats.get('total_shots_hit', 0) / stats.get('total_shots_fired', 1)),
+            100
+        )
+        stats['headshots_percentage'] = max(
+            to_percentage(stats.get('total_kills_headshot', 0) / stats.get('total_kills', 1)),
+            100
         )
 
         total_wins_map_stats = [stat for stat in stats if stat.startswith('total_wins_map_')]
@@ -227,11 +231,15 @@ class UserGameStats(NamedTuple):
             stats['best_map_name'] = 'N/A'
             stats['best_map_win_percentage'] = 0
 
-        stats['taser_accuracy'] = to_percentage(stats.get('total_kills_taser', 0) / stats.get('total_shots_taser', 1))
+        stats['taser_accuracy'] = max(
+            to_percentage(stats.get('total_kills_taser', 0) / stats.get('total_shots_taser', 1)),
+            100
+        )
 
         for weapon in weapons:
-            stats[f'{weapon}_accuracy'] = (
-                to_percentage(stats.get(f'total_hits_{weapon}', 0) / stats.get(f'total_shots_{weapon}', 1))
+            stats[f'{weapon}_accuracy'] = max(
+                to_percentage(stats.get(f'total_hits_{weapon}', 0) / stats.get(f'total_shots_{weapon}', 1)),
+                100
             )
 
         stats = {key: stats.get(key, 0) for key in UserGameStats._fields}
