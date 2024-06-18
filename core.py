@@ -93,6 +93,7 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,
              bot_token=config.BOT_TOKEN,
+             test_mode=config.TEST_MODE,
              no_updates=True,
              workdir=config.SESS_FOLDER)
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
@@ -133,16 +134,16 @@ def remap_datacenters_info(info: dict) -> dict:
     dcs = DatacenterAtlas.available_dcs()
     
     remapped_info = {}
-    for _obj in dcs:
-        match _obj:
+    for obj in dcs:
+        match obj:
             case Datacenter(id=_id):
-                remapped_info[_id] = remap_dc(info, _obj)
+                remapped_info[_id] = remap_dc(info, obj)
 
             case DatacenterRegion(id=_id):
-                remapped_info[_id] = remap_dc_region(info, _obj)
+                remapped_info[_id] = remap_dc_region(info, obj)
 
             case DatacenterGroup(id=_id):
-                remapped_info[_id] = remap_dc_group(info, _obj)
+                remapped_info[_id] = remap_dc_group(info, obj)
 
     return remapped_info
 
@@ -282,7 +283,7 @@ async def send_alert(key, new_value):
         logging.warning(f'Got wrong key to send alert: {key}')
         return
 
-    if config.TEST_MODE:
+    if bot.test_mode:
         chat_list = [config.AQ]
     else:
         chat_list = [config.INCS2CHAT, config.CSTRACKER]

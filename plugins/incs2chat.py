@@ -220,7 +220,6 @@ async def echo(client: Client, message: Message):
 
     if message.text:
         text = message.text.removeprefix('/echo').strip()
-        entities = correct_message_entities(message.entities, message.text, text)
 
         if not text:
             msg = await message.reply('Пустой текст.', quote=False)
@@ -228,6 +227,7 @@ async def echo(client: Client, message: Message):
             await msg.delete()
             return
 
+        entities = correct_message_entities(message.entities, message.text, text)
         return await reply_to.reply(text, entities=entities, quote=should_reply, disable_web_page_preview=True)
 
     caption = message.caption.removeprefix('/echo').strip()
