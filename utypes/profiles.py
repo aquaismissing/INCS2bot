@@ -21,10 +21,26 @@ _csgofrcode_chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 api = SteamWebAPI(config.STEAM_API_KEY)
 
 
-def to_percentage(x: int | float, /, round_to: int = 2):
-    """Shortcut to `round(x * 100, round_to)`."""
+def safe_div(x: float, y: float):
+    return x / y if y != 0 else x
 
-    return round(x * 100, round_to if round_to else None)
+
+def to_percentage(x: float, y: float, /, *, round_to: int = 2, max_percentage: float = 100):
+    """
+    Takes a numerator and a denominator to return the corresponding (rounded if necessary) percentage,
+    clamped to ``max_percentage`` argument.
+
+    If denominator = 0, it becomes 1.
+    """
+
+    percent = safe_div(x, y) * 100
+    if percent % 1 != 0:
+        percent = round(percent, round_to if round_to else None)
+
+    if max_percentage is None:
+        return percent
+
+    return min(percent, max_percentage)
 
 
 class ErrorCode(StrEnum):
@@ -207,18 +223,14 @@ class UserGameStats(NamedTuple):
                    'xm1014', 'negev', 'm249')
 
         stats['total_time_played'] = round(stats.get('total_time_played', 0) / 3600, 2)
-        stats['kd_ratio'] = round(stats.get('total_kills', 0) / stats.get('total_deaths', 1), 2)
-        stats['matches_win_percentage'] = to_percentage(
-            stats.get('total_matches_won', 0) / stats.get('total_matches_played', 1)
-        )
-        stats['hit_accuracy'] = max(
-            to_percentage(stats.get('total_shots_hit', 0) / stats.get('total_shots_fired', 1)),
-            100
-        )
-        stats['headshots_percentage'] = max(
-            to_percentage(stats.get('total_kills_headshot', 0) / stats.get('total_kills', 1)),
-            100
-        )
+        stats['kd_ratio'] = round(safe_div(stats.get('total_kills', 0), stats.get('total_deaths', 1)), 2)
+
+        stats['matches_win_percentage'] = to_percentage(stats.get('total_matches_won', 0),
+                                                        stats.get('total_matches_played', 1))
+        stats['hit_accuracy'] = to_percentage(stats.get('total_shots_hit', 0),
+                                              stats.get('total_shots_fired', 1))
+        stats['headshots_percentage'] = to_percentage(stats.get('total_kills_headshot', 0),
+                                                      stats.get('total_kills', 1))
 
         total_wins_map_stats = [stat for stat in stats if stat.startswith('total_wins_map_')]
         if total_wins_map_stats:
@@ -226,21 +238,16 @@ class UserGameStats(NamedTuple):
             stats['best_map_name'] = best_map[-1].capitalize()
             best_map_wins = stats[f'total_wins_map_{"_".join(best_map)}']
             best_map_rounds = stats[f'total_rounds_map_{"_".join(best_map)}']
-            stats['best_map_win_percentage'] = to_percentage(best_map_wins / best_map_rounds)
+            stats['best_map_win_percentage'] = to_percentage(best_map_wins, best_map_rounds)
         else:
             stats['best_map_name'] = 'N/A'
             stats['best_map_win_percentage'] = 0
 
-        stats['taser_accuracy'] = max(
-            to_percentage(stats.get('total_kills_taser', 0) / stats.get('total_shots_taser', 1)),
-            100
-        )
+        stats['taser_accuracy'] = to_percentage(stats.get('total_kills_taser', 0), stats.get('total_shots_taser', 1))
 
         for weapon in weapons:
-            stats[f'{weapon}_accuracy'] = max(
-                to_percentage(stats.get(f'total_hits_{weapon}', 0) / stats.get(f'total_shots_{weapon}', 1)),
-                100
-            )
+            stats[f'{weapon}_accuracy'] = to_percentage(stats.get(f'total_hits_{weapon}', 0),
+                                                        stats.get(f'total_shots_{weapon}', 1))
 
         stats = {key: stats.get(key, 0) for key in UserGameStats._fields}
         return UserGameStats(**stats)
