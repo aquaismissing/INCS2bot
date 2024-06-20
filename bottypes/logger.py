@@ -12,6 +12,17 @@ if typing.TYPE_CHECKING:
     from .sessions import UserSession
 
 
+def limit_message_length(text: str, limit: int = 4000) -> str:
+    warning_message = ('\n\n'
+                       '&lt;The original log message is too long to display fully.&gt;\n'
+                       '&lt;Syb: looks like some shit really hit the fan&gt;')
+
+    if len(text) <= limit:
+        return text
+
+    return text[:limit - len(warning_message) - 3] + '...' + warning_message
+
+
 class SystemLogPayload(typing.NamedTuple):
     client: BotClient
     text: str
@@ -47,6 +58,8 @@ class BotLogger:
         self._logs_queue[_id].append(payload)
 
     async def process_queue(self):
+        """If the queue is not empty, takes the first request from it, deserialize it and send as a log."""
+
         if self.is_queue_empty():
             return
 
@@ -91,7 +104,7 @@ class BotLogger:
                        parse_mode: ParseMode = None):
         """Sends log to the log channel immediately, avoiding the queue."""
 
-        await client.send_message(self.log_channel_id, text,
+        await client.send_message(self.log_channel_id, limit_message_length(text),
                                   disable_notification=disable_notification,
                                   reply_markup=reply_markup,
                                   parse_mode=parse_mode)
