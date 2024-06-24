@@ -387,6 +387,9 @@ class ProfileInfo:
 
 
 def parse_steamid(data: str) -> SteamID:
+    if data is None:
+        raise ParseUserStatsError(ErrorCode.INVALID_REQUEST)
+
     data = data.strip()
 
     if STEAM_PROFILE_LINK_PATTERN.match(data):
