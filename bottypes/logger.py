@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 import typing
 
 if typing.TYPE_CHECKING:
     from pyrogram.enums import ParseMode
 
-    from pyrogram.types import (CallbackQuery, InlineQuery, Message,
-                                ReplyKeyboardMarkup, User)
+    from pyrogram.types import (CallbackQuery, InlineQuery, InlineKeyboardMarkup, Message, User)
 
     from .botclient import BotClient
     from .sessions import UserSession
@@ -27,7 +27,7 @@ class SystemLogPayload(typing.NamedTuple):
     client: BotClient
     text: str
     disable_notification: bool
-    reply_markup: ReplyKeyboardMarkup
+    reply_markup: InlineKeyboardMarkup
     parse_mode: ParseMode
 
 
@@ -41,9 +41,7 @@ class EventLogPayload(typing.NamedTuple):
 SYSTEM = 'system'
 
 
-class BotLogger:
-    """Made to work in a pair with BotClient handling logging stuff."""
-
+class BotLogger(ABC):
     def __init__(self, log_channel_id: int):
         self.log_channel_id = log_channel_id
         self._logs_queue: dict[str, list[SystemLogPayload | EventLogPayload]] = {}
@@ -66,48 +64,28 @@ class BotLogger:
         userid = tuple(self._logs_queue)[0]
         logged_events = self._logs_queue[userid]
 
-        if not logged_events:  # I have no idea how is it possible,
-            return             # but it's possible
+        if not logged_events:             # probably left an empty list
+            del self._logs_queue[userid]  # just delete it
+            return
 
         if userid == SYSTEM:  # invoked by system, not user
-            system_log = logged_events.pop(0)
-            return await self.send_log(system_log.client,
-                                       system_log.text,
-                                       system_log.disable_notification,
-                                       system_log.reply_markup,
-                                       system_log.parse_mode)
+            payload = logged_events.pop(0)
+
+            if not logged_events:  # if empty after popping
+                del self._logs_queue[userid]
+
+            return await self.send_system_log(payload)
 
         del self._logs_queue[userid]
-        client = logged_events[-1].client
-        user = logged_events[-1].user
-        session = logged_events[-1].session
-        display_name = f'@{user.username}' if user.username is not None else f'{user.mention} (username hidden)'
-
-        text = [f'👤: {display_name}',
-                f'ℹ️: {userid}',
-                f'✈️: {user.language_code}',
-                f'⚙️: {session.locale.lang_code}',
-                f'━━━━━━━━━━━━━━━━━━━━━━━'] + [event.result_text for event in logged_events]
-        return await self.send_log(client, '\n'.join(text), disable_notification=True)
+        return await self.send_event_log(logged_events)
 
     async def schedule_system_log(self, client: BotClient, text: str,
                                   disable_notification: bool = True,
-                                  reply_markup: ReplyKeyboardMarkup = None,
+                                  reply_markup: InlineKeyboardMarkup = None,
                                   parse_mode: ParseMode = None):
         """Put sending a system log into the queue."""
 
         self.put_into_queue(SYSTEM, SystemLogPayload(client, text, disable_notification, reply_markup, parse_mode))
-
-    async def send_log(self, client: BotClient, text: str,
-                       disable_notification: bool = True,
-                       reply_markup: ReplyKeyboardMarkup = None,
-                       parse_mode: ParseMode = None):
-        """Sends log to the log channel immediately, avoiding the queue."""
-
-        await client.send_message(self.log_channel_id, limit_message_length(text),
-                                  disable_notification=disable_notification,
-                                  reply_markup=reply_markup,
-                                  parse_mode=parse_mode)
 
     async def schedule_message_log(self, client: BotClient, session: UserSession, message: Message):
         """Put sending a message log into the queue."""
@@ -130,3 +108,91 @@ class BotLogger:
         user = inline_query.from_user
 
         self.put_into_queue(str(user.id), EventLogPayload(client, user, session, f'🛰: "{inline_query.query}"'))
+
+    async def send_log(self, client: BotClient, text: str,
+                       disable_notification: bool = True,
+                       reply_markup: InlineKeyboardMarkup = None,
+                       parse_mode: ParseMode = None):
+        """Sends log to the log channel immediately, avoiding the queue."""
+
+        await client.send_message(self.log_channel_id, limit_message_length(text),
+                                  disable_notification=disable_notification,
+                                  reply_markup=reply_markup,
+                                  parse_mode=parse_mode)
+
+    @abstractmethod
+    async def send_system_log(self, payload: SystemLogPayload):
+        """Sends log to the log channel immediately, avoiding the queue."""
+
+        raise NotImplementedError
+
+    @abstractmethod
+    async def send_event_log(self, payload: list[EventLogPayload],
+                             reply_markup: InlineKeyboardMarkup = None):
+        """Sends log to the log channel immediately, avoiding the queue."""
+
+        raise NotImplementedError
+
+
+class PlainBotLogger(BotLogger):
+    """Made to work in a pair with BotClient handling logging stuff."""
+
+    async def send_system_log(self, payload: SystemLogPayload):
+        """Sends log to the log channel immediately, avoiding the queue."""
+
+        return await self.send_log(payload.client,
+                                   payload.text,
+                                   payload.disable_notification,
+                                   payload.reply_markup,
+                                   payload.parse_mode)
+
+    async def send_event_log(self, payloads: list[EventLogPayload],
+                             reply_markup: InlineKeyboardMarkup = None):
+        """Sends log to the log channel immediately, avoiding the queue."""
+        client = payloads[-1].client
+        user = payloads[-1].user
+        session = payloads[-1].session
+        display_name = f'@{user.username}' if user.username is not None else f'{user.mention} (username hidden)'
+
+        text = [f'👤: {display_name}',
+                f'ℹ️: {user.id}',
+                f'✈️: {user.language_code}',
+                f'⚙️: {session.locale.lang_code}',
+                f'━━━━━━━━━━━━━━━━━━━━━━━'] + [event.result_text for event in payloads]
+
+        return await self.send_log(client, '\n'.join(text),
+                                   reply_markup=reply_markup)
+
+
+class ReplyBackBotLogger(BotLogger):
+    def __init__(self, log_channel_id: int,
+                 event_reply_markup_builder: typing.Callable[[User], InlineKeyboardMarkup] = lambda _: None):
+        super().__init__(log_channel_id)
+
+        self.event_reply_markup_builder = event_reply_markup_builder
+
+    async def send_system_log(self, payload: SystemLogPayload):
+        """Sends log to the log channel immediately, avoiding the queue."""
+
+        return await self.send_log(payload.client,
+                                   payload.text,
+                                   payload.disable_notification,
+                                   payload.reply_markup,
+                                   payload.parse_mode)
+
+    async def send_event_log(self, payloads: list[EventLogPayload],
+                             reply_markup: InlineKeyboardMarkup = None):
+        """Sends log to the log channel immediately, avoiding the queue."""
+        client = payloads[-1].client
+        user = payloads[-1].user
+        session = payloads[-1].session
+        display_name = f'@{user.username}' if user.username is not None else f'{user.mention} (username hidden)'
+
+        text = [f'👤: {display_name}',
+                f'ℹ️: {user.id}',
+                f'✈️: {user.language_code}',
+                f'⚙️: {session.locale.lang_code}',
+                f'━━━━━━━━━━━━━━━━━━━━━━━'] + [event.result_text for event in payloads]
+
+        return await self.send_log(client, '\n'.join(text),
+                                   reply_markup=self.event_reply_markup_builder(user))

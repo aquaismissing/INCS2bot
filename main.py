@@ -12,14 +12,15 @@ from babel.dates import format_datetime
 from csxhair import Crosshair
 from pyrogram import filters
 from pyrogram.enums import ChatType, ChatAction, ParseMode
-from pyrogram.errors import MessageDeleteForbidden, MessageNotModified
+from pyrogram.errors import MessageDeleteForbidden, MessageNotModified, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Message
 # noinspection PyUnresolvedReferences
 from pyropatch import pyropatch  # do not delete!!
 from telegraph.aio import Telegraph
 
-from bottypes import BotClient, BotLogger, ExtendedIKB, ExtendedIKM
+from bottypes import BotClient, ExtendedIKB, ExtendedIKM
 import config
+from bottypes.logger import ReplyBackBotLogger
 from db import db_session
 from functions import info_formatters, utime
 from functions.decorators import ignore_message_not_modified
@@ -57,7 +58,7 @@ bot = BotClient(config.BOT_NAME,
                 plugins={'root': 'plugins'},
                 test_mode=config.TEST_MODE,
                 workdir=config.SESS_FOLDER,
-                logger=BotLogger(config.LOGCHANNEL),
+                logger=ReplyBackBotLogger(config.LOGCHANNEL, keyboards.event_log_markup_builder),
                 navigate_back_callback=LK.bot_back,)
 
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
@@ -83,12 +84,25 @@ async def handle_messages(client: BotClient, message: Message):
 
 @bot.on_callback_query()
 async def handle_callbacks(client: BotClient, callback_query: CallbackQuery):
-    if callback_query.message.chat.id != client.logger.log_channel_id:
-        # Render selection indicator on selectable markups
-        for markup in keyboards.all_selectable_markups:
-            markup.select_button_by_key(callback_query.data)
+    if callback_query.message.chat.id == client.logger.log_channel_id:
+        return await handle_callbacks_in_logger(client, callback_query)
+
+    # Render selection indicator on selectable markups
+    for markup in keyboards.all_selectable_markups:
+        markup.select_button_by_key(callback_query.data)
 
     return await client.handle_callback(callback_query)
+
+
+async def handle_callbacks_in_logger(client: BotClient, callback_query: CallbackQuery):
+    user = callback_query.from_user
+    session = client.sessions.get(user.id)
+    if session is None:
+        session = await client.register_session(user, callback_query.message)
+
+    if callback_query.data.startswith("reply_through_logger_"):
+        userid = int(callback_query.data.removeprefix("reply_through_logger_"))
+        return await reply_through_logger_callback(client, session, callback_query, userid)
 
 
 @bot.navmenu('main', ignore_message_not_modified=True)
@@ -874,6 +888,88 @@ async def _help(client: BotClient, session: UserSession, message: Message):
 
     session.current_menu_id = main_menu.id
     return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
+
+
+# cat: TESTING
+
+
+@bot.on_message(filters.command('reply'))
+async def reply_through_logger_command(client: BotClient, message: Message):
+    if message.from_user.id not in config.DEVS_IDS:
+        return
+
+    user = message.from_user
+    session = client.sessions.get(user.id)
+    if session is None:
+        session = await client.register_session(user, message)
+
+    _, recipient_id, message_to_send = message.text.split(maxsplit=2)
+
+    try:
+        recipient = await client.get_users(recipient_id)
+        recipient_pm_chat = await client.get_chat(recipient.username)
+    except PeerIdInvalid:
+        await message.reply("You can't send messages to this user (perhaps, they didn't interact with the bot yet).")
+        session.current_menu_id = main_menu.id
+        return await message.reply(session.locale.bot_choose_cmd,
+                                   reply_markup=keyboards.main_markup(session.locale))
+
+    await client.send_message(recipient_pm_chat.id, f'The developers sent a personal message for you!:\n'
+                                                    f'\n'
+                                                    f'<blockquote>{message_to_send}</blockquote>')
+
+    await message.reply('Successfully sent the message.')
+    session.current_menu_id = main_menu.id
+    return await message.reply(session.locale.bot_choose_cmd,
+                               reply_markup=keyboards.main_markup(session.locale))
+
+
+async def reply_through_logger_callback(client: BotClient, session: UserSession,
+                                        callback_query: CallbackQuery, recipient_id: int):
+    sender = callback_query.from_user
+    sender_pm_chat = await client.get_chat(sender.username)
+
+    e = await client.send_message(sender_pm_chat.id, "Loading...")
+
+    try:
+        recipient = await client.get_users(recipient_id)
+        recipient_pm_chat = await client.get_chat(recipient.username)
+    except PeerIdInvalid:
+        await e.edit("You can't send messages to this user (perhaps, they blocked the bot).")
+        session.current_menu_id = main_menu.id
+        return await e.reply(session.locale.bot_choose_cmd,
+                             reply_markup=keyboards.main_markup(session.locale))
+
+    try:
+        message_to_send = await client.ask_message_silently(
+            e,
+            f'Enter the message you want to send to {recipient.username}... \n'
+            f'\n'
+            f'(or use /cancel)',
+            timeout=ASK_TIMEOUT
+        )
+    except asyncio.exceptions.TimeoutError:
+        await e.reply("Timed out.")
+
+        session.current_menu_id = main_menu.id
+        return await e.reply(session.locale.bot_choose_cmd,
+                             reply_markup=keyboards.main_markup(session.locale))
+
+    if message_to_send.text == '/cancel':
+        await e.reply("Canceled.")
+
+        session.current_menu_id = main_menu.id
+        return await e.reply(session.locale.bot_choose_cmd,
+                             reply_markup=keyboards.main_markup(session.locale))
+
+    await client.send_message(recipient_pm_chat.id, f'The developers sent a personal message for you!:\n'
+                                                    f'\n'
+                                                    f'<blockquote>{message_to_send.text}</blockquote>')
+
+    await message_to_send.reply('Successfully sent the message.')
+    session.current_menu_id = main_menu.id
+    return await message_to_send.reply(session.locale.bot_choose_cmd,
+                                       reply_markup=keyboards.main_markup(session.locale))
 
 
 # cat: Service
