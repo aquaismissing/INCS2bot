@@ -161,7 +161,13 @@ async def update_depots():
                 await send_alert('dprp_build_sync_id', new_value)
                 continue
             if _id == 'public_build_id':
-                _ = asyncio.create_task(update_game_version())
+                with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:  # pre-dump before new values
+                    json.dump(cache, f, indent=4, ensure_ascii=False)
+
+                await asyncio.create_task(update_game_version())
+
+                with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+                    cache = json.load(f)
             await send_alert(_id, new_value)
 
     with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
@@ -196,6 +202,8 @@ async def update_game_version():
 
                 with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
                     json.dump(cache, f, indent=4, ensure_ascii=False)
+
+                logging.info('Successfully updated the game version data.')
                 return
         except Exception:
             logging.exception('Caught an exception while trying to get new version!')
