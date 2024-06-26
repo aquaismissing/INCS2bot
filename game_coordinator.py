@@ -164,7 +164,7 @@ async def update_depots():
                 with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:  # pre-dump before new values
                     json.dump(cache, f, indent=4, ensure_ascii=False)
 
-                await asyncio.create_task(update_game_version())
+                await update_game_version()
 
                 with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
                     cache = json.load(f)
