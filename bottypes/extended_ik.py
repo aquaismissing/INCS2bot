@@ -60,11 +60,15 @@ class ExtendedIKB(InlineKeyboardButton):
 
 
 class ExtendedIKM(InlineKeyboardMarkup):
-    def update_locale(self, locale: Locale):
+    def iter_buttons(self):
         for line in self.inline_keyboard:
             for button in line:
-                if isinstance(button, ExtendedIKB):
-                    button.set_localed_text(locale)
+                yield button
+
+    def update_locale(self, locale: Locale):
+        for button in self.iter_buttons():
+            if isinstance(button, ExtendedIKB):
+                button.set_localed_text(locale)
 
     def localed(self, locale: Locale):
         self.update_locale(locale)
@@ -74,10 +78,6 @@ class ExtendedIKM(InlineKeyboardMarkup):
         return self.localed(locale)
 
     def select_button_by_key(self, key: str):
-        for line in self.inline_keyboard:
-            for button in line:
-                if isinstance(button, ExtendedIKB) and button.selectable:
-                    if button.text_key == key or button.callback_data == key:
-                        button.selected = True
-                    else:
-                        button.selected = False  # only one button at a time can be selected
+        for button in self.iter_buttons():
+            if isinstance(button, ExtendedIKB) and button.selectable:
+                button.selected = (button.text_key == key or button.callback_data == key)

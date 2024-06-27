@@ -235,6 +235,7 @@ rifles_markup = ExtendedIKM([
 ])
 
 # Leaderboard
+
 _leaderboard_global = ExtendedIKB(LK.game_leaderboard_world)
 _leaderboard_na = ExtendedIKB(LK.regions_northamerica)
 _leaderboard_sa = ExtendedIKB(LK.regions_southamerica)
@@ -254,6 +255,7 @@ leaderboard_markup = ExtendedIKM([
 ])
 
 # Crosshair
+
 _generate_crosshair = ExtendedIKB(LK.crosshair_generate, LK.crosshair_generate)
 _decode_crosshair = ExtendedIKB(LK.crosshair_decode, LK.crosshair_decode)
 
@@ -262,24 +264,29 @@ crosshair_markup = ExtendedIKM([
     [back_button]
 ])
 
+
 # Language
-_available_langs = get_available_languages()
-columns = 3
 
-_language_buttons = []
-_row = []
-for lang_code, lang_name in _available_langs.items():
-    _row.append(ExtendedIKB(lang_name, lang_code, translatable=False))
-    if len(_row) == columns:
-        _language_buttons.append(_row)  # yes, we append lists
-        _row = []
-if _row:
-    _language_buttons.append(_row)
+def get_language_settings_layout():
+    available_langs = get_available_languages()
+    columns = 3
 
-_language_buttons.append([back_button])
+    language_buttons = []
+    row = []
+    for lang_code, lang_name in available_langs.items():
+        row.append(ExtendedIKB(lang_name, lang_code, translatable=False))
+        if len(row) >= columns:
+            language_buttons.append(row)  # yes, we append lists
+            row = []
+    if row:
+        language_buttons.append(row)
 
-language_settings_markup = ExtendedIKM(_language_buttons)
+    language_buttons.append([back_button])
+    return language_buttons
 
 
-all_selectable_markups = (ss_markup, extra_markup, dc_markup, dc_asia_markup, dc_eu_markup, dc_us_markup, dc_southamerica_markup,
+language_settings_markup = ExtendedIKM(get_language_settings_layout())
+
+all_selectable_markups = (ss_markup, extra_markup,
+                          dc_markup, dc_asia_markup, dc_eu_markup, dc_us_markup, dc_southamerica_markup,
                           pistols_markup, heavy_markup, smgs_markup, rifles_markup, language_settings_markup)
