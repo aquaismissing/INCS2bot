@@ -110,7 +110,7 @@ def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN') 
     logging.error(f'{r.status_code=}, {r.reason=}')
 
 
-def post_to_discord_webhook(url: str, text: str, attachment: BytesIO = None):  # todo: attachments support?
+def post_to_discord_webhook(url: str, text: str, attachment: BytesIO = None):
     payload = {'content': text}
 
     if attachment:
@@ -118,7 +118,7 @@ def post_to_discord_webhook(url: str, text: str, attachment: BytesIO = None):  #
         r = requests.post(url, files=payload)
     else:
         headers = {'Content-Type': 'application/json'}
-        r = requests.post(url, payload, headers=headers)
+        r = requests.post(url, json=payload, headers=headers)
 
     if r.status_code not in [200, 204]:  # Discord uses 204 as a success code (yikes)
         logging.error('Failed to post to Discord webhook.')
