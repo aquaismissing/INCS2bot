@@ -23,7 +23,7 @@ if platform.system() == 'Linux':
 
 import config
 from functions import caching, locale, utime
-from functions.ulogging import setup_logging
+from functions.ulogging import get_logger
 from utypes import GameVersion, States, GameVersionData
 
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
@@ -46,8 +46,7 @@ AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
                     'branch_deleted': loc.notifs_branch_deleted}
 MAIN_BRANCHES = {'public', 'dpr', 'dprp', '<null>'}  # <null> is for other important things
 
-logger = getLogger('GC')
-setup_logging(logger, config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
+logger = get_logger('GC', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 
 class PatchedSteamClient(SteamClient):

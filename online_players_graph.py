@@ -14,13 +14,12 @@ import seaborn as sns
 
 import config
 from functions import utime
-from functions.ulogging import setup_logging
+from functions.ulogging import get_logger
 
 MINUTE = 60
 MAX_ONLINE_MARKS = (MINUTE // 10) * 24 * 7 * 2  # = 2016 marks - every 10 minutes for the last two weeks
 
-logger = logging.getLogger('player_count_graph')
-setup_logging(logger, config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
+logger = get_logger('player_count_graph', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 scheduler = BlockingScheduler()
 

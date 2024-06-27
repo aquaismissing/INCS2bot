@@ -15,7 +15,7 @@ if platform.system() == 'Linux':
 import config
 from dcatlas import DatacenterAtlas
 from functions import caching, utime
-from functions.ulogging import setup_logging
+from functions.ulogging import get_logger
 from l10n import locale
 from utypes import (ExchangeRate, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServers,
@@ -74,8 +74,7 @@ if execution_cron_minute >= 60:
 
 loc = locale('ru')
 
-logger = getLogger('Core')
-setup_logging(logger, config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
+logger = get_logger('Core', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 scheduler = AsyncIOScheduler()
 bot = Client(config.BOT_CORE_MODULE_NAME,

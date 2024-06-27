@@ -4,11 +4,13 @@ import logging.handlers
 from pathlib import Path
 
 
-__all__ = ['setup_logging']
+__all__ = ['get_logger']
 
 
-def setup_logging(logger: logging.Logger, logs_path: str | Path, config_path: str | Path):
+def get_logger(name: str, logs_path: str | Path, config_path: str | Path):
     """Applies all the settings from a logging config, as well as a RotatingFileHandler (for per-logger logs output)."""
+
+    logger = logging.getLogger(name)
 
     with open(config_path, encoding='utf-8') as f:
         logging_config = json.load(f)
@@ -28,3 +30,4 @@ def setup_logging(logger: logging.Logger, logs_path: str | Path, config_path: st
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(detailed_formatter)
     logger.addHandler(file_handler)
+    return logger
