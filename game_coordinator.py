@@ -1,6 +1,5 @@
 import asyncio
 import datetime as dt
-from logging import getLogger
 import platform
 import sys
 import time
@@ -46,7 +45,7 @@ AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
                     'branch_deleted': loc.notifs_branch_deleted}
 MAIN_BRANCHES = {'public', 'dpr', 'dprp', '<null>'}  # <null> is for other important things
 
-logger = get_logger('GC', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
+logger = get_logger('game_coordinator', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 
 class PatchedSteamClient(SteamClient):
@@ -359,6 +358,7 @@ async def mainloop():
 
 
 async def main():
+    logger.info('Started.')
     try:
         logger.info('Logging in...')
         result = client.login(username=config.STEAM_USERNAME, password=config.STEAM_PASS)
@@ -374,6 +374,7 @@ async def main():
         if client.connected:
             logger.info('Logout...')
             client.logout()
+        logger.info('Terminated.')
         raise
 
 

@@ -3,12 +3,12 @@
   "disable_existing_loggers": false,
   "formatters": {
     "simple": {
-      "format": "{asctime} | {name:<30}: {message}",
+      "format": "{asctime} | {name}: {message}",
       "datefmt": "%H:%M:%S — %d/%m/%Y (%z)",
       "style": "{"
     },
     "detailed": {
-      "format": "{asctime} | {name:<30} | L{lineno:<4} | [{levelname:^8}]: {message}",
+      "format": "{asctime} | {name:<17} | L{lineno:<4} | [{levelname:^8}]: {message}",
       "datefmt": "%Y-%m-%dT%H:%M:%S%z",
       "style": "{"
     }

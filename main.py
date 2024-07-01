@@ -66,7 +66,7 @@ bot = BotClient(config.BOT_NAME,
                 plugins={'root': 'plugins'},
                 test_mode=config.TEST_MODE,
                 workdir=config.SESS_FOLDER,
-                logger=BotLogger(config.LOGCHANNEL),
+                telegram_logger=BotLogger(config.LOGCHANNEL),
                 navigate_back_callback=LK.bot_back,)
 
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
@@ -77,7 +77,7 @@ telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 @bot.on_callback_exception()
 async def handle_exceptions_in_callback(client: BotClient, session: UserSession, bot_message: Message, exc: Exception):
     if exc is not None:
-        logging.exception('Caught exception!', exc_info=exc)
+        logger.exception('Caught exception!', exc_info=exc)
         await client.log(f'❗️ {"".join(traceback.format_exception(exc))}',
                          disable_notification=False, parse_mode=ParseMode.DISABLED)
 
@@ -93,7 +93,7 @@ async def handle_messages(client: BotClient, message: Message):
 
 @bot.on_callback_query()
 async def handle_callbacks(client: BotClient, callback_query: CallbackQuery):
-    if callback_query.message.chat.id != client.logger.log_channel_id:
+    if callback_query.message.chat.id != client.telegram_logger.log_channel_id:
         # Render selection indicator on selectable markups
         for markup in keyboards.all_selectable_markups:
             markup.select_button_by_key(callback_query.data)
@@ -968,6 +968,7 @@ async def drop_cap_reset_in_10_minutes(client: BotClient):  # todo: finish testi
 
 
 async def main():
+    logger.info('Started.')
     scheduler = AsyncIOScheduler()
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=30)
     scheduler.add_job(regular_stats_report, 'interval', hours=8,
@@ -983,15 +984,16 @@ async def main():
         await bot.log('Bot started.', instant=True)
         await bot.mainloop()
     except Exception as e:
-        logging.exception('The bot got terminated because of exception!')
+        logger.exception('The bot got terminated because of exception!')
         await bot.log(f'Bot got terminated because of exception!\n'
                       f'\n'
                       f'❗️ {"".join(traceback.format_exception(e))}', disable_notification=True, instant=True)
     finally:
-        logging.info('Shutting down the bot...')
+        logger.info('Shutting down the bot...')
         await bot.log('Bot is shutting down...', instant=True)
         await bot.dump_sessions()
         await bot.stop(block=False)
+        logger.info('Terminated.')
 
 
 if __name__ == '__main__':

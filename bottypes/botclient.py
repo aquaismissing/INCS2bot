@@ -24,6 +24,9 @@ from .stats import BotRegularStats
 __all__ = ('BotClient',)
 
 
+logger = logging.getLogger('INCS2bot')
+
+
 class BotClient(Client):
     """
     Custom pyrogram.Client class to add custom properties and methods and stop PyCharm annoy me.
@@ -33,10 +36,11 @@ class BotClient(Client):
 
     WILDCARD = '_'
 
-    def __init__(self, *args, logger: BotLogger, navigate_back_callback: str, commands_prefix: str = '/', **kwargs):
+    def __init__(self, *args, telegram_logger: BotLogger,
+                 navigate_back_callback: str, commands_prefix: str = '/', **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.logger = logger
+        self.telegram_logger = telegram_logger
         self.navigate_back_callback = navigate_back_callback
 
         self._sessions: UserSessions = UserSessions()
@@ -75,7 +79,7 @@ class BotClient(Client):
         task = None
 
         def signal_handler(signum, __):
-            logging.info(f'Stop signal received ({signals[signum]}). Exiting...')
+            logger.info(f'Stop signal received ({signals[signum]}). Exiting...')
             task.cancel()
 
         for s in (SIGINT, SIGTERM, SIGABRT):
@@ -87,7 +91,7 @@ class BotClient(Client):
             task = asyncio.create_task(asyncio.sleep(self.MAINLOOP_TIMEOUT.total_seconds()))
             try:
                 await task
-                await self.logger.process_queue()
+                await self.telegram_logger.process_queue()
             except asyncio.CancelledError:
                 self.is_in_mainloop = False
 
@@ -113,7 +117,6 @@ class BotClient(Client):
             async def inner(client: BotClient, session: UserSession, bot_message: Message, exc: Exception,
                             *args, **kwargs):
                 message = await func(client, session, bot_message, exc, *args, **kwargs)
-                # logging.info(f'{message!r}')
                 if isinstance(message, Message):
                     session.last_bot_pm_id = message.id
 
@@ -299,7 +302,7 @@ class BotClient(Client):
         if session is None:
             session = await self.register_session(user, callback_query.message)
 
-        if callback_query.message.chat.id != self.logger.log_channel_id:
+        if callback_query.message.chat.id != self.telegram_logger.log_channel_id:
             await self.log_callback(session, callback_query)
 
         bot_message = callback_query.message
@@ -464,10 +467,10 @@ class BotClient(Client):
         """Sends log to the log channel."""
 
         if instant:  # made for specific log messages (e.g. "Bot is shutting down...")
-            await self.logger.send_log(self, text, disable_notification, reply_markup, parse_mode)
+            await self.telegram_logger.send_log(self, text, disable_notification, reply_markup, parse_mode)
             return
 
-        await self.logger.schedule_system_log(self, text, disable_notification, reply_markup, parse_mode)
+        await self.telegram_logger.schedule_system_log(self, text, disable_notification, reply_markup, parse_mode)
 
     async def log_message(self, session: UserSession, message: Message):
         """Sends message log to the log channel."""
@@ -475,7 +478,7 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        await self.logger.schedule_message_log(self, session, message)
+        await self.telegram_logger.schedule_message_log(self, session, message)
 
     async def log_callback(self, session: UserSession, callback_query: CallbackQuery):
         """Sends callback query log to the log channel."""
@@ -483,7 +486,7 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        await self.logger.schedule_callback_log(self, session, callback_query)
+        await self.telegram_logger.schedule_callback_log(self, session, callback_query)
 
     async def log_inline(self, session: UserSession, inline_query: InlineQuery):
         """Sends an inline query log to the log channel."""
@@ -491,4 +494,4 @@ class BotClient(Client):
         if self.test_mode:
             return
 
-        await self.logger.schedule_inline_log(self, session, inline_query)
+        await self.telegram_logger.schedule_inline_log(self, session, inline_query)

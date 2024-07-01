@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 
 TAGS = load_tags()
 
+logger = logging.getLogger('INCS2bot')
+
 
 def log_exception_inline(func):
     """Decorator to catch and log exceptions in bot inline functions."""
@@ -35,7 +37,7 @@ def log_exception_inline(func):
         try:
             await func(client, session, inline_query, *args, **kwargs)
         except Exception:
-            logging.exception('Caught exception!')
+            logger.exception('Caught exception!')
             await client.log(f'❗️ {traceback.format_exc()}\n'
                              f'\n'
                              f'↩️ inline_query',

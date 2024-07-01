@@ -35,6 +35,9 @@ def dump_message_filters(_filters: dict[int, str]):
 filtered_channels_and_bots = load_message_filters()  # {id: name} (for easier recognition)
 
 
+logger = logging.getLogger('INCS2bot')
+
+
 async def is_administrator(chat: Chat, user: User) -> bool:
     admins = {admin.user.id async for admin in chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)}
 
@@ -123,9 +126,9 @@ def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN') 
     if r.status_code == 200:
         return r.json()['translations'][0]['text']
 
-    logging.error('Failed to translate text.')
-    logging.error(f'{text=}')
-    logging.error(f'{r.status_code=}, {r.reason=}')
+    logger.error('Failed to translate text.')
+    logger.error(f'{text=}')
+    logger.error(f'{r.status_code=}, {r.reason=}')
 
 
 def post_to_discord_webhook(url: str, text: str, attachment: BytesIO = None):
@@ -139,14 +142,13 @@ def post_to_discord_webhook(url: str, text: str, attachment: BytesIO = None):
         r = requests.post(url, json=payload, headers=headers)
 
     if r.status_code not in [200, 204]:  # Discord uses 204 as a success code (yikes)
-        logging.error('Failed to post to Discord webhook.')
-        logging.error(f'{payload=}')
-        logging.error(f'{r.status_code=}, {r.reason=}, {r.text=}')
+        logger.error('Failed to post to Discord webhook.')
+        logger.error(f'{payload=}')
+        logger.error(f'{r.status_code=}, {r.reason=}, {r.text=}')
 
 
 async def forward_to_discord(client: Client, message: Message):
     texts = process_discord_text(message)
-    logging.info(texts)
 
     attachment: BytesIO | None
     try:

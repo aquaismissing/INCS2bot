@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 
 import requests
@@ -19,7 +18,7 @@ from functions.ulogging import get_logger
 MINUTE = 60
 MAX_ONLINE_MARKS = (MINUTE // 10) * 24 * 7 * 2  # = 2016 marks - every 10 minutes for the last two weeks
 
-logger = get_logger('player_count_graph', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
+logger = get_logger('online_players_graph', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 scheduler = BlockingScheduler()
 
@@ -131,7 +130,11 @@ def graph_maker():
 
 
 def main():
-    scheduler.start()
+    logger.info('Started.')
+    try:
+        scheduler.start()
+    except KeyboardInterrupt:
+        logger.info('Terminated.')
 
 
 if __name__ == "__main__":

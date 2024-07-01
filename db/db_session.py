@@ -5,6 +5,9 @@ from sqlalchemy.orm import DeclarativeBase, Session
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 
 
+logger = logging.getLogger('INCS2bot.db')
+
+
 class SqlAlchemyBase(AsyncAttrs, DeclarativeBase):
     pass
 
@@ -19,7 +22,7 @@ async def init(db_file: Path):
         return
 
     conn_str = f'sqlite+aiosqlite:///{db_file}?check_same_thread=False'
-    logging.info(f'Connecting to database in {conn_str}')
+    logger.info(f'Connecting to database in {conn_str}')
 
     engine = create_async_engine(conn_str, echo=False)
 

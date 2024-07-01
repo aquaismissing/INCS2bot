@@ -1,6 +1,5 @@
 import asyncio
 import datetime as dt
-from logging import getLogger
 import platform
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -74,7 +73,7 @@ if execution_cron_minute >= 60:
 
 loc = locale('ru')
 
-logger = get_logger('Core', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
+logger = get_logger('core', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
 scheduler = AsyncIOScheduler()
 bot = Client(config.BOT_CORE_MODULE_NAME,
@@ -255,6 +254,7 @@ async def send_alert(key, new_value):
 
 
 def main():
+    logger.info('Started.')
     try:
         scheduler.start()
         bot.run()
@@ -262,6 +262,7 @@ def main():
         logger.info('Shutting down the bot...')
     finally:
         steam_webapi.close()
+        logger.info('Terminated.')
 
 
 if __name__ == '__main__':
