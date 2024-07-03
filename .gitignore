@@ -9,12 +9,14 @@ __pycache__/
 .venv/
 
 # secrets
-/_internal/
-/data/
-/config.py
+_internal/
+data/
+logs/*
+!logs/config.json
+config.py
 
 # bot sessions
-/sessions/
+sessions/
 
 # misc
 init.sh
