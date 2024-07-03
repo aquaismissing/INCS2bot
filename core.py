@@ -58,18 +58,18 @@ DATACENTER_API_FIELDS = {
 }
 
 
-UNUSED_FIELDS = ['csgo_client_version',
-                 'csgo_server_version',
-                 'csgo_patch_version',
-                 'csgo_version_timestamp',
-                 'sdk_build_id',
-                 'ds_build_id',
-                 'valve_ds_changenumber',
-                 'webapi',
-                 'sessions_logon',
-                 'steam_community',
-                 'matchmaking_scheduler',
-                 'game_coordinator']
+DEPRECATED_FIELDS = ['csgo_client_version',
+                     'csgo_server_version',
+                     'csgo_patch_version',
+                     'csgo_version_timestamp',
+                     'sdk_build_id',
+                     'ds_build_id',
+                     'valve_ds_changenumber',
+                     'webapi',
+                     'sessions_logon',
+                     'steam_community',
+                     'matchmaking_scheduler',
+                     'game_coordinator']
 
 UNKNOWN_DC_STATE = {"capacity": "unknown", "load": "unknown"}
 
@@ -99,8 +99,18 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
 
 
-def clear_from_unused_fields(cache: dict):
-    for field in UNUSED_FIELDS:
+def update_cache(**changes):
+    with open(config.CORE_CACHE_FILE_PATH, encoding='utf-8') as f:
+        cache = json.load(f)
+
+    cache |= changes
+
+    with open(config.CORE_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        json.dump(cache, f, indent=4, ensure_ascii=False)
+
+
+def clear_from_deprecated_fields(cache: dict):
+    for field in DEPRECATED_FIELDS:
         if cache.get(field):
             del cache[field]
 
@@ -152,10 +162,10 @@ def remap_datacenters_info(info: dict) -> dict:
 async def update_cache_info():
     # noinspection PyBroadException
     try:
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        with open(config.CORE_CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
-        clear_from_unused_fields(cache)
+        clear_from_deprecated_fields(cache)  # todo: I guess we can already delete that one?
 
         overall_data = GameServers.request(steam_webapi)
 
@@ -168,9 +178,10 @@ async def update_cache_info():
 
         cache['datacenters'] = remap_datacenters_info(overall_data.datacenters)
 
-        if cache['online_players'] > cache.get('player_alltime_peak', 0):
+        if cache.get('online_players', 0) > cache.get('player_alltime_peak', 1):
             if scheduler.get_job('players_peak') is None:
-                scheduler.add_job(update_players_peak, id='players_peak',  # to collect new peak for 15 minutes and then post the highest one
+                # to collect new peak for 15 minutes and then post the highest one
+                scheduler.add_job(update_players_peak, id='players_peak',
                                   next_run_time=dt.datetime.now() + dt.timedelta(minutes=15), coalesce=True)
             cache['player_alltime_peak'] = cache['online_players']
 
@@ -184,7 +195,7 @@ async def update_cache_info():
         if player_24h_peak != cache.get('player_24h_peak', 0):
             cache['player_24h_peak'] = player_24h_peak
 
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        with open(config.CORE_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught exception in the main thread!')
@@ -196,7 +207,7 @@ async def unique_monthly():
     try:
         data = steam_webapi.csgo_get_monthly_player_count()
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        with open(config.CORE_CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
         if cache.get('monthly_unique_players') is None:
@@ -207,7 +218,7 @@ async def unique_monthly():
                              (cache['monthly_unique_players'], data))
             cache['monthly_unique_players'] = data
 
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        with open(config.CORE_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught exception while gathering monthly players!')
@@ -221,13 +232,13 @@ async def check_currency():
     try:
         new_prices = ExchangeRate.request(steam_webapi).asdict()
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        with open(config.CORE_CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
         if new_prices != cache.get('key_price'):
             cache['key_price'] = new_prices
 
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        with open(config.CORE_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught exception while gathering key price!')
@@ -241,7 +252,7 @@ async def fetch_leaderboard():
     try:
         world_leaderboard_stats = LeaderboardStats.request_world(steam_webapi.session)
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        with open(config.CORE_CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
         if world_leaderboard_stats != cache.get('world_leaderboard_stats'):
@@ -253,7 +264,7 @@ async def fetch_leaderboard():
             if regional_leaderboard_stats != cache.get(f'regional_leaderboard_stats_{region}'):
                 cache[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
 
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        with open(config.CORE_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught exception fetching leaderboards!')
@@ -264,7 +275,7 @@ async def fetch_leaderboard():
 async def update_players_peak():
     # noinspection PyBroadException
     try:
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+        with open(config.CORE_CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
         await send_alert('online_players', cache['player_alltime_peak'])

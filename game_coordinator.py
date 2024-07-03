@@ -11,7 +11,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.gevent import GeventScheduler
 from csgo.client import CSGOClient
 import gevent
-from pyrogram import Client, idle
+from pyrogram import Client
 import requests
 from steam.client import SteamClient
 from steam.enums import EResult
@@ -107,13 +107,13 @@ def update_gc_status(status):
                 3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
     game_coordinator = statuses.get(status, States.UNKNOWN)
 
-    with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+    with open(config.GC_CACHE_FILE_PATH, encoding='utf-8') as f:
         cache = json.load(f)
 
     if game_coordinator != cache.get('game_coordinator_state'):
         cache['game_coordinator_state'] = game_coordinator.literal
 
-    with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+    with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
         json.dump(cache, f, indent=4, ensure_ascii=False)
 
     logging.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
@@ -142,7 +142,7 @@ async def update_depots():
         logging.exception('Caught gevent.Timeout, we\'re going to shutdown...')
         return
 
-    with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+    with open(config.GC_CACHE_FILE_PATH, encoding='utf-8') as f:
         cache = json.load(f)
 
     new_data = {'cs2_app_changenumber': cs2_app_change_number,
@@ -161,16 +161,16 @@ async def update_depots():
                 await send_alert('dprp_build_sync_id', new_value)
                 continue
             if _id == 'public_build_id':
-                with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:  # pre-dump before new values
+                with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:  # pre-dump before new values
                     json.dump(cache, f, indent=4, ensure_ascii=False)
 
                 await update_game_version()
 
-                with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+                with open(config.GC_CACHE_FILE_PATH, encoding='utf-8') as f:
                     cache = json.load(f)
             await send_alert(_id, new_value)
 
-    with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+    with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
         json.dump(cache, f, indent=4, ensure_ascii=False)
 
     logging.info('Successfully dumped game build IDs.')
@@ -185,7 +185,7 @@ async def update_game_version():
             with requests.Session() as session:
                 data = GameVersion.request(session)
 
-            with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
+            with open(config.GC_CACHE_FILE_PATH, encoding='utf-8') as f:
                 cache = json.load(f)
 
             # Made to ensure we will grab the latest public data if we *somehow* don't have anything cached
@@ -200,7 +200,7 @@ async def update_game_version():
                 for key, value in data.asdict().items():
                     cache[key] = value
 
-                with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+                with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
                     json.dump(cache, f, indent=4, ensure_ascii=False)
 
                 logging.info('Successfully updated the game version data.')
@@ -220,13 +220,13 @@ async def update_game_version():
 def online_players():
     value = client.get_player_count(730)
 
-    with open(config.CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
+    with open(config.GC_CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
         cache = json.load(f)
 
     if value != cache.get('online_players'):
         cache['online_players'] = value
 
-    with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+    with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
         json.dump(cache, f, indent=4, ensure_ascii=False)
 
     logging.info(f'Successfully dumped player count: {value}')
