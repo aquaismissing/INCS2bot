@@ -34,7 +34,7 @@ Then check the [Contributing](#contributing) section to know how to get started.
 |  zh  | Chinese    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 
 
-## Contributing 
+## Contributing
 
 ### Prerequirements
 
