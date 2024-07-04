@@ -1,13 +1,12 @@
-# INCS2 Bot - Localization system
+# INCS2Bot - Localization system
 
-If you want to contribute - make sure that translation into your preferred language is not complete yet by looking at [Progress](#progress) section.
-Then check [Contributing](#contributing) section to know how to start translating
+If you want to contribute - make sure that the translation into your preferred language is not complete yet by looking at the [Progress](#progress) section.
+
+Then check the [Contributing](#contributing) section to know how to get started.
 
 ---
 
 ## Progress
-
-Here you can see translations' progress and contributors' list:
 
 | Code | Language   | Progress        |                               Summary                               |        Contributors        |
 |:----:|------------|-----------------|:-------------------------------------------------------------------:|:--------------------------:|
