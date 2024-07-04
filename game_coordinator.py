@@ -146,10 +146,12 @@ async def update_depots():
 
     for build_id, new_value in new_data.items():
         old_value = cache.get(build_id)
-        if old_value is None or old_value == new_value:
+        if old_value is None:
             if build_id == 'public_build_id':
                 game_version_data = await get_game_version_loop(cache.get('cs2_client_version'))
                 cache.update(game_version_data.asdict())
+            continue
+        if old_value == new_value:
             continue
 
         if build_id == 'dpr_build_id' and new_value == old_public_build_id:
@@ -170,7 +172,7 @@ async def update_depots():
     logging.info('Successfully dumped game version data.')
 
 
-async def get_game_version_loop(cs2_client_version: int) -> GameVersionData:
+async def get_game_version_loop(cs2_client_version: int | None) -> GameVersionData:
     timeout = 30 * 60
     timeout_start = time.time()
     with requests.Session() as session:
@@ -178,15 +180,16 @@ async def get_game_version_loop(cs2_client_version: int) -> GameVersionData:
             data = await get_game_version(session, cs2_client_version)
             if data:
                 return data
-
+            logging.warning('Failed to pull the game version data, retry in 45 seconds...')
             await asyncio.sleep(45)
     # xPaw: Zzz...
     # because of this, we retry in an hour
+    logging.warning('Reached a timeout while trying to pull the game version data, retry in an hour...')
     await asyncio.sleep(60 * 60)
     await get_game_version_loop(cs2_client_version)
 
 
-async def get_game_version(session: requests.Session, cs2_client_version: int) -> GameVersionData | None:
+async def get_game_version(session: requests.Session, cs2_client_version: int | None) -> GameVersionData | None:
     # noinspection PyBroadException
     try:
         data = GameVersion.request(session)

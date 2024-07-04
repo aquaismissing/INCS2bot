@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime as dt
-import json
+from json import JSONDecodeError
 import traceback
 from typing import TYPE_CHECKING
 import logging
@@ -21,7 +21,7 @@ from telegraph.aio import Telegraph
 from bottypes import BotClient, BotLogger, ExtendedIKB, ExtendedIKM
 import config
 from db import db_session
-from functions import info_formatters, utime
+from functions import caching, info_formatters, utime
 from functions.decorators import ignore_message_not_modified
 from functions.locale import get_available_languages
 import keyboards
@@ -301,15 +301,15 @@ async def send_dc_state(client: BotClient, session: UserSession, bot_message: Me
     except Exception as e:
         return await handle_exceptions_in_callback(client, session, bot_message, e)
 
+
 # cat: Profile info
 
 
 @bot.navmenu(LK.bot_profile_info, came_from=main_menu, ignore_message_not_modified=True)
 async def profile_info(client: BotClient, session: UserSession, bot_message: Message):
-    with open(config.CORE_CACHE_FILE_PATH, encoding='utf-8') as f:
-        cache_file = json.load(f)
+    cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
 
-    if cache_file.get('webapi_state') != 'normal':
+    if States.get(cache.get('webapi_state')) != States.NORMAL:
         return await send_about_maintenance(client, session, bot_message)
 
     await bot_message.edit(session.locale.bot_choose_cmd,
@@ -420,7 +420,7 @@ async def user_game_stats_process(client: BotClient, session: UserSession, bot_m
                                                          html_content=stats_page_text,
                                                          author_name='@INCS2bot',
                                                          author_url='https://t.me/INCS2bot')
-    except json.JSONDecodeError:
+    except JSONDecodeError:
         await user_input.delete()
         return await user_game_stats(client, session, bot_message, last_error=session.locale.user_telegraph_error)
 

@@ -39,7 +39,7 @@ def log_exception_inline(func):
                              f'\n'
                              f'↩️ inline_query',
                              disable_notification=True, parse_mode=ParseMode.DISABLED)
-
+            client.rstats.exceptions_caught += 1
     return inner
 
 

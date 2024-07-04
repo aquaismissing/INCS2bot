@@ -1,9 +1,12 @@
 from babel import Locale as BabelLocale, UnknownLocaleError
 
-from l10n import Locale, locale as _loc, get_available_languages as _gal
+from l10n import Locale, locale as _loc, get_available_languages
 
 
 CIS_LANG_CODES = ('kk',)
+
+
+__all__ = ['locale', 'get_refined_lang_code', 'get_available_languages']
 
 
 def locale(lang: str = 'en') -> Locale:
@@ -25,9 +28,3 @@ def get_refined_lang_code(_locale: Locale) -> str:
         lang_code = 'en'
 
     return lang_code
-
-
-def get_available_languages() -> dict[str, str]:
-    """Returns a dictionary with lang codes as keys and lang names as values."""
-
-    return _gal()
