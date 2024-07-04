@@ -1,7 +1,7 @@
+import asyncio
 import datetime as dt
 import logging
 import platform
-import time
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
@@ -206,7 +206,7 @@ async def unique_monthly():
         caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
     except Exception:
         logging.exception('Caught exception while gathering monthly players!')
-        time.sleep(45)
+        await asyncio.sleep(45)
         return await unique_monthly()
 
 
@@ -219,7 +219,7 @@ async def check_currency():
         caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, {'key_price': new_prices})
     except Exception:
         logging.exception('Caught exception while gathering key price!')
-        time.sleep(45)
+        await asyncio.sleep(45)
         return await check_currency()
 
 
@@ -237,7 +237,7 @@ async def fetch_leaderboard():
         caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, new_data)
     except Exception:
         logging.exception('Caught exception fetching leaderboards!')
-        time.sleep(45)
+        await asyncio.sleep(45)
         return await fetch_leaderboard()
 
 
@@ -249,7 +249,7 @@ async def alert_players_peak():
         await send_alert('online_players', cache['player_alltime_peak'])
     except Exception:
         logging.exception('Caught exception while alerting players peak!')
-        time.sleep(45)
+        await asyncio.sleep(45)
         return await alert_players_peak()
 
 
