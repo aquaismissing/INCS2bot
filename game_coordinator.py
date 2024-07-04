@@ -1,6 +1,5 @@
 import asyncio
 import datetime as dt
-import json
 import logging
 import platform
 import sys
@@ -23,8 +22,8 @@ if platform.system() == 'Linux':
     uvloop.install()
 
 import config
-from functions import locale, utime
-from utypes import GameVersion, States
+from functions import caching, locale, utime
+from utypes import GameVersion, States, GameVersionData
 
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 loc = locale('ru')
@@ -105,18 +104,11 @@ def cs_launched():
 def update_gc_status(status):
     statuses = {0: States.NORMAL, 1: States.INTERNAL_SERVER_ERROR, 2: States.OFFLINE,
                 3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
-    game_coordinator = statuses.get(status, States.UNKNOWN)
+    game_coordinator_state = statuses.get(status, States.UNKNOWN).literal
 
-    with open(config.GC_CACHE_FILE_PATH, encoding='utf-8') as f:
-        cache = json.load(f)
+    caching.dump_cache_changes(config.GC_CACHE_FILE_PATH, {'game_coordinator_state': game_coordinator_state})
 
-    if game_coordinator != cache.get('game_coordinator_state'):
-        cache['game_coordinator_state'] = game_coordinator.literal
-
-    with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-        json.dump(cache, f, indent=4, ensure_ascii=False)
-
-    logging.info(f'Successfully dumped game coordinator status: {game_coordinator.literal}')
+    logging.info(f'Successfully dumped game coordinator status: {game_coordinator_state}')
 
 
 @async_scheduler.scheduled_job('interval', seconds=45)
@@ -137,13 +129,12 @@ async def update_depots():
     except Exception:
         logging.exception('Caught an exception while trying to fetch depots!')
         return
-    except gevent.Timeout:  # just crash and restart the thing
+    except gevent.Timeout:  # just crash and restart the entire thing
         going_to_shutdown = True
         logging.exception('Caught gevent.Timeout, we\'re going to shutdown...')
         return
 
-    with open(config.GC_CACHE_FILE_PATH, encoding='utf-8') as f:
-        cache = json.load(f)
+    cache = caching.load_cache(config.GC_CACHE_FILE_PATH)
 
     new_data = {'cs2_app_changenumber': cs2_app_change_number,
                 'cs2_server_changenumber': cs2_server_change_number,
@@ -151,85 +142,78 @@ async def update_depots():
                 'dpr_build_id': dpr_build_id,
                 'public_build_id': public_build_id}
 
-    for _id, new_value in new_data.items():
-        if cache.get(_id) != new_value:
-            cache[_id] = new_value
-            if _id == 'dpr_build_id' and new_value == cache['public_build_id']:
-                await send_alert('dpr_build_sync_id', new_value)
-                continue
-            if _id == 'dprp_build_id' and new_value == cache['public_build_id']:
-                await send_alert('dprp_build_sync_id', new_value)
-                continue
-            if _id == 'public_build_id':
-                with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:  # pre-dump before new values
-                    json.dump(cache, f, indent=4, ensure_ascii=False)
+    old_public_build_id = cache.get('public_build_id')
 
-                await update_game_version()
+    for build_id, new_value in new_data.items():
+        old_value = cache.get(build_id)
+        if old_value is None or old_value == new_value:
+            if build_id == 'public_build_id':
+                game_version_data = await get_game_version_loop(cache.get('cs2_client_version'))
+                cache.update(game_version_data.asdict())
+            continue
 
-                with open(config.GC_CACHE_FILE_PATH, encoding='utf-8') as f:
-                    cache = json.load(f)
-            await send_alert(_id, new_value)
+        if build_id == 'dpr_build_id' and new_value == old_public_build_id:
+            await send_alert('dpr_build_sync_id', new_value)
+            continue
+        if build_id == 'dprp_build_id' and new_value == old_public_build_id:
+            await send_alert('dprp_build_sync_id', new_value)
+            continue
+        if build_id == 'public_build_id':
+            game_version_data = await get_game_version_loop(cache.get('cs2_client_version'))
+            cache.update(game_version_data.asdict())
+        await send_alert(build_id, new_value)
 
-    with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-        json.dump(cache, f, indent=4, ensure_ascii=False)
+    cache.update(new_data)
 
-    logging.info('Successfully dumped game build IDs.')
+    caching.dump_cache(config.GC_CACHE_FILE_PATH, cache)
+
+    logging.info('Successfully dumped game version data.')
 
 
-async def update_game_version():
+async def get_game_version_loop(cs2_client_version: int) -> GameVersionData:
     timeout = 30 * 60
     timeout_start = time.time()
-    while time.time() < timeout_start + timeout:
-        # noinspection PyBroadException
-        try:
-            with requests.Session() as session:
-                data = GameVersion.request(session)
+    with requests.Session() as session:
+        while time.time() < timeout_start + timeout:
+            data = await get_game_version(session, cs2_client_version)
+            if data:
+                return data
 
-            with open(config.GC_CACHE_FILE_PATH, encoding='utf-8') as f:
-                cache = json.load(f)
-
-            # Made to ensure we will grab the latest public data if we *somehow* don't have anything cached
-            no_cached_data = (cache.get('cs2_client_version') is None)
-
-            # We also want to ensure that the data is up-to-date, so we check datetime
-            new_data_datetime = (dt.datetime.fromtimestamp(data.cs2_version_timestamp)
-                                 .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
-            is_up_to_date = utime.utcnow() - new_data_datetime < dt.timedelta(hours=12)
-
-            if no_cached_data or (is_up_to_date and data.cs2_client_version != cache.get('cs2_client_version')):
-                for key, value in data.asdict().items():
-                    cache[key] = value
-
-                with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-                    json.dump(cache, f, indent=4, ensure_ascii=False)
-
-                logging.info('Successfully updated the game version data.')
-                return
-        except Exception:
-            logging.exception('Caught an exception while trying to get new version!')
             await asyncio.sleep(45)
-            continue
-        await asyncio.sleep(45)
     # xPaw: Zzz...
     # because of this, we retry in an hour
     await asyncio.sleep(60 * 60)
-    await update_game_version()
+    await get_game_version_loop(cs2_client_version)
+
+
+async def get_game_version(session: requests.Session, cs2_client_version: int) -> GameVersionData | None:
+    # noinspection PyBroadException
+    try:
+        data = GameVersion.request(session)
+
+        if cs2_client_version is None:  # *somehow* don't have anything cached
+            logging.info('Successfully pulled the game version data.')
+            return data
+
+        # Ensure that the data is up-to-date, so we check datetime
+        new_data_datetime = (dt.datetime.fromtimestamp(data.cs2_version_timestamp)
+                             .replace(tzinfo=VALVE_TIMEZONE).astimezone(dt.UTC))
+        is_up_to_date = (utime.utcnow() - new_data_datetime < dt.timedelta(hours=12))
+
+        if is_up_to_date and data.cs2_client_version != cs2_client_version:
+            logging.info('Successfully pulled the game version data.')
+            return data
+    except Exception:
+        logging.exception('Caught an exception while trying to get new version!')
 
 
 @gevent_scheduler.scheduled_job('interval', seconds=45)
 def online_players():
-    value = client.get_player_count(730)
+    player_count = client.get_player_count(730)
 
-    with open(config.GC_CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
-        cache = json.load(f)
+    caching.dump_cache_changes(config.GC_CACHE_FILE_PATH, {'online_players': player_count})
 
-    if value != cache.get('online_players'):
-        cache['online_players'] = value
-
-    with open(config.GC_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-        json.dump(cache, f, indent=4, ensure_ascii=False)
-
-    logging.info(f'Successfully dumped player count: {value}')
+    logging.info(f'Successfully dumped player count: {player_count}')
 
 
 async def send_alert(key: str, new_value: int):

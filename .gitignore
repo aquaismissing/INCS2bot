@@ -9,9 +9,11 @@ __pycache__/
 .venv/
 
 # secrets
-/_internal/
-/data/
-/config.py
+_internal/
+data/
+config.py
+logs/*
+!logs/config.json
 
 # bot sessions
 /sessions/
