@@ -13,7 +13,7 @@ Then check the [Contributing](#contributing) section to know how to get started.
 |  en  | English    | ██████████ 100% |                              built in                               |                            |
 |  ru  | Russian    | ██████████ 100% |                              built in                               |                            |
 |  ar  | Arabic     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
-|  be  | Belarusian | ██████████ 100% |                   need to confirm the correctness                   |       [HiddenDeath]        |
+|  be  | Belarusian | ██████████ 100% |                             fully done                              |       [HiddenDeath]        |
 |  da  | Danish     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  de  | German     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  es  | Spanish    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
