@@ -4,7 +4,7 @@ import dataclasses
 from dataclasses import dataclass
 import datetime as dt
 import json
-from typing import NamedTuple, TYPE_CHECKING
+from typing import NamedTuple, TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
 from functions import utime
@@ -101,6 +101,20 @@ class ExchangeRateData(NamedTuple):
     QAR: float
     UYU: float
     KZT: float
+
+    @classmethod
+    def converter(cls, data: dict[str, Any]):
+        """
+        Used for convertion in ``@attrs.define``.
+
+        You can use it as you would use a ``from_dict()`` method,
+        but it returns the same object if you passed it as an argument.
+        """
+
+        if isinstance(data, cls):
+            return data
+
+        return ExchangeRateData(**data)
 
     def asdict(self):
         return self._asdict()
@@ -362,28 +376,33 @@ class LeaderboardStats(NamedTuple):
         detail_data = detail_data[2:].rstrip('0')
         detail_data = SLD.parse(bytes.fromhex(detail_data))
 
-        wins = 0
-        ties = 0
-        losses = 0
         last_wins = {map_name: 0 for map_name in MAPS.values()}
-        timestamp = 0
-        region = 0
-        for entry in detail_data.matchentries:
-            if entry.tag == 16:
-                wins = entry.val
-            elif entry.tag == 17:
-                ties = entry.val
-            elif entry.tag == 18:
-                losses = entry.val
-            elif entry.tag == 19:
-                for map_id, map_name in MAPS.items():
-                    last_wins[map_name] = ((entry.val << (4 * map_id)) & 0xF0000000) >> 4 * 7
-            elif entry.tag == 20:
-                timestamp = entry.val
-            elif entry.tag == 21:
-                region = REGIONS.get(entry.val, 'unknown')
+        stats = {entry.tag: entry.val for entry in detail_data.matchentries}
+
+        wins = stats.get(16, -1)
+        ties = stats.get(17, -1)
+        losses = stats.get(18, -1)
+        if stats.get(19):
+            for map_id, map_name in MAPS.items():
+                last_wins[map_name] = ((stats[19] << (4 * map_id)) & 0xF0000000) >> 4 * 7
+        timestamp = stats.get(20, -1)
+        region = REGIONS.get(stats.get(21), 'unknown')
 
         return cls(rank, rating, name, wins, ties, losses, last_wins, timestamp, region)
+
+    @classmethod
+    def converter(cls, data: list[Any]):
+        """
+        Used for convertion in ``@attrs.define``.
+
+        You can use it as you would use a ``from_dict()`` method,
+        but it returns the same object if you passed it as an argument.
+        """
+
+        if isinstance(data, cls):
+            return data
+
+        return [LeaderboardStats.from_json(person) for person in data]
 
     @staticmethod
     def request_world(session: requests.Session):

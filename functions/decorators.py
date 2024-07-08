@@ -7,6 +7,9 @@ from pyrogram.types import CallbackQuery
 from bottypes import UserSession
 
 
+__all__ = ['ignore_message_not_modified']
+
+
 def ignore_message_not_modified(func):
     """Decorator to ignore annoying `pyrogram.errors.MessageNotModified`."""
 

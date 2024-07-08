@@ -42,9 +42,6 @@ x_major_formatter = mdates.DateFormatter("%b %d")
 def graph_maker():
     # noinspection PyBroadException
     try:
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache = json.load(f)
-
         old_player_data = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
 
         marks_count = len(old_player_data.index)
@@ -52,7 +49,9 @@ def graph_maker():
             remove_marks = marks_count - MAX_ONLINE_MARKS
             old_player_data.drop(range(remove_marks + 1), axis=0, inplace=True)
 
-        player_count = cache.get('online_players', 0)
+        with open(config.CORE_CACHE_FILE_PATH, encoding='utf-8') as f:
+            player_count = json.load(f).get('online_players', 0)
+
         if player_count < 50_000:  # potentially Steam maintenance
             player_count = old_player_data.iloc[-1]['Players']
 
@@ -111,10 +110,13 @@ def graph_maker():
             image_path = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))[0]['src']
         image_url = f'https://telegra.ph{image_path}'
 
+        with open(config.GRAPH_CACHE_FILE_PATH, encoding='utf-8') as f:
+            cache = json.load(f)
+
         if image_url != cache.get('graph_url'):
             cache['graph_url'] = image_url
 
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        with open(config.GRAPH_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4, ensure_ascii=False)
     except Exception:
         logging.exception('Caught exception in graph maker!')

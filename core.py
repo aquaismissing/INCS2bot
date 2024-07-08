@@ -1,8 +1,7 @@
+import asyncio
 import datetime as dt
-import json
 import logging
 import platform
-import time
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
@@ -14,7 +13,7 @@ if platform.system() == 'Linux':
     uvloop.install()
 
 import config
-from functions import utime
+from functions import caching, utime
 from l10n import locale
 from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServers,
@@ -58,18 +57,18 @@ DATACENTER_API_FIELDS = {
 }
 
 
-UNUSED_FIELDS = ['csgo_client_version',
-                 'csgo_server_version',
-                 'csgo_patch_version',
-                 'csgo_version_timestamp',
-                 'sdk_build_id',
-                 'ds_build_id',
-                 'valve_ds_changenumber',
-                 'webapi',
-                 'sessions_logon',
-                 'steam_community',
-                 'matchmaking_scheduler',
-                 'game_coordinator']
+DEPRECATED_FIELDS = ['csgo_client_version',
+                     'csgo_server_version',
+                     'csgo_patch_version',
+                     'csgo_version_timestamp',
+                     'sdk_build_id',
+                     'ds_build_id',
+                     'valve_ds_changenumber',
+                     'webapi',
+                     'sessions_logon',
+                     'steam_community',
+                     'matchmaking_scheduler',
+                     'game_coordinator']
 
 UNKNOWN_DC_STATE = {"capacity": "unknown", "load": "unknown"}
 
@@ -99,10 +98,10 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
 
 
-def clear_from_unused_fields(cache: dict):
-    for field in UNUSED_FIELDS:
+def clear_from_deprecated_fields(cache: dict):
+    for field in DEPRECATED_FIELDS:
         if cache.get(field):
-            del cache[field]
+            cache.pop(field, None)
 
 
 def remap_dc(info: dict, dc: Datacenter):
@@ -152,25 +151,25 @@ def remap_datacenters_info(info: dict) -> dict:
 async def update_cache_info():
     # noinspection PyBroadException
     try:
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache = json.load(f)
+        cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
 
-        clear_from_unused_fields(cache)
+        clear_from_deprecated_fields(cache)  # todo: I guess we can already delete that one?
 
-        overall_data = GameServers.request(steam_webapi)
+        game_servers_data = GameServers.request(steam_webapi)
 
-        for key, value in overall_data.asdict().items():
+        for key, value in game_servers_data.asdict().items():
             if key == 'datacenters':
                 continue
             if isinstance(value, State):
                 value = value.literal
             cache[key] = value
 
-        cache['datacenters'] = remap_datacenters_info(overall_data.datacenters)
+        cache['datacenters'] = remap_datacenters_info(game_servers_data.datacenters)
 
-        if cache['online_players'] > cache.get('player_alltime_peak', 0):
+        if cache.get('online_players', 0) > cache.get('player_alltime_peak', 1):
             if scheduler.get_job('players_peak') is None:
-                scheduler.add_job(update_players_peak, id='players_peak',  # to collect new peak for 15 minutes and then post the highest one
+                # to collect new peak for 15 minutes and then post the highest one
+                scheduler.add_job(alert_players_peak, id='players_peak',
                                   next_run_time=dt.datetime.now() + dt.timedelta(minutes=15), coalesce=True)
             cache['player_alltime_peak'] = cache['online_players']
 
@@ -181,11 +180,9 @@ async def update_cache_info():
         mask = (df['DateTime'] > start_date) & (df['DateTime'] <= end_date)
         player_24h_peak = int(df.loc[mask]['Players'].max())
 
-        if player_24h_peak != cache.get('player_24h_peak', 0):
-            cache['player_24h_peak'] = player_24h_peak
+        cache['player_24h_peak'] = player_24h_peak
 
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4, ensure_ascii=False)
+        caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
     except Exception:
         logging.exception('Caught exception in the main thread!')
 
@@ -196,22 +193,20 @@ async def unique_monthly():
     try:
         data = steam_webapi.csgo_get_monthly_player_count()
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache = json.load(f)
+        cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
 
         if cache.get('monthly_unique_players') is None:
             cache['monthly_unique_players'] = data
 
-        if data != cache.get('monthly_unique_players'):
+        if data != cache['monthly_unique_players']:
             await send_alert('monthly_unique_players',
                              (cache['monthly_unique_players'], data))
             cache['monthly_unique_players'] = data
 
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4, ensure_ascii=False)
+        caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
     except Exception:
         logging.exception('Caught exception while gathering monthly players!')
-        time.sleep(45)
+        await asyncio.sleep(45)
         return await unique_monthly()
 
 
@@ -221,17 +216,10 @@ async def check_currency():
     try:
         new_prices = ExchangeRate.request(steam_webapi).asdict()
 
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache = json.load(f)
-
-        if new_prices != cache.get('key_price'):
-            cache['key_price'] = new_prices
-
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4, ensure_ascii=False)
+        caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, {'key_price': new_prices})
     except Exception:
         logging.exception('Caught exception while gathering key price!')
-        time.sleep(45)
+        await asyncio.sleep(45)
         return await check_currency()
 
 
@@ -240,38 +228,29 @@ async def fetch_leaderboard():
     # noinspection PyBroadException
     try:
         world_leaderboard_stats = LeaderboardStats.request_world(steam_webapi.session)
-
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache = json.load(f)
-
-        if world_leaderboard_stats != cache.get('world_leaderboard_stats'):
-            cache['world_leaderboard_stats'] = world_leaderboard_stats
+        new_data = {'world_leaderboard_stats': world_leaderboard_stats}
 
         for region in LEADERBOARD_API_REGIONS:
             regional_leaderboard_stats = LeaderboardStats.request_regional(steam_webapi.session, region)
+            new_data[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
 
-            if regional_leaderboard_stats != cache.get(f'regional_leaderboard_stats_{region}'):
-                cache[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
-
-        with open(config.CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4, ensure_ascii=False)
+        caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, new_data)
     except Exception:
         logging.exception('Caught exception fetching leaderboards!')
-        time.sleep(45)
+        await asyncio.sleep(45)
         return await fetch_leaderboard()
 
 
-async def update_players_peak():
+async def alert_players_peak():
     # noinspection PyBroadException
     try:
-        with open(config.CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache = json.load(f)
+        cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
 
         await send_alert('online_players', cache['player_alltime_peak'])
     except Exception:
         logging.exception('Caught exception while alerting players peak!')
-        time.sleep(45)
-        return await update_players_peak()
+        await asyncio.sleep(45)
+        return await alert_players_peak()
 
 
 async def send_alert(key, new_value):
