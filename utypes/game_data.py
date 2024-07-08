@@ -7,7 +7,7 @@ import json
 from typing import NamedTuple, TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
-from functions import utime
+from functions import utime, caching
 from .states import States
 from .steam_webapi import SteamWebAPI
 from .protobufs import ScoreLeaderboardData
@@ -295,18 +295,16 @@ class GameServers:
                                       datacenters)
 
     @staticmethod
-    def cached_server_status(main_cache: str | Path, game_coordinator_cache: str | Path):
+    def cached_server_status(main_cache: Path, game_coordinator_cache: Path):
         """Get the status of Counter-Strike servers"""
 
-        with open(main_cache, encoding='utf-8') as f:
-            cache = json.load(f)
+        cache = caching.load_cache(main_cache)
 
         game_server_dt = GameServers.latest_info_update(main_cache)
         if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
 
-        with open(game_coordinator_cache, encoding='utf-8') as f:
-            gc_cache = json.load(f)
+        gc_cache = caching.load_cache(game_coordinator_cache)
 
         gc_state = States.get_or_unknown(gc_cache.get('game_coordinator_state'))  # GC!!!!
         sl_state = States.get_or_unknown(cache.get('sessions_logon_state'))
@@ -318,27 +316,28 @@ class GameServers:
                                 gc_state, sl_state, ms_state, sc_state, webapi_state)
     
     @staticmethod
-    def cached_matchmaking_stats(filename: str | Path):
-        with open(filename, encoding='utf-8') as f:
-            cache_file = json.load(f)
-        
-        game_server_dt = GameServers.latest_info_update(filename)
+    def cached_matchmaking_stats(main_cache: Path, game_coordinator_cache: Path):
+        cache = caching.load_cache(main_cache)
+
+        game_server_dt = GameServers.latest_info_update(main_cache)
         if game_server_dt is States.UNKNOWN:
             return States.UNKNOWN
+
+        gc_cache = caching.load_cache(game_coordinator_cache)
         
-        gc_state = States.get_or_unknown(cache_file.get('game_coordinator_state'))
-        sl_state = States.get_or_unknown(cache_file.get('sessions_logon_state'))
+        gc_state = States.get_or_unknown(cache.get('game_coordinator_state'))
+        sl_state = States.get_or_unknown(cache.get('sessions_logon_state'))
 
-        graph_url = cache_file.get('graph_url', '')
-        online_players = cache_file.get('online_players', 0)
-        online_servers = cache_file.get('online_servers', 0)
-        active_players = cache_file.get('active_players', 0)
-        average_search_time = cache_file.get('average_search_time', 0)
-        searching_players = cache_file.get('searching_players', 0)
+        graph_url = cache.get('graph_url', '')
+        online_players = gc_cache.get('online_players', 0)  # GC!!!!
+        online_servers = cache.get('online_servers', 0)
+        active_players = cache.get('active_players', 0)
+        average_search_time = cache.get('average_search_time', 0)
+        searching_players = cache.get('searching_players', 0)
 
-        player_24h_peak = cache_file.get('player_24h_peak', 0)
-        player_alltime_peak = cache_file.get('player_alltime_peak', 0)
-        monthly_unique_players = cache_file.get('monthly_unique_players', 0)
+        player_24h_peak = cache.get('player_24h_peak', 0)
+        player_alltime_peak = cache.get('player_alltime_peak', 0)
+        monthly_unique_players = cache.get('monthly_unique_players', 0)
 
         return MatchmakingStatsData(game_server_dt,
                                     gc_state, sl_state,
@@ -348,14 +347,13 @@ class GameServers:
                                     player_24h_peak, player_alltime_peak, monthly_unique_players)
     
     @staticmethod
-    def latest_info_update(filename: str | Path):
-        with open(filename, encoding='utf-8') as f:
-            cache_file = json.load(f)
+    def latest_info_update(filename: Path):
+        cache = caching.load_cache(filename)
 
-        if cache_file.get('api_timestamp', 'unknown') == 'unknown':
+        if cache.get('api_timestamp', 'unknown') == 'unknown':
             return States.UNKNOWN
 
-        return dt.datetime.fromtimestamp(cache_file['api_timestamp'], dt.UTC)
+        return dt.datetime.fromtimestamp(cache['api_timestamp'], dt.UTC)
 
 
 class LeaderboardStats(NamedTuple):
