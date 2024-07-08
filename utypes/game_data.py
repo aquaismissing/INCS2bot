@@ -295,21 +295,24 @@ class GameServers:
                                       datacenters)
 
     @staticmethod
-    def cached_server_status(filename: str | Path):
+    def cached_server_status(main_cache: str | Path, game_coordinator_cache: str | Path):
         """Get the status of Counter-Strike servers"""
 
-        with open(filename, encoding='utf-8') as f:
-            cache_file = json.load(f)
+        with open(main_cache, encoding='utf-8') as f:
+            cache = json.load(f)
 
-        game_server_dt = GameServers.latest_info_update(filename)
+        game_server_dt = GameServers.latest_info_update(main_cache)
         if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
 
-        gc_state = States.get_or_unknown(cache_file.get('game_coordinator_state'))
-        sl_state = States.get_or_unknown(cache_file.get('sessions_logon_state'))
-        ms_state = States.get_or_unknown(cache_file.get('matchmaking_scheduler_state'))
-        sc_state = States.get_or_unknown(cache_file.get('steam_community_state'))
-        webapi_state = States.get_or_unknown(cache_file.get('webapi_state'))
+        with open(game_coordinator_cache, encoding='utf-8') as f:
+            gc_cache = json.load(f)
+
+        gc_state = States.get_or_unknown(gc_cache.get('game_coordinator_state'))  # GC!!!!
+        sl_state = States.get_or_unknown(cache.get('sessions_logon_state'))
+        ms_state = States.get_or_unknown(cache.get('matchmaking_scheduler_state'))
+        sc_state = States.get_or_unknown(cache.get('steam_community_state'))
+        webapi_state = States.get_or_unknown(cache.get('webapi_state'))
 
         return ServerStatusData(game_server_dt,
                                 gc_state, sl_state, ms_state, sc_state, webapi_state)

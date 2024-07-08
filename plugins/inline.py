@@ -291,9 +291,9 @@ async def inline_deadlock(_, __, inline_query: InlineQuery):
 
 @log_exception_inline
 async def default_inline(_, session: UserSession, inline_query: InlineQuery):
-    servers_status_data = GameServers.cached_server_status(config.CORE_CACHE_FILE_PATH)
+    servers_status_data = GameServers.cached_server_status(config.CORE_CACHE_FILE_PATH, config.GC_CACHE_FILE_PATH)
     matchmaking_stats_data = GameServers.cached_matchmaking_stats(config.CORE_CACHE_FILE_PATH)
-    game_version_data = GameVersion.cached_data(config.CORE_CACHE_FILE_PATH)
+    game_version_data = GameVersion.cached_data(config.GC_CACHE_FILE_PATH)
 
     server_status_text = info_formatters.format_server_status(servers_status_data, session.locale)
     matchmaking_stats_text = info_formatters.format_matchmaking_stats(matchmaking_stats_data, session.locale)

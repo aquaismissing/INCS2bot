@@ -118,7 +118,7 @@ async def server_stats(_, session: UserSession, bot_message: Message):
 async def send_server_status(client: BotClient, session: UserSession, bot_message: Message):
     """Send the status of Counter-Strike servers"""
 
-    data = GameServers.cached_server_status(config.CORE_CACHE_FILE_PATH)
+    data = GameServers.cached_server_status(config.CORE_CACHE_FILE_PATH, config.GC_CACHE_FILE_PATH)
 
     if data is States.UNKNOWN:
         return await something_went_wrong(client, session, bot_message)
@@ -531,7 +531,7 @@ async def send_dropcap_timer(_, session: UserSession, bot_message: Message):
 async def send_game_version(_, session: UserSession, bot_message: Message):
     """Send a current version of CS:GO/CS 2"""
 
-    data = GameVersion.cached_data(config.CORE_CACHE_FILE_PATH)
+    data = GameVersion.cached_data(config.GC_CACHE_FILE_PATH)
     text = info_formatters.format_game_version_info(data, session.locale)
 
     await bot_message.edit(text, reply_markup=keyboards.extra_markup(session.locale),
