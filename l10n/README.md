@@ -1,40 +1,40 @@
-# INCS2 Bot - Localization system
+# INCS2Bot - Localization system
 
-If you want to contribute - make sure that translation into your preferred language is not complete yet by looking at [Progress](#progress) section.
-Then check [Contributing](#contributing) section to know how to start translating
+If you want to contribute - make sure that the translation into your preferred language is not complete yet by looking at the [Progress](#progress) section.
+
+Then check the [Contributing](#contributing) section to know how to get started.
 
 ---
 
 ## Progress
 
-Here you can see translations' progress and contributors' list:
+| Code | Language   | Progress        |                               Summary                               |        Contributors        |
+|:----:|------------|-----------------|:-------------------------------------------------------------------:|:--------------------------:|
+|  en  | English    | ██████████ 100% |                              built in                               |                            |
+|  ru  | Russian    | ██████████ 100% |                              built in                               |                            |
+|  ar  | Arabic     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  be  | Belarusian | ██████████ 100% |                             fully done                              |       [HiddenDeath]        |
+|  da  | Danish     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  de  | German     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  es  | Spanish    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  fa  | Persian    | █████████▒ 90%  |         missing: settings; need to confirm the correctness          |          [@A460N]          |
+|  fi  | Finnish    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  fr  | French     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  hi  | Hindi      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  it  | Italian    | ██████████ 100% |                   need to confirm the correctness                   |         [MrJiavo]          |
+|  ja  | Japanese   | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  kk  | Kazakh     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  no  | Norwegian  | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  pl  | Polish     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  pt  | Portuguese | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  sv  | Swedish    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
+|  tr  | Turkish    | █████████▒ 90%  |         missing: settings; need to confirm the correctness          |         [@ITMiroN]         |
+|  uk  | Ukrainian  | ██████████ 100% |                   need to confirm the correctness                   | [akimerslys], [Agent47Dev] |
+|  uz  | Uzbek      | ████████▒▒ 80%  | missing: settings, user game stats; need to confirm the correctness |        [@d1az1337]         |
+|  zh  | Chinese    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 
-| Code | Language     |    Progress     |                             Summary                              |        Contributors        |
-|:----:|--------------|:---------------:|:----------------------------------------------------------------:|:--------------------------:|
-|  en  | English      | ██████████ 100% |                             built in                             |                            |
-|  ru  | Russian      | ██████████ 100% |                             built in                             |                            |
-|  ar  | Arabic       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  be  | Belarusian   | ██████████ 100% |                            fully done                            |       [HiddenDeath]        |
-|  da  | Danish       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  de  | German       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  es  | Spanish      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  fa  | Persian      | ████████▒▒ 80%  |               missing: settings, leaderboard, USA DC             |          [@A460N]          |
-|  fi  | Finnish      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  fr  | French       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  hi  | Hindi        | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  it  | Italian      | ████████▒▒ 80%  |                    missing: leaderboard, USA DC                  |          [MrJiavo]         |
-|  ja  | Japanese     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  no  | Norwegian    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  pl  | Polish       | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  pt  | Portuguese   | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  sv  | Swedish      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
-|  tr  | Turkish      | ███████▒▒▒ 70%  |           missing: settings, leaderboard, tags, USA DC           |         [@ITMiroN]         |
-|  uk  | Ukrainian    | ████████▒▒ 80%  |                    missing: leaderboard, USA DC                  | [akimerslys], [Agent47Dev] |
-|  uz  | Uzbek        | ███████▒▒▒ 70%  |       missing: user game stats, settings, leaderboard, USA DC    |         [@d1az1337]        |
-|  zh  | Chinese      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                        contributors needed                       |                            |
 
-
-## Contributing 
+## Contributing
 
 ### Prerequirements
 
@@ -81,7 +81,7 @@ Here you can see translations' progress and contributors' list:
    git push origin {branch name}
    ```
    ![commiting changes](../media/commit_changes.png)
-9. Submit a pull request to the original repository and wait for tests results and our feedback.
+8. Submit a pull request to the original repository and wait for tests results and our feedback.
    \
    ![submiting pull](../media/submit_pull_request.png)
 
