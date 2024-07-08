@@ -118,7 +118,7 @@ async def share_inline(_, session: UserSession, inline_query: InlineQuery):
 
 @log_exception_inline
 async def inline_exchange_rate(_, session: UserSession, inline_query: InlineQuery):
-    data = ExchangeRate.cached_data(config.CACHE_FILE_PATH).asdict()
+    data = ExchangeRate.cached_data(config.CORE_CACHE_FILE_PATH).asdict()
 
     try:
         query = inline_query.query.split()[1].lower()
@@ -174,96 +174,96 @@ async def inline_datacenters(_, session: UserSession, inline_query: InlineQuery)
     dcs = [
         DatacenterInlineResult(session.locale.dc_china_inline_title,
                                'https://telegra.ph/file/ff0dad30ae32144d7cd0c.jpg',
-                               DatacenterAtlas.CHINA.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.CHINA.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_asia_china),
         DatacenterInlineResult(session.locale.dc_emirates_inline_title,
                                'https://telegra.ph/file/1de1e51e62b79cae5181a.jpg',
-                               DatacenterAtlas.EMIRATES.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.EMIRATES.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_asia_emirates),
         DatacenterInlineResult(session.locale.dc_hongkong_inline_title,
                                'https://telegra.ph/file/0b209e65c421910419f34.jpg',
-                               DatacenterAtlas.HONGKONG.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.HONGKONG.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_asia_hongkong),
         DatacenterInlineResult(session.locale.dc_india_inline_title,
                                'https://telegra.ph/file/b2213992b750940113b69.jpg',
-                               DatacenterAtlas.INDIA.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.INDIA.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_asia_india),
         DatacenterInlineResult(session.locale.dc_japan_inline_title,
                                'https://telegra.ph/file/11b6601a3e60940d59c88.jpg',
-                               DatacenterAtlas.JAPAN.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.JAPAN.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_asia_japan),
         DatacenterInlineResult(session.locale.dc_singapore_inline_title,
                                'https://telegra.ph/file/1c2121ceec5d1482173d5.jpg',
-                               DatacenterAtlas.SINGAPORE.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.SINGAPORE.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_asia_singapore),
         DatacenterInlineResult(session.locale.dc_southkorea_inline_title,
                                'https://telegra.ph/file/2265e9728d06632773537.png',
-                               DatacenterAtlas.SOUTH_KOREA.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.SOUTH_KOREA.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_asia_southkorea),
         DatacenterInlineResult(session.locale.dc_austria_inline_title,
                                'https://telegra.ph/file/2287811648e78e851867f.png',
-                               DatacenterAtlas.AUSTRIA.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.AUSTRIA.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_europe_austria),
         DatacenterInlineResult(session.locale.dc_finland_inline_title,
                                'https://telegra.ph/file/679a01598932aeebceb55.png',
-                               DatacenterAtlas.FINLAND.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.FINLAND.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_europe_finland),
         DatacenterInlineResult(session.locale.dc_germany_inline_title,
                                'https://telegra.ph/file/e19c71673c65a791f1e7b.png',
-                               DatacenterAtlas.GERMANY.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.GERMANY.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_europe_germany),
         # DatacenterInlineResult(session.locale.dc_netherlands_inline_title,
         #                        'https://telegra.ph/file/984b82bbf8bcff40d7e74.png',
-        #                        DatacenterAtlas.NETHERLANDS.cached_state(config.CACHE_FILE_PATH),
+        #                        DatacenterAtlas.NETHERLANDS.cached_state(config.CORE_CACHE_FILE_PATH),
         #                        TAGS.dc_europe_netherlands),
         DatacenterInlineResult(session.locale.dc_poland_inline_title,
                                'https://telegra.ph/file/485df799a416149642142.png',
-                               DatacenterAtlas.POLAND.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.POLAND.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_europe_poland),
         DatacenterInlineResult(session.locale.dc_spain_inline_title,
                                'https://telegra.ph/file/72b3dfb6830aa95f48064.png',
-                               DatacenterAtlas.SPAIN.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.SPAIN.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_europe_spain),
         DatacenterInlineResult(session.locale.dc_sweden_inline_title,
                                'https://telegra.ph/file/f552dc251f2c0a4e5be53.png',
-                               DatacenterAtlas.SWEDEN.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.SWEDEN.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_europe_sweden),
         DatacenterInlineResult(session.locale.dc_us_east_inline_title,
                                'https://telegra.ph/file/06119c30872031d1047d0.jpg',
-                               DatacenterAtlas.US_EAST.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.US_EAST.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_us_east),
         DatacenterInlineResult(session.locale.dc_us_west_inline_title,
                                'https://telegra.ph/file/06119c30872031d1047d0.jpg',
-                               DatacenterAtlas.US_WEST.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.US_WEST.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_us_west),
         DatacenterInlineResult(session.locale.dc_australia_inline_title,
                                'https://telegra.ph/file/5dc6beef1556ea852284c.jpg',
-                               DatacenterAtlas.AUSTRALIA.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.AUSTRALIA.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_australia),
         DatacenterInlineResult(session.locale.dc_africa_inline_title,
                                'https://telegra.ph/file/12628c8193b48302722e8.jpg',
-                               DatacenterAtlas.AFRICA.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.AFRICA.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_africa),
         DatacenterInlineResult(session.locale.dc_brazil_inline_title,
                                'https://telegra.ph/file/71264c82d0f7f6b8cb848.png',
-                               DatacenterAtlas.BRAZIL.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.BRAZIL.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_southamerica_brazil),
         DatacenterInlineResult(session.locale.dc_peru_inline_title,
                                'https://telegra.ph/file/df707dd2664bdfcaef66f.png',
-                               DatacenterAtlas.PERU.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.PERU.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_southamerica_peru),
         DatacenterInlineResult(session.locale.dc_chile_inline_title,
                                'https://telegra.ph/file/85f0997f445ddf5f2e56a.png',
-                               DatacenterAtlas.CHILE.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.CHILE.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_southamerica_chile),
         DatacenterInlineResult(session.locale.dc_argentina_inline_title,
                                'https://telegra.ph/file/3a2333e7effcc377e3848.png',
-                               DatacenterAtlas.ARGENTINA.cached_state(config.CACHE_FILE_PATH),
+                               DatacenterAtlas.ARGENTINA.cached_state(config.CORE_CACHE_FILE_PATH),
                                TAGS.dc_southamerica_argentina)
     ]
     dcs.sort(key=lambda x: x.title)
 
-    latest_info_update_at = GameServers.latest_info_update(config.CACHE_FILE_PATH)
+    latest_info_update_at = GameServers.latest_info_update(config.CORE_CACHE_FILE_PATH)
 
     inline_btn = keyboards.markup_inline_button(session.locale)
 
@@ -291,9 +291,9 @@ async def inline_deadlock(_, __, inline_query: InlineQuery):
 
 @log_exception_inline
 async def default_inline(_, session: UserSession, inline_query: InlineQuery):
-    servers_status_data = GameServers.cached_server_status(config.CACHE_FILE_PATH)
-    matchmaking_stats_data = GameServers.cached_matchmaking_stats(config.CACHE_FILE_PATH)
-    game_version_data = GameVersion.cached_data(config.CACHE_FILE_PATH)
+    servers_status_data = GameServers.cached_server_status(config.CORE_CACHE_FILE_PATH)
+    matchmaking_stats_data = GameServers.cached_matchmaking_stats(config.CORE_CACHE_FILE_PATH)
+    game_version_data = GameVersion.cached_data(config.CORE_CACHE_FILE_PATH)
 
     server_status_text = info_formatters.format_server_status(servers_status_data, session.locale)
     matchmaking_stats_text = info_formatters.format_matchmaking_stats(matchmaking_stats_data, session.locale)
