@@ -132,7 +132,9 @@ async def send_server_status(client: BotClient, session: UserSession, bot_messag
 async def send_matchmaking_stats(client: BotClient, session: UserSession, bot_message: Message):
     """Send Counter-Strike matchamaking statistics"""
 
-    data = GameServers.cached_matchmaking_stats(config.CORE_CACHE_FILE_PATH, config.GC_CACHE_FILE_PATH)
+    data = GameServers.cached_matchmaking_stats(config.CORE_CACHE_FILE_PATH,
+                                                config.GC_CACHE_FILE_PATH,
+                                                config.GRAPH_CACHE_FILE_PATH)
 
     if data is States.UNKNOWN:
         return await something_went_wrong(client, session, bot_message)

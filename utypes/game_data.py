@@ -316,7 +316,7 @@ class GameServers:
                                 gc_state, sl_state, ms_state, sc_state, webapi_state)
     
     @staticmethod
-    def cached_matchmaking_stats(main_cache: Path, game_coordinator_cache: Path):
+    def cached_matchmaking_stats(main_cache: Path, game_coordinator_cache: Path, graph_link_cache: Path):
         cache = caching.load_cache(main_cache)
 
         game_server_dt = GameServers.latest_info_update(main_cache)
@@ -324,11 +324,12 @@ class GameServers:
             return States.UNKNOWN
 
         gc_cache = caching.load_cache(game_coordinator_cache)
+        graph_cache = caching.load_cache(graph_link_cache)
         
         gc_state = States.get_or_unknown(cache.get('game_coordinator_state'))
         sl_state = States.get_or_unknown(cache.get('sessions_logon_state'))
 
-        graph_url = cache.get('graph_url', '')
+        graph_url = graph_cache.get('graph_url', '')  # graph!!!!
         online_players = gc_cache.get('online_players', 0)  # GC!!!!
         online_servers = cache.get('online_servers', 0)
         active_players = cache.get('active_players', 0)
