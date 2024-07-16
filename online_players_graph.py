@@ -49,7 +49,7 @@ def graph_maker():
             remove_marks = marks_count - MAX_ONLINE_MARKS
             old_player_data.drop(range(remove_marks + 1), axis=0, inplace=True)
 
-        with open(config.CORE_CACHE_FILE_PATH, encoding='utf-8') as f:
+        with open(config.GC_CACHE_FILE_PATH, encoding='utf-8') as f:
             player_count = json.load(f).get('online_players', 0)
 
         if player_count < 50_000:  # potentially Steam maintenance
