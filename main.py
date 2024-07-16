@@ -26,7 +26,7 @@ from functions.decorators import ignore_message_not_modified
 from functions.locale import get_available_languages
 import keyboards
 # noinspection PyPep8Naming
-from l10n import LocaleKeys as LK
+from l10n import LocaleKeys as LK, locale as lc
 from utypes import (DatacenterAtlas, DatacenterVariation, ExchangeRate,
                     GameServers, GameVersion, LeaderboardStats,
                     ProfileInfo,
@@ -45,6 +45,7 @@ GUNS_INFO = load_gun_infos(config.GUN_DATA_FILE_PATH)
 AVAILABLE_LANGUAGES = get_available_languages()
 ALL_COMMANDS = ('start', 'help')
 ASK_TIMEOUT = 5 * 60
+ENGLISH_LOCALE = lc('en')
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(threadName)s: %(message)s",
@@ -77,6 +78,8 @@ async def handle_exceptions_in_callback(client: BotClient, session: UserSession,
 @bot.on_message(~filters.me)
 async def handle_messages(client: BotClient, message: Message):
     result = await client.handle_message(message)
+    if message.from_user.id in config.DEVS_IDS:  # todo: remove after testing
+        print(message)
     if result is None:
         message.continue_propagation()
 
@@ -934,10 +937,16 @@ async def regular_stats_report(client: BotClient):
     client.rstats.clear()
 
 
+async def drop_cap_reset_in_10_minutes(client: BotClient):
+    await client.log(ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
+
+
 async def main():
     scheduler = AsyncIOScheduler()
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=30)
     scheduler.add_job(regular_stats_report, 'interval', hours=8,
+                      args=(bot,))
+    scheduler.add_job(drop_cap_reset_in_10_minutes, 'cron', day_of_week=1, hour=16, minute=50,
                       args=(bot,))
 
     try:
