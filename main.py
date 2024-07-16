@@ -78,8 +78,6 @@ async def handle_exceptions_in_callback(client: BotClient, session: UserSession,
 @bot.on_message(~filters.me)
 async def handle_messages(client: BotClient, message: Message):
     result = await client.handle_message(message)
-    if message.from_user.id in config.DEVS_IDS:  # todo: remove after testing
-        print(message)
     if result is None:
         message.continue_propagation()
 
@@ -938,7 +936,9 @@ async def regular_stats_report(client: BotClient):
 
 
 async def drop_cap_reset_in_10_minutes(client: BotClient):
-    await client.log(ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
+    await client.send_photo(config.LOGCHANNEL,
+                            "AgACAgIAAxkBAAI3fmaWvuMsr2xyRCT5a3UaHsktcuEuAAJN3DEbqNi4SL68DxwuWQqeAAgBAAMCAAN4AAceBA",
+                            ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
 
 
 async def main():
