@@ -6,6 +6,7 @@ from json import JSONDecodeError
 import traceback
 from typing import TYPE_CHECKING
 import logging
+from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from babel.dates import format_datetime
@@ -46,6 +47,7 @@ AVAILABLE_LANGUAGES = get_available_languages()
 ALL_COMMANDS = ('start', 'help')
 ASK_TIMEOUT = 5 * 60
 ENGLISH_LOCALE = lc('en')
+VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(threadName)s: %(message)s",
@@ -946,7 +948,8 @@ async def main():
     scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=30)
     scheduler.add_job(regular_stats_report, 'interval', hours=8,
                       args=(bot,))
-    scheduler.add_job(drop_cap_reset_in_10_minutes, 'cron', day_of_week=1, hour=16, minute=50,
+    scheduler.add_job(drop_cap_reset_in_10_minutes, 'cron', day_of_week=1, hour=16, minute=49, second=59,
+                      timezone=VALVE_TIMEZONE,
                       args=(bot,))
 
     try:
