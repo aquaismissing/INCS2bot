@@ -207,6 +207,11 @@ async def send_dc_sweden(client: BotClient, session: UserSession, bot_message: M
     await send_dc_state(client, session, bot_message, DatacenterAtlas.SWEDEN, keyboards.dc_eu_markup)
 
 
+@bot.funcmenu(LK.dc_uk, came_from=dc_europe)
+async def send_dc_uk(client: BotClient, session: UserSession, bot_message: Message):
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.UK, keyboards.dc_eu_markup)
+
+
 @bot.navmenu(LK.dc_us, came_from=datacenters, ignore_message_not_modified=True)
 async def dc_us(_, session: UserSession, bot_message: Message):
     await bot_message.edit(session.locale.dc_status_specify_region,
@@ -938,9 +943,13 @@ async def regular_stats_report(client: BotClient):
 
 
 async def drop_cap_reset_in_10_minutes(client: BotClient):
-    await client.send_photo(config.LOGCHANNEL,
-                            "AgACAgIAAxkBAAI3fmaWvuMsr2xyRCT5a3UaHsktcuEuAAJN3DEbqNi4SL68DxwuWQqeAAgBAAMCAAN4AAceBA",
-                            ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
+    if drop_cap_reset_timer()[1] != 0:
+        await asyncio.sleep(60 * 60)  # to account timezone changing
+
+    a = await client.send_photo(config.LOGCHANNEL,
+                                'AgACAgIAAx0EcqmfAwACE_1ml3gYlVf65aXBmhaq54dI5NtctgACYOExG2LEwEj6jR-JjYwTMgAIAQADAgADeAAHHgQ',
+                                ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
+    print(a)
 
 
 async def main():

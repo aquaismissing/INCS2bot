@@ -135,6 +135,11 @@ class Locale(SLocale):
     dc_spain_inline_title: str  # Spanish DC
     dc_spain_madrid: str  # Madrid
 
+    dc_uk: str  # United Kingdom
+    dc_uk_title: str  # United Kingdom's DC
+    dc_uk_inline_title: str  # British DC
+    dc_uk_london: str  # London
+
     dc_us: str  # USA
     dc_us_east: str  # East
     dc_us_east_title: str  # East USA DC

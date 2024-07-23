@@ -44,6 +44,7 @@ class Tags(NamedTuple):
     dc_europe_poland: set  # Poland
     dc_europe_spain: set  # Spain
     dc_europe_sweden: set  # Sweden
+    dc_europe_uk: set  # United Kingdom
 
     dc_us: set  # USA
     dc_us_east: set  # East

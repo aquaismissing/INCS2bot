@@ -220,6 +220,19 @@ class DatacenterAtlas:
         LK.dc_sweden_title
     )
 
+    UK = DatacenterRegion(
+        "uk",
+        [
+            Datacenter(
+                "london",
+                l10n_key_title=LK.dc_uk_london
+            ),
+        ],
+        "🇬🇧",
+        LK.dc_uk,
+        LK.dc_uk_title
+    )
+
     US_EAST = DatacenterRegion(
         "us_east",
         [

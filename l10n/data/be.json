@@ -21,7 +21,7 @@
     "bot_servers_stats": "Статыстыка сервераў",
     "bot_profile_info": "Інфармацыя аб профілі",
     "bot_extras": "Дадатковыя функцыі",
-    "bot_settings": "🆕 Настройкі",
+    "bot_settings": "Настройкі",
     "crosshair": "Прыцэл",
     "crosshair_generate": "Стварыць",
     "crosshair_decode": "Расшыфраваць",
@@ -125,6 +125,10 @@
     "dc_spain_title": "дата-цэнтра Іспаніі",
     "dc_spain_inline_title": "Іспанскі ДЦ",
     "dc_spain_madrid": "Мадрыд",
+    "dc_uk": "\uD83C\uDD95 Вялікабрытанія",
+    "dc_uk_title": "дата-цэнтра Вялікабрытаніі",
+    "dc_uk_inline_title": "Брытанскi ДЦ",
+    "dc_uk_london": "Лондан",
     "dc_us": "ЗША",
     "dc_us_east": "dc_us_east / internally used key, no need to translate it",
     "dc_us_east_title": "усходніх дата-цэнтраў ЗША",
@@ -270,7 +274,7 @@
     "game_dropcaptimer_inline_title": "Скід абмежаванняў",
     "game_dropcaptimer_inline_description": "Час да скіду абмежаванняў вопыту і дропу",
     "game_dropcaptimer_text": "⏳ Час да скіду абмежаванняў вопыту і дропу: {} д. {} г. {} мін. {} сек.",
-    "game_leaderboard_button_title": "🆕 Табліца лідэраў CS2",
+    "game_leaderboard_button_title": "Табліца лідэраў CS2",
     "game_leaderboard_world": "Свет",
     "game_leaderboard_header_world": "Лепшыя гульцы CS2 па свеце:",
     "game_leaderboard_header_regional": "Лепшыя гульцы CS2 па гэтым рэгіёне:",
@@ -327,51 +331,15 @@
     "data_not_found": "Дадзеныя не знойдзены.",
     "metrics_hours": "гадзін",
     "metrics_hours_short": "гадз.",
-    "notifs_build_public": [
-        "⚡️ [Публічная зборка](https://t.me/cstracker/28) Counter-Strike была абноўлена.",
-        "",
-        "Ідэнтыфікатар новай зборкі: `{}`"
-    ],
-    "notifs_build_dpr": [
-        "🔒 Прыватная [DPR-галінка](https://t.me/cstracker/25) Counter-Strike была абноўлена.",
-        "",
-        "Ідэнтыфікатар новай зборкі: `{}`"
-    ],
-    "notifs_build_dprp": [
-        "🔒 Прыватная [DPRP-галінка](https://t.me/cstracker/25) Counter-Strike была абноўлена.",
-        "",
-        "Ідэнтыфікатар новай зборкі: `{}`"
-    ],
-    "notifs_build_cs2_client": [
-        "🔐 [Невядомы кліенцкі дадатак CS2](https://t.me/cstracker/40) быў абноўлены.",
-        "",
-        "Нумар змены: `{}`"
-    ],
-    "notifs_build_cs2_server": [
-        "🔐 [Невядомы серверны дадатак CS2](https://t.me/cstracker/40) быў абноўлены.",
-        "",
-        "Нумар змены: `{}`"
-    ],
-    "notifs_new_map": [
-        "<a href=\"https://steamcommunity.com/sharedfiles/filedetails/?id={}\">‎</a>🆕 Афіцыйны акаўнт Counter-Strike загрузіў карту **{}** [у Майстэрню Steam](https://t.me/cstracker/29).",
-        "",
-        "🔗 steamcommunity.com/sharedfiles/filedetails/?id={}"
-    ],
-    "notifs_new_map_multiple": [
-        "<a href=\"https://steamcommunity.com/profiles/76561198082857351/myworkshopfiles/?appid=730\">‎</a>🆕 Афіцыйны акаўнт Counter-Strike загрузіў карты **{}** [у Майстэрню Steam](https://t.me/cstracker/29).",
-        "",
-        "🔗 steamcommunity.com/profiles/76561198082857351/myworkshopfiles/?appid=730"
-    ],
-    "notifs_new_playerspeak": [
-        "🤩 Зарэгістраваны новы рэкордны пік анлайн гульцоў у Counter-Strike.",
-        "",
-        "Колькасць гульцоў: {:,}"
-    ],
-    "notifs_new_monthlyunique": [
-        "📊 Колькасць штомесячных унікальных гульцоў Counter-Strike была абноўлена!",
-        "",
-        "{:,} ➡️ {:,}"
-    ],
+    "notifs_build_public": "",
+    "notifs_build_dpr": "",
+    "notifs_build_dprp": "",
+    "notifs_build_cs2_client": "",
+    "notifs_build_cs2_server": "",
+    "notifs_new_map": "",
+    "notifs_new_map_multiple": "",
+    "notifs_new_playerspeak": "",
+    "notifs_new_monthlyunique": "",
     "regions_africa": "Паўднёвая Афрыка",
     "regions_asia": "Азія",
     "regions_australia": "Аўстралія",
