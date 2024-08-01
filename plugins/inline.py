@@ -133,8 +133,12 @@ async def inline_exchange_rate(_, session: UserSession, inline_query: InlineQuer
         return await inline_query.answer(result, cache_time=10)
 
     results = []
+    currencies = []
+    for k, v in TAGS.currencies_to_dict().items():
+        if any(query in tag for tag in v):
+            currencies.append(k)
 
-    if not any(query in tag for tag in TAGS.currencies_to_list()):
+    if not currencies:
         currency_available = (session.locale.currencies_tags.format(k.upper(),
                                                                     session.locale.get(f'currencies_{k}'),
                                                                     ', '.join(v[1:]))
@@ -148,11 +152,6 @@ async def inline_exchange_rate(_, session: UserSession, inline_query: InlineQuer
             )
         )
         return await inline_query.answer(results, cache_time=5)
-
-    currencies = []
-    for k, v in TAGS.currencies_to_dict().items():
-        if any(query in tag for tag in v):
-            currencies.append(k)
 
     for i, currency in enumerate(currencies):
         value = data[currency.upper()]
