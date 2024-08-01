@@ -141,8 +141,8 @@ class Tags(NamedTuple):
 
         result = {}
         for k, tags in self._asdict().items():
-            if k.startswith('currencies'):
-                result[tags[0]] = tags
+            if k.startswith('currencies_'):
+                result[k.removeprefix('currencies_')] = tags
         return result
 
     def get(self, key: str) -> str:
