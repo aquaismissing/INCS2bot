@@ -65,6 +65,7 @@ typing_extensions==4.11.0
 tzdata==2024.1
 tzlocal==5.2
 urllib3==1.26.18
+uvloop==0.19.0; sys_platform == 'linux'
 vdf==3.4
 zope.event==5.0
 zope.interface==6.3
