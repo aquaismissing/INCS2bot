@@ -156,8 +156,16 @@ async def cs_l10n_update(message: Message):
         await message.reply_sticker('CAACAgIAAxkBAAID-l_9tlLJhZQSgqsMUAvLv0r8qhxSAAIKAwAC-p_xGJ-m4XRqvoOzHgQ')
 
 
-async def filter_message(sender: Chat | User, message: Message):
-    if sender and sender.id in config.FILTERED_SENDERS:
+async def filter_message(message: Message):
+    senders = set()
+    if message.via_bot:
+        senders.add(message.via_bot.id)
+    if message.forward_from:
+        senders.add(message.forward_from.id)
+    if message.forward_from_chat:
+        senders.add(message.forward_from_chat.id)
+
+    if senders & set(config.FILTERED_SENDERS):
         await message.delete()
 
 
@@ -270,16 +278,12 @@ async def handle_new_post(client: Client, message: Message):
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
 async def filter_forwards(_, message: Message):
-    if message.via_bot:
-        return await filter_via_bot(_, message)
-
-    forward_from = message.forward_from_chat if message.forward_from_chat else message.forward_from
-    await filter_message(forward_from, message)
+    await filter_message(message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.via_bot)
 async def filter_via_bot(_, message: Message):
-    await filter_message(message.via_bot, message)
+    await filter_message(message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.sticker)

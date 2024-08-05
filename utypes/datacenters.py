@@ -377,7 +377,11 @@ class DatacenterAtlas:
             Datacenter(
                 "chengdu",
                 l10n_key_title=LK.dc_china_chengdu
-            )
+            ),
+            Datacenter(
+                "pudong",
+                l10n_key_title=LK.dc_china_pudong
+            ),
         ],
         "🇨🇳",
         LK.regions_china,

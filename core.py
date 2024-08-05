@@ -51,6 +51,7 @@ DATACENTER_API_FIELDS = {
     ('china', 'tianjin'): 'China Tianjin',
     ('china', 'guangzhou'): 'China Guangzhou',
     ('china', 'chengdu'): 'China Chengdu',
+    ('china', 'pudong'): 'China Pudong',
     ('south_korea', 'seoul'): 'South Korea',
     'singapore': 'Singapore',
     ('emirates', 'dubai'): 'Emirates',

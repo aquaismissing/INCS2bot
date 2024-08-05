@@ -189,6 +189,7 @@ class Locale(SLocale):
     dc_china_tianjin: str  # Tianjin
     dc_china_guangzhou: str  # Guangzhou
     dc_china_chengdu: str  # Chengdu
+    dc_china_pudong: str  # Pudong
     dc_emirates: str  # Emirates
     dc_emirates_title: str  # Emiratesʼ DC
     dc_emirates_inline_title: str  # Emirati DC
