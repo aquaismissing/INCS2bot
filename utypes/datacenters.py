@@ -363,10 +363,6 @@ class DatacenterAtlas:
         "china",
         [
             Datacenter(
-                "shanghai",
-                l10n_key_title=LK.dc_china_shanghai
-            ),
-            Datacenter(
                 "tianjin",
                 l10n_key_title=LK.dc_china_tianjin
             ),

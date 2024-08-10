@@ -47,7 +47,7 @@ DATACENTER_API_FIELDS = {
     ('india', 'bombay'): 'India Bombay',  # unknown
     ('india', 'madras'): 'India Madras',  # unknown
     ('uk', 'london'): 'United Kingdom',
-    ('china', 'shanghai'): 'China Shanghai',
+    ('china', 'shanghai'): 'China Shanghai',  # unknown
     ('china', 'tianjin'): 'China Tianjin',
     ('china', 'guangzhou'): 'China Guangzhou',
     ('china', 'chengdu'): 'China Chengdu',
