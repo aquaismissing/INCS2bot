@@ -377,6 +377,10 @@
         "",
         "{:,} ➡️ {:,}"
     ],
+    "notifs_backup_branch_created": "notifs_backup_branch_created",
+    "notifs_private_branch_created": "notifs_private_branch_created",
+    "notifs_misc_branch_created": "notifs_misc_branch_created",
+    "notifs_branch_deleted": "notifs_branch_deleted",
     "regions_africa": "Южная Африка",
     "regions_asia": "Азия",
     "regions_australia": "Австралия",

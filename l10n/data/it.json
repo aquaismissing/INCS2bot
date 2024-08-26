@@ -358,6 +358,10 @@
     "notifs_new_monthlyunique": [
         "notifs_new_monthlyunique"
     ],
+    "notifs_backup_branch_created": "notifs_backup_branch_created",
+    "notifs_private_branch_created": "notifs_private_branch_created",
+    "notifs_misc_branch_created": "notifs_misc_branch_created",
+    "notifs_branch_deleted": "notifs_branch_deleted",
     "regions_africa": "Sud Africa",
     "regions_asia": "Asia",
     "regions_australia": "Australia",

@@ -291,6 +291,10 @@ class Locale(SLocale):
     notifs_new_map_multiple: str
     notifs_new_playerspeak: str
     notifs_new_monthlyunique: str
+    notifs_backup_branch_created: str
+    notifs_private_branch_created: str
+    notifs_misc_branch_created: str
+    notifs_branch_deleted: str
 
     # regions (used across the bot)
     regions_africa: str  # South Africa
