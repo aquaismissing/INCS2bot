@@ -44,6 +44,30 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s | GC: %(message)s',
                     datefmt='%H:%M:%S — %d/%m/%Y')
 
+
+class PatchedSteamClient(SteamClient):
+    """*Probably* fixes an infinite program blocking when unable to connect to CM."""
+
+    def _pre_login(self):
+        if self.logged_on:
+            raise RuntimeError("Already logged on")
+
+        if not self.connected and not self._connecting:
+            if not self.connect(retry=10):
+                return EResult.Fail
+
+        if not self.channel_secured:
+            resp = self.wait_event(self.EVENT_CHANNEL_SECURED, timeout=10)
+
+            # some CMs will not send hello
+            if resp is None:
+                if self.connected:
+                    self.wait_event(self.EVENT_DISCONNECTED)
+                return EResult.TryAnotherCM
+
+        return EResult.OK
+
+
 bot = Client(config.BOT_GC_MODULE_NAME,
              api_id=config.API_ID,
              api_hash=config.API_HASH,
@@ -51,7 +75,7 @@ bot = Client(config.BOT_GC_MODULE_NAME,
              test_mode=config.TEST_MODE,
              no_updates=True,
              workdir=config.SESS_FOLDER)
-client = SteamClient()
+client = PatchedSteamClient()
 client.set_credential_location(config.STEAM_CREDS_PATH)
 cs = CSGOClient(client)
 gevent_scheduler = GeventScheduler()
