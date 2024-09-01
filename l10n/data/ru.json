@@ -338,12 +338,12 @@
         "Идентификатор новой сборки: `{}`"
     ],
     "notifs_build_dpr": [
-        "🔒 Приватная [DPR-ветка](https://t.me/cstracker/25) Counter-Strike была обновлена.",
+        "🔒 Приватная [«DPR» сборка](https://t.me/cstracker/25) Counter-Strike была обновлена.",
         "",
         "Идентификатор новой сборки: `{}`"
     ],
     "notifs_build_dprp": [
-        "🔒 Приватная [DPRP-ветка](https://t.me/cstracker/25) Counter-Strike была обновлена.",
+        "🔒 Приватная [«DPRP» сборка](https://t.me/cstracker/25) Counter-Strike была обновлена.",
         "",
         "Идентификатор новой сборки: `{}`"
     ],
@@ -357,16 +357,6 @@
         "",
         "Номер изменения: `{}`"
     ],
-    "notifs_new_map": [
-        "<a href=\"https://steamcommunity.com/sharedfiles/filedetails/?id={}\">‎</a>🆕 Официальный аккаунт Counter-Strike загрузил карту **{}** [в Мастерскую Steam](https://t.me/cstracker/29).",
-        "",
-        "🔗 steamcommunity.com/sharedfiles/filedetails/?id={}"
-    ],
-    "notifs_new_map_multiple": [
-        "<a href=\"https://steamcommunity.com/profiles/76561198082857351/myworkshopfiles/?appid=730\">‎</a>🆕 Официальный аккаунт Counter-Strike загрузил карты **{}** [в Мастерскую Steam](https://t.me/cstracker/29).",
-        "",
-        "🔗 steamcommunity.com/profiles/76561198082857351/myworkshopfiles/?appid=730"
-    ],
     "notifs_new_playerspeak": [
         "🤩 Зарегистрирован новый рекордный пик онлайн игроков в Counter-Strike.",
         "",
@@ -377,10 +367,40 @@
         "",
         "{:,} ➡️ {:,}"
     ],
-    "notifs_backup_branch_created": "notifs_backup_branch_created",
-    "notifs_private_branch_created": "notifs_private_branch_created",
-    "notifs_misc_branch_created": "notifs_misc_branch_created",
-    "notifs_branch_deleted": "notifs_branch_deleted",
+    "notifs_backup_branch_created": [
+        "💾 Добавлена [резервная копия](https://t.me/cstracker/42) Counter-Strike версии `{}`.",
+        "",
+        "Идентификатор сборки: `{}`"
+    ],
+    "notifs_backup_branch_updated": [
+        "💾 [Резервная копия](https://t.me/cstracker/42) Counter-Strike версии `{}` была обновлена.",
+        "",
+        "Идентификатор новой сборки: `{}`"
+    ],
+    "notifs_backup_branch_deleted": "🗑 [Резервная копия](https://t.me/cstracker/42) Counter-Strike версии `{}` была удалена.",
+    "notifs_private_branch_created": [
+        "🔒 Добавлена приватная сборка Counter-Strike под названием «{}».",
+        "",
+        "Идентификатор сборки: `{}`"
+    ],
+    "notifs_private_branch_updated": [
+        "🔒 Приватная «{}» сборка Counter-Strike была обновлена.",
+        "",
+        "Идентификатор новой сборки: `{}`"
+    ],
+    "notifs_misc_branch_created": [
+        "❔ Добавлена сборка Counter-Strike под названием «{}».",
+        "",
+        "Идентификатор сборки: `{}`"
+    ],
+    "notifs_misc_branch_updated": [
+        "❔ «{}» сборка Counter-Strike была обновлена.",
+        "",
+        "Идентификатор новой сборки: `{}`"
+    ],
+    "notifs_branch_deleted": [
+        "🗑 «{}» сборка Counter-Strike была удалена."
+    ],
     "regions_africa": "Южная Африка",
     "regions_asia": "Азия",
     "regions_australia": "Австралия",

@@ -287,13 +287,15 @@ class Locale(SLocale):
     notifs_build_dprp: str
     notifs_build_cs2_client: str
     notifs_build_cs2_server: str
-    notifs_new_map: str
-    notifs_new_map_multiple: str
     notifs_new_playerspeak: str
     notifs_new_monthlyunique: str
     notifs_backup_branch_created: str
+    notifs_backup_branch_updated: str
+    notifs_backup_branch_deleted: str
     notifs_private_branch_created: str
+    notifs_private_branch_updated: str
     notifs_misc_branch_created: str
+    notifs_misc_branch_updated: str
     notifs_branch_deleted: str
 
     # regions (used across the bot)

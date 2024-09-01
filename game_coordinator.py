@@ -36,8 +36,12 @@ available_alerts = {'public_build_id': loc.notifs_build_public,
                     'cs2_app_changenumber': loc.notifs_build_cs2_client,
                     'cs2_server_changenumber': loc.notifs_build_cs2_server,
                     'backup_branch_created': loc.notifs_backup_branch_created,
+                    'backup_branch_updated': loc.notifs_backup_branch_updated,
+                    'backup_branch_deleted': loc.notifs_backup_branch_deleted,
                     'private_branch_created': loc.notifs_private_branch_created,
+                    'private_branch_updated': loc.notifs_private_branch_updated,
                     'misc_branch_created': loc.notifs_misc_branch_created,
+                    'misc_branch_updated': loc.notifs_misc_branch_updated,
                     'branch_deleted': loc.notifs_branch_deleted}
 
 logging.basicConfig(level=logging.INFO,
@@ -82,6 +86,10 @@ gevent_scheduler = GeventScheduler()
 async_scheduler = AsyncIOScheduler()
 
 going_to_shutdown = False  # can be used in jobs to safely call sys.exit() afterwards
+
+
+def is_backup_branch(name: str) -> bool:
+    return name.startswith('1.4') or name.startswith('1.3')
 
 
 @client.on('error')
@@ -148,11 +156,11 @@ async def update_depots():
         data = client.get_product_info(apps=[730, 2275500, 2275530], timeout=15)['apps']
         main_data = data[730]
 
-        current_main_branches = main_data['depots']['branches']
+        current_branches = main_data['depots']['branches']
 
-        public_build_id = int(current_main_branches['public']['buildid'])
-        dpr_build_id = int(current_main_branches['dpr']['buildid'])
-        dprp_build_id = int(current_main_branches['dprp']['buildid'])
+        public_build_id = int(current_branches['public']['buildid'])
+        dpr_build_id = int(current_branches['dpr']['buildid'])
+        dprp_build_id = int(current_branches['dprp']['buildid'])
 
         cs2_app_change_number = data[2275500]['_change_number']
         cs2_server_change_number = data[2275530]['_change_number']
@@ -167,7 +175,6 @@ async def update_depots():
     cache = caching.load_cache(config.GC_CACHE_FILE_PATH)
 
     new_data = {
-        'main_branches': current_main_branches,
         'cs2_app_changenumber': cs2_app_change_number,
         'cs2_server_changenumber': cs2_server_change_number,
         'dprp_build_id': dprp_build_id,
@@ -198,11 +205,13 @@ async def update_depots():
             cache.update(game_version_data.asdict())
         await send_alert(build_id, new_value)
 
-    cached_branches = cache.get('main_branches')
+    cached_branches = cache.get('branches')
     if cached_branches is not None:
-        await check_for_new_branches(cached_branches, current_main_branches)
-        await check_for_removed_branches(cached_branches, current_main_branches)
+        await check_for_new_branches(cached_branches, current_branches)
+        await check_for_removed_branches(cached_branches, current_branches)
+        await check_for_branches_updates(cached_branches, current_branches)
 
+    new_data['branches'] = current_branches
     cache.update(new_data)
 
     caching.dump_cache(config.GC_CACHE_FILE_PATH, cache)
@@ -216,13 +225,13 @@ async def check_for_new_branches(cached_branches: dict, current_branches: dict):
         return
 
     for branch_name in new_branches:
-        if branch_name.startswith('1.4'):
+        if is_backup_branch(branch_name):
             event = 'backup_branch_created'
         elif current_branches[branch_name].get('pwdrequired') == '1':  # why the fuck it's a string? Valve???
             event = 'private_branch_created'
         else:
             event = 'misc_branch_created'
-        await send_branch_alert(branch_name, event)
+        await send_branch_alert(branch_name, event, current_branches[branch_name]['buildid'])
 
 
 async def check_for_removed_branches(cached_branches: dict, current_branches: dict):
@@ -231,7 +240,31 @@ async def check_for_removed_branches(cached_branches: dict, current_branches: di
         return
 
     for branch_name in removed_branches:
-        await send_branch_alert(branch_name, 'branch_removed')
+        if is_backup_branch(branch_name):
+            event = 'backup_branch_deleted'
+        else:
+            event = 'branch_deleted'
+        await send_branch_alert(branch_name, event)
+
+
+async def check_for_branches_updates(cached_branches: dict, current_branches: dict):
+    for branch_name, branch_data in current_branches.items():
+        if branch_name in ('public', 'dpr', 'dprp'):  # handled separately
+            continue                                  # todo: merge their handling with this?
+        cached_branch_data = cached_branches.get(branch_name)
+
+        if cached_branch_data is None:  # newly created, ignore
+            continue
+        if cached_branch_data == branch_data:
+            continue
+
+        if is_backup_branch(branch_name):
+            event = 'backup_branch_updated'
+        elif current_branches[branch_name].get('pwdrequired') == '1':
+            event = 'private_branch_updated'
+        else:
+            event = 'misc_branch_updated'
+        await send_branch_alert(branch_name, event, branch_data['buildid'])
 
 
 async def get_game_version_loop(cs2_client_version: int | None) -> GameVersionData:
@@ -281,7 +314,7 @@ def online_players():
     logging.info(f'Successfully dumped player count: {player_count}')
 
 
-async def send_branch_alert(branch: str, event: str):
+async def send_branch_alert(branch: str, event: str, new_buildid: str = None):
     logging.info(f'Detected {branch} branch "{event}" event, sending alert...')
 
     alert_sample = available_alerts.get(event)
@@ -290,7 +323,7 @@ async def send_branch_alert(branch: str, event: str):
         logging.warning(f'Got wrong event name to send alert: {event}')
         return
 
-    text = alert_sample.format(branch)
+    text = alert_sample.format(branch, new_buildid)
 
     if bot.test_mode:
         chat_list = [config.AQ]

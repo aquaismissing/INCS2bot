@@ -331,37 +331,21 @@
     "data_not_found": "Data not found.",
     "metrics_hours": "hours",
     "metrics_hours_short": "h",
-    "notifs_build_public": [
-        "notifs_build_public"
-    ],
-    "notifs_build_dpr": [
-        "notifs_build_dpr"
-    ],
-    "notifs_build_dprp": [
-        "notifs_build_dprp"
-    ],
-    "notifs_build_cs2_client": [
-        "notifs_build_cs2_client"
-    ],
-    "notifs_build_cs2_server": [
-        "notifs_build_cs2_server"
-    ],
-    "notifs_new_map": [
-        "notifs_new_map"
-    ],
-    "notifs_new_map_multiple": [
-        "notifs_new_map_multiple"
-    ],
-    "notifs_new_playerspeak": [
-        "notifs_new_playerspeak"
-    ],
-    "notifs_new_monthlyunique": [
-        "notifs_new_monthlyunique"
-    ],
-    "notifs_backup_branch_created": "notifs_backup_branch_created",
-    "notifs_private_branch_created": "notifs_private_branch_created",
-    "notifs_misc_branch_created": "notifs_misc_branch_created",
-    "notifs_branch_deleted": "notifs_branch_deleted",
+    "notifs_build_public": "<unused key>",
+    "notifs_build_dpr": "<unused key>",
+    "notifs_build_dprp": "<unused key>",
+    "notifs_build_cs2_client": "<unused key>",
+    "notifs_build_cs2_server": "<unused key>",
+    "notifs_new_playerspeak": "<unused key>",
+    "notifs_new_monthlyunique": "<unused key>",
+    "notifs_backup_branch_created": "<unused key>",
+    "notifs_backup_branch_updated": "<unused key>",
+    "notifs_backup_branch_deleted": "<unused key>",
+    "notifs_private_branch_created": "<unused key>",
+    "notifs_private_branch_updated": "<unused key>",
+    "notifs_misc_branch_created": "<unused key>",
+    "notifs_misc_branch_updated": "<unused key>",
+    "notifs_branch_deleted": "<unused key>",
     "regions_africa": "South Africa",
     "regions_asia": "Asia",
     "regions_australia": "Australia",
