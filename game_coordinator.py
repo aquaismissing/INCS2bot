@@ -28,11 +28,11 @@ from utypes import GameVersion, States, GameVersionData
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 loc = locale('ru')
 
-available_alerts = {'public_build_id': loc.notifs_build_public,
-                    'dpr_build_id': loc.notifs_build_dpr,
-                    'dprp_build_id': loc.notifs_build_dprp,
-                    'dpr_build_sync_id': f'{loc.notifs_build_dpr} 🔃',
-                    'dprp_build_sync_id': f'{loc.notifs_build_dprp} 🔃',
+AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
+                    'dpr_branch_updated': loc.notifs_build_dpr,
+                    'dprp_branch_updated': loc.notifs_build_dprp,
+                    'dpr_branch_sync': f'{loc.notifs_build_dpr} 🔃',
+                    'dprp_branch_sync': f'{loc.notifs_build_dprp} 🔃',
                     'cs2_app_changenumber': loc.notifs_build_cs2_client,
                     'cs2_server_changenumber': loc.notifs_build_cs2_server,
                     'backup_branch_created': loc.notifs_backup_branch_created,
@@ -43,6 +43,7 @@ available_alerts = {'public_build_id': loc.notifs_build_public,
                     'misc_branch_created': loc.notifs_misc_branch_created,
                     'misc_branch_updated': loc.notifs_misc_branch_updated,
                     'branch_deleted': loc.notifs_branch_deleted}
+MAIN_BRANCHES = ('public', 'dpr', 'dprp')
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s | GC: %(message)s',
@@ -154,14 +155,8 @@ async def update_depots():
     # noinspection PyBroadException
     try:
         data = client.get_product_info(apps=[730, 2275500, 2275530], timeout=15)['apps']
-        main_data = data[730]
 
-        current_branches = main_data['depots']['branches']
-
-        public_build_id = int(current_branches['public']['buildid'])
-        dpr_build_id = int(current_branches['dpr']['buildid'])
-        dprp_build_id = int(current_branches['dprp']['buildid'])
-
+        current_branches = data[730]['depots']['branches']
         cs2_app_change_number = data[2275500]['_change_number']
         cs2_server_change_number = data[2275530]['_change_number']
     except Exception:
@@ -174,44 +169,19 @@ async def update_depots():
 
     cache = caching.load_cache(config.GC_CACHE_FILE_PATH)
 
-    new_data = {
-        'cs2_app_changenumber': cs2_app_change_number,
-        'cs2_server_changenumber': cs2_server_change_number,
-        'dprp_build_id': dprp_build_id,
-        'dpr_build_id': dpr_build_id,
-        'public_build_id': public_build_id
-    }
-
-    old_public_build_id = cache.get('public_build_id')
-
-    for build_id, new_value in new_data.items():
-        old_value = cache.get(build_id)
-        if old_value is None:
-            if build_id == 'public_build_id':
-                game_version_data = await get_game_version_loop(cache.get('cs2_client_version'))
-                cache.update(game_version_data.asdict())
-            continue
-        if old_value == new_value:
-            continue
-
-        if build_id == 'dpr_build_id' and new_value == old_public_build_id:
-            await send_alert('dpr_build_sync_id', new_value)
-            continue
-        if build_id == 'dprp_build_id' and new_value == old_public_build_id:
-            await send_alert('dprp_build_sync_id', new_value)
-            continue
-        if build_id == 'public_build_id':
-            game_version_data = await get_game_version_loop(cache.get('cs2_client_version'))
-            cache.update(game_version_data.asdict())
-        await send_alert(build_id, new_value)
-
     cached_branches = cache.get('branches')
     if cached_branches is not None:
         await check_for_new_branches(cached_branches, current_branches)
         await check_for_removed_branches(cached_branches, current_branches)
-        await check_for_branches_updates(cached_branches, current_branches)
+        # mutates `cache` var in case of "public" branch update
+        await check_for_branches_updates(cache, cached_branches, current_branches)
 
-    new_data['branches'] = current_branches
+    new_data = {
+        'cs2_app_changenumber': cs2_app_change_number,
+        'cs2_server_changenumber': cs2_server_change_number,
+        'branches': current_branches
+    }
+
     cache.update(new_data)
 
     caching.dump_cache(config.GC_CACHE_FILE_PATH, cache)
@@ -225,13 +195,15 @@ async def check_for_new_branches(cached_branches: dict, current_branches: dict):
         return
 
     for branch_name in new_branches:
+        branch_data = current_branches[branch_name]
+
         if is_backup_branch(branch_name):
             event = 'backup_branch_created'
-        elif current_branches[branch_name].get('pwdrequired') == '1':  # why the fuck it's a string? Valve???
+        elif branch_data.get('pwdrequired') == '1':  # why the fuck it's a string? Valve???
             event = 'private_branch_created'
         else:
             event = 'misc_branch_created'
-        await send_branch_alert(branch_name, event, current_branches[branch_name]['buildid'])
+        await send_branch_alert(branch_name, event, branch_data['buildid'])
 
 
 async def check_for_removed_branches(cached_branches: dict, current_branches: dict):
@@ -247,24 +219,34 @@ async def check_for_removed_branches(cached_branches: dict, current_branches: di
         await send_branch_alert(branch_name, event)
 
 
-async def check_for_branches_updates(cached_branches: dict, current_branches: dict):
+async def check_for_branches_updates(cache: dict, cached_branches: dict, current_branches: dict):
+    public_buildid = cached_branches.get('public', {}).get('buildid')
+
     for branch_name, branch_data in current_branches.items():
-        if branch_name in ('public', 'dpr', 'dprp'):  # handled separately
-            continue                                  # todo: merge their handling with this?
         cached_branch_data = cached_branches.get(branch_name)
 
         if cached_branch_data is None:  # newly created, ignore
             continue
-        if cached_branch_data == branch_data:
+        old_buildid = cached_branch_data['buildid']
+        new_buildid = branch_data['buildid']
+        if old_buildid == new_buildid:
             continue
 
-        if is_backup_branch(branch_name):
+        if branch_name == 'public':
+            game_version_data = await get_game_version_loop(cache.get('cs2_client_version'))
+            cache.update(game_version_data.asdict())
+            event = 'public_branch_updated'
+        elif branch_name == 'dpr':
+            event = 'dpr_branch_sync' if new_buildid == public_buildid else 'dpr_branch_updated'
+        elif branch_name == 'dprp':
+            event = 'dprp_branch_sync' if new_buildid == public_buildid else 'dprp_branch_updated'
+        elif is_backup_branch(branch_name):
             event = 'backup_branch_updated'
-        elif current_branches[branch_name].get('pwdrequired') == '1':
+        elif branch_data.get('pwdrequired') == '1':
             event = 'private_branch_updated'
         else:
             event = 'misc_branch_updated'
-        await send_branch_alert(branch_name, event, branch_data['buildid'])
+        await send_branch_alert(branch_name, event, new_buildid)
 
 
 async def get_game_version_loop(cs2_client_version: int | None) -> GameVersionData:
@@ -317,35 +299,16 @@ def online_players():
 async def send_branch_alert(branch: str, event: str, new_buildid: str = None):
     logging.info(f'Detected {branch} branch "{event}" event, sending alert...')
 
-    alert_sample = available_alerts.get(event)
+    alert_sample = AVAILABLE_ALERTS.get(event)
 
     if alert_sample is None:
         logging.warning(f'Got wrong event name to send alert: {event}')
         return
 
-    text = alert_sample.format(branch, new_buildid)
-
-    if bot.test_mode:
-        chat_list = [config.AQ]
+    if branch in MAIN_BRANCHES:
+        text = alert_sample.format(new_buildid)
     else:
-        chat_list = [config.INCS2CHAT, config.CSTRACKER]
-
-    for chat_id in chat_list:
-        msg = await bot.send_message(chat_id, text, disable_web_page_preview=True)
-        if chat_id == config.INCS2CHAT:
-            await msg.pin(disable_notification=True)
-
-
-async def send_alert(key: str, new_value: int):
-    logging.info(f'Found new change: {key}, sending alert...')
-
-    alert_sample = available_alerts.get(key)
-
-    if alert_sample is None:
-        logging.warning(f'Got wrong key to send alert: {key}')
-        return
-
-    text = alert_sample.format(new_value)
+        text = alert_sample.format(branch, new_buildid)
 
     if bot.test_mode:
         chat_list = [config.AQ]
