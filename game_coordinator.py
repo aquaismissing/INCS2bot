@@ -169,18 +169,25 @@ async def update_depots():
 
     cache = caching.load_cache(config.GC_CACHE_FILE_PATH)
 
-    cached_branches = cache.get('branches')
-    if cached_branches is not None:
-        await check_for_new_branches(cached_branches, current_branches)
-        await check_for_removed_branches(cached_branches, current_branches)
-        # mutates `cache` var in case of "public" branch update
-        await check_for_branches_updates(cache, cached_branches, current_branches)
-
     new_data = {
         'cs2_app_changenumber': cs2_app_change_number,
         'cs2_server_changenumber': cs2_server_change_number,
         'branches': current_branches
     }
+
+    for key, new_value in new_data.items():
+        old_value = cache.get(key)
+        if old_value is None or old_value == new_value:
+            continue
+
+        if key == 'branches':
+            await check_for_new_branches(old_value, new_value)
+            await check_for_removed_branches(old_value, new_value)
+            # mutates `cache` var in case of "public" branch update
+            await check_for_branches_updates(cache, old_value, new_value)
+        else:
+            # I am an idiot but oh well
+            await send_branch_alert('<null>', key, new_value)
 
     cache.update(new_data)
 
