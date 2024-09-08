@@ -99,6 +99,8 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
              workdir=config.SESS_FOLDER)
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
 
+MEOW_MEOW_MEOW_IN_A_ROW = 0
+
 
 def clear_from_deprecated_fields(cache: dict):
     for field in DEPRECATED_FIELDS:

@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import json
 import logging
 import random
@@ -13,6 +14,7 @@ from tgentity import to_md
 
 import config
 
+import core
 
 DISCORD_MESSAGE_LENGTH_LIMIT = 2000
 
@@ -88,8 +90,8 @@ def wrap_text(text: str, max_length: int) -> list[str]:
 def process_discord_text(message: Message) -> list[str]:
     text = (to_discord_markdown(message) if message.entities
             else message.caption if message.caption
-            else message.text if message.text
-            else '')
+    else message.text if message.text
+    else '')
 
     # fixme: can break formatting if wrapping happens in the middle of formatted section
     # fixme: (e.g. "**some [split] wise words**")
@@ -287,8 +289,17 @@ async def filter_via_bot(_, message: Message):
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.sticker)
-async def meow_meow_meow_meow(_, message: Message):
+async def meow_meow_meow_meow(client: Client, message: Message):
     chance = random.randint(0, 100)
 
     if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug' and chance < 5:
         await message.reply('мяу мяу мяу мяу')
+        core.MEOW_MEOW_MEOW_IN_A_ROW += 1
+
+        if core.MEOW_MEOW_MEOW_IN_A_ROW == 3:   # chance 0.05*0.05*0.05 = 0.000125 = 0.0125% = 1/10000
+            syb_id = 802764912
+            syb = await client.get_chat(syb_id)
+            await client.ban_chat_member(config.INCS2CHAT,
+                                         syb_id,
+                                         datetime.datetime.now() + datetime.timedelta(days=30))  # на 30 дней нормис
+            await message.reply(f'{syb.first_name} получил(а) VAC бан.')
