@@ -7,6 +7,7 @@ from typing import Type
 
 from pyrogram import Client
 from pyrogram.enums import ChatAction, ChatType, ParseMode
+from pyrogram.errors.exceptions.bad_request_400 import MessageIdInvalid
 from pyrogram.types import (CallbackQuery, InlineQuery, Message,
                             MessageEntity, InlineKeyboardMarkup,
                             ReplyKeyboardMarkup,
@@ -112,7 +113,7 @@ class BotClient(Client):
             async def inner(client: BotClient, session: UserSession, bot_message: Message, exc: Exception,
                             *args, **kwargs):
                 message = await func(client, session, bot_message, exc, *args, **kwargs)
-                logging.info(f'{message!r}')
+                # logging.info(f'{message!r}')
                 if isinstance(message, Message):
                     session.last_bot_pm_id = message.id
 
@@ -223,7 +224,14 @@ class BotClient(Client):
             async def inner(client: BotClient, session: UserSession, bot_message: Message, user_input: Message,
                             *args, **kwargs):
                 await client.log_message(session, user_input)
-                message = await func(client, session, bot_message, user_input, *args, **kwargs)
+                if bot_message.chat is None:  # if user blocked the bot and deleted the message history before
+                    bot_message = await client.send_message(user_input.chat.id, ".")
+                    message = await client._func_at_exception(client, session, bot_message, None)
+                else:
+                    try:
+                        message = await func(client, session, bot_message, user_input, *args, **kwargs)
+                    except MessageIdInvalid:  # if user deleted bot_message for some reason
+                        message = await client.send_message(user_input.chat.id, ".")
                 if isinstance(message, Message):
                     bot_message = message
                     session.last_bot_pm_id = bot_message.id
