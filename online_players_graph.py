@@ -2,6 +2,7 @@ import json
 import logging
 import time
 
+import requests
 from apscheduler.schedulers.blocking import BlockingScheduler
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.cm import ScalarMappable
@@ -9,9 +10,7 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FixedFormatter
 import pandas as pd
-from requests import JSONDecodeError
 import seaborn as sns
-from telegraph import Telegraph
 
 import config
 from functions import utime
@@ -24,7 +23,6 @@ logging.basicConfig(level=logging.INFO,
                     datefmt="%H:%M:%S — %d/%m/%Y")
 
 scheduler = BlockingScheduler()
-telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
 cmap = LinearSegmentedColormap.from_list('custom', [(1, 1, 0), (1, 0, 0)], N=100)
 norm = plt.Normalize(0, 2_000_000)
@@ -36,6 +34,20 @@ fig_ticks_format = ['' for _ in ticks]
 
 x_major_locator = mdates.DayLocator()
 x_major_formatter = mdates.DateFormatter("%b %d")
+
+
+def post_image_to_catbox() -> str:
+    with open(config.GRAPH_IMG_FILE_PATH, 'rb') as f:
+        response = requests.post('https://catbox.moe/user/api.php',
+                                 headers=config.REQUESTS_HEADERS,
+                                 data={'reqtype': 'fileupload'},
+                                 files={'fileToUpload': f})
+
+        if response.status_code != 200:
+            print(response.status_code, response.reason, response.text)
+            return ''
+
+        return response.text
 
 
 @scheduler.scheduled_job('cron', hour='*', minute='0,10,20,30,40,50', second='0')
@@ -103,18 +115,12 @@ def graph_maker():
         fig.savefig(config.GRAPH_IMG_FILE_PATH, dpi=200)
         plt.close()
 
-        try:
-            image_path = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))[0]['src']
-        except JSONDecodeError:  # SCREW YOU
-            time.sleep(1)
-            image_path = telegraph.upload_file(str(config.GRAPH_IMG_FILE_PATH))[0]['src']
-        image_url = f'https://telegra.ph{image_path}'
+        image_url = post_image_to_catbox()
 
         with open(config.GRAPH_CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
 
-        if image_url != cache.get('graph_url'):
-            cache['graph_url'] = image_url
+        cache['graph_url'] = image_url
 
         with open(config.GRAPH_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=4, ensure_ascii=False)
