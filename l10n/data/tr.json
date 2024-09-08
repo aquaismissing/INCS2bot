@@ -373,7 +373,7 @@
     "stats_matchmaking_inline_title": "MM istatistikleri",
     "stats_matchmaking_inline_description": "Çevrimiçi oyuncu sayısını görmek",
     "stats_matchmaking_text": [
-        "<a href=\"{}\">‎</a>⁠📊 **M istatistikleri:**",
+        "<a href=\"{}\">‎</a>📊 **M istatistikleri:**",
         "",
         "• Ağdaki sunucular: {:,}",
         "• Çevrimiçi oyuncular: {:,}",

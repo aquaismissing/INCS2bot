@@ -373,7 +373,7 @@
     "stats_matchmaking_inline_title": "MM statistikasi",
     "stats_matchmaking_inline_description": "Onlayn o'yinchilar sonini ko'ring",
     "stats_matchmaking_text": [
-        "<a href=\"{}\">‎</a>⁠📊 **matchmaking statiskikasi:**",
+        "<a href=\"{}\">‎</a>📊 **Matchmaking statiskikasi:**",
         "",
         "• Onlayn serverlar: {:,}",
         "• O'yinchilar onlayn: {:,}",
