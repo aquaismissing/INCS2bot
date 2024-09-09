@@ -62,8 +62,8 @@ class BotClient(Client):
         return self._sessions
 
     async def start(self):
-        await super().start()
         self.startup_dt = dt.datetime.now(dt.UTC)
+        await super().start()
 
     async def mainloop(self):
         # ESSENTIALS FOR MAINLOOP

@@ -43,7 +43,7 @@ def format_datetime(datetime: dt.datetime, locale: Locale):
 
 
 def format_timedelta(td: dt.timedelta) -> str:
-    time_elapsed = int(td.total_seconds())
+    time_elapsed = round(td.total_seconds())
 
     time_elapsed_strf = []
     if (elapsed_years := time_elapsed // YEAR) != 0:
@@ -56,8 +56,8 @@ def format_timedelta(td: dt.timedelta) -> str:
         time_elapsed_strf.append(f'{elapsed_hours} {"hour" if elapsed_hours == 1 else "hours"}')
     if (elapsed_minutes := time_elapsed % HOUR // MINUTE) != 0:
         time_elapsed_strf.append(f'{elapsed_minutes} {"minute" if elapsed_minutes == 1 else "minutes"}')
-    elapsed_seconds = time_elapsed % MINUTE // 1
-    time_elapsed_strf.append(f'{elapsed_seconds} {"second" if elapsed_seconds == 1 else "seconds"}')
+    if (elapsed_seconds := time_elapsed % MINUTE) != 0:
+        time_elapsed_strf.append(f'{elapsed_seconds} {"second" if elapsed_seconds == 1 else "seconds"}')
 
     if len(time_elapsed_strf) > 1:
         time_elapsed_strf = time_elapsed_strf[:-2] + [" and ".join(time_elapsed_strf[-2:])]
