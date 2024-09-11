@@ -43,7 +43,7 @@ AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
                     'misc_branch_created': loc.notifs_misc_branch_created,
                     'misc_branch_updated': loc.notifs_misc_branch_updated,
                     'branch_deleted': loc.notifs_branch_deleted}
-MAIN_BRANCHES = ('public', 'dpr', 'dprp')
+MAIN_BRANCHES = {'public', 'dpr', 'dprp', '<null>'}  # <null> is for other important things
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s | GC: %(message)s',
@@ -317,6 +317,10 @@ async def send_branch_alert(branch: str, event: str, new_buildid: str = None):
     else:
         text = alert_sample.format(branch, new_buildid)
 
+    await send_text_alert(text)
+
+
+async def send_text_alert(text: str):
     if bot.test_mode:
         chat_list = [config.AQ]
     else:
