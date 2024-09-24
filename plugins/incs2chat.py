@@ -293,5 +293,5 @@ async def meow_meow_meow_meow(_, message: Message):
     if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug':
         if chance < 0.025:
             await message.reply('гав гав гав гав')
-        elif chance < 0.05:
+        elif chance < 0.075:  # 0.05
             await message.reply('мяу мяу мяу мяу')
