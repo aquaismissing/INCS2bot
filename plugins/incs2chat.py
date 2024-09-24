@@ -288,7 +288,10 @@ async def filter_via_bot(_, message: Message):
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.sticker)
 async def meow_meow_meow_meow(_, message: Message):
-    chance = random.randint(0, 100)
+    chance = random.random()
 
-    if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug' and chance < 5:
-        await message.reply('мяу мяу мяу мяу')
+    if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug':
+        if chance < 0.025:
+            await message.reply('гав гав гав гав')
+        elif chance < 0.05:
+            await message.reply('мяу мяу мяу мяу')
