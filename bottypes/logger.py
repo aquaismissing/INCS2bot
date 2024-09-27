@@ -71,6 +71,8 @@ class BotLogger:
 
         if userid == SYSTEM:  # invoked by system, not user
             system_log = logged_events.pop(0)
+            if not logged_events:
+                del self._logs_queue[SYSTEM]
             return await self.send_log(system_log.client,
                                        system_log.text,
                                        system_log.disable_notification,

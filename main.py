@@ -501,6 +501,8 @@ async def decode_crosshair_process(client: BotClient, session: UserSession, bot_
     await bot_message.edit(session.locale.bot_loading)
 
     try:
+        if not user_input.text:
+            raise ValueError
         _crosshair = Crosshair.decode(user_input.text)
     except ValueError:
         await user_input.delete()
