@@ -179,10 +179,16 @@ async def ban(client: Client, message: Message):
     if message.from_user.id not in admins:
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
-    if message.reply_to_message:
-        original_msg = message.reply_to_message
-        await chat.ban_member(original_msg.from_user.id)
-        await message.reply(f"{original_msg.from_user.first_name} получил(а) VAC бан.")
+    original_msg = message.reply_to_message
+    if original_msg:
+        user_to_ban = original_msg.from_user
+
+        # if not chat.get_member(user_to_ban.id):  # probably already banned, untested
+        #     return await message.reply(f"{user_to_ban.first_name} не находится в этом чате."
+        #                                f" Возможно, он(а) уже получил(а) VAC бан.")
+
+        await chat.ban_member(user_to_ban.id)
+        await message.reply(f"{user_to_ban.first_name} получил(а) VAC бан.")
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("unban"))
