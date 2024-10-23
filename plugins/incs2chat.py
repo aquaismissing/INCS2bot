@@ -192,7 +192,7 @@ async def addfilter(_, message: Message):
     global filtered_channels_and_bots
 
     # todo: specific text filtering (for cases when the spammer sends a regular message)
-    if message.command[1] == 'channel':
+    if message.command[1] == 'forward':
         source_msg = message.reply_to_message
         if not source_msg:
             msg = await message.reply('Укажите ответом пересланное сообщение из канала, который вы хотите фильтровать.')
@@ -223,7 +223,7 @@ async def addfilter(_, message: Message):
             await message.delete()
             await msg.delete()
     else:
-        msg = await message.reply('Укажите правильный тип фильтрации (`channel`).')
+        msg = await message.reply('Укажите правильный тип фильтрации (`forward`).')
         await asyncio.sleep(5)
         await message.delete()
         await msg.delete()
