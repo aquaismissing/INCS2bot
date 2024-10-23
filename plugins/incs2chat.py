@@ -15,6 +15,24 @@ import config
 
 
 DISCORD_MESSAGE_LENGTH_LIMIT = 2000
+MESSAGE_FILTERS_FILE = config.DATA_FOLDER / 'filtered.json'
+
+if not MESSAGE_FILTERS_FILE.exists():
+    with open(MESSAGE_FILTERS_FILE, 'w', encoding='utf-8') as _f:
+        json.dump({}, _f)
+
+
+def load_message_filters() -> dict[int, str]:
+    with open(MESSAGE_FILTERS_FILE, encoding='utf-8') as f:
+        return json.load(f)
+
+
+def dump_message_filters(_filters: dict[int, str]):
+    with open(MESSAGE_FILTERS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(_filters, f)
+
+
+filtered_channels_and_bots = load_message_filters()  # {id: name} (for easier recognition)
 
 
 async def is_administrator(chat: Chat, user: User) -> bool:
@@ -165,8 +183,51 @@ async def filter_message(message: Message):
     if message.forward_from_chat:
         senders.add(message.forward_from_chat.id)
 
-    if senders & set(config.FILTERED_SENDERS):
+    if senders & filtered_channels_and_bots.keys():
         await message.delete()
+
+
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("addfilter"))
+async def addfilter(_, message: Message):
+    global filtered_channels_and_bots
+
+    # todo: specific text filtering (for cases when the spammer sends a regular message)
+    if message.command[1] == 'channel':
+        source_msg = message.reply_to_message
+        if not source_msg:
+            msg = await message.reply('Укажите ответом пересланное сообщение из канала, который вы хотите фильтровать.')
+            await asyncio.sleep(5)
+            await message.delete()
+            await msg.delete()
+            return
+
+        things_to_filter = {}
+        if source_msg.via_bot:
+            things_to_filter[source_msg.via_bot.id] = source_msg.via_bot.username
+        if source_msg.forward_from:
+            things_to_filter[source_msg.forward_from.id] = source_msg.forward_from.username
+        if source_msg.forward_from_chat:
+            things_to_filter[source_msg.forward_from_chat.id] = source_msg.forward_from_chat.username
+
+        if things_to_filter:
+            filtered_channels_and_bots |= things_to_filter
+            dump_message_filters(filtered_channels_and_bots)
+            msg = await message.reply('Фильтр был успешно обновлён.')
+            await source_msg.delete()
+            await asyncio.sleep(5)
+            await message.delete()
+            await msg.delete()
+        else:
+            msg = await message.reply('Не удалось найти параметры, по которым можно применить фильтр.')
+            await asyncio.sleep(5)
+            await message.delete()
+            await msg.delete()
+    else:
+        msg = await message.reply('Укажите правильный тип фильтрации (`channel`).')
+        await asyncio.sleep(5)
+        await message.delete()
+        await msg.delete()
+        return
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("ban"))
