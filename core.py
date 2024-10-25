@@ -59,19 +59,6 @@ DATACENTER_API_FIELDS = {
 }
 
 
-DEPRECATED_FIELDS = ['csgo_client_version',
-                     'csgo_server_version',
-                     'csgo_patch_version',
-                     'csgo_version_timestamp',
-                     'sdk_build_id',
-                     'ds_build_id',
-                     'valve_ds_changenumber',
-                     'webapi',
-                     'sessions_logon',
-                     'steam_community',
-                     'matchmaking_scheduler',
-                     'game_coordinator']
-
 UNKNOWN_DC_STATE = {"capacity": "unknown", "load": "unknown"}
 
 
@@ -98,12 +85,6 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
              no_updates=True,
              workdir=config.SESS_FOLDER)
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
-
-
-def clear_from_deprecated_fields(cache: dict):
-    for field in DEPRECATED_FIELDS:
-        if cache.get(field):
-            cache.pop(field, None)
 
 
 def remap_dc(info: dict, dc: Datacenter):

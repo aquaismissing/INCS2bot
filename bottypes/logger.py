@@ -66,9 +66,6 @@ class BotLogger:
         userid = tuple(self._logs_queue)[0]
         logged_events = self._logs_queue[userid]
 
-        if not logged_events:  # I have no idea how is it possible,
-            return             # but it's possible
-
         if userid == SYSTEM:  # invoked by system, not user
             system_log = logged_events.pop(0)
             if not logged_events:
