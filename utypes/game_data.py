@@ -3,18 +3,16 @@ from __future__ import annotations
 import dataclasses
 from dataclasses import dataclass
 import datetime as dt
-import json
 from typing import NamedTuple, TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
-from functions import utime, caching
+from functions import utime
+from .cache import CoreCache, GCCache, GraphCache
 from .states import States
 from .steam_webapi import SteamWebAPI
 from .protobufs import ScoreLeaderboardData
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     import requests
 
     from .states import State
@@ -54,8 +52,8 @@ REGIONS = {1: 'NA',
 
 
 class GameVersionData(NamedTuple):
-    cs2_client_version: int
-    cs2_server_version: int
+    cs2_client_version: int | str
+    cs2_server_version: int | str
     cs2_patch_version: str
     cs2_version_timestamp: float | str
 
@@ -202,17 +200,14 @@ class GameVersion:
                                cs2_version_timestamp)
     
     @staticmethod
-    def cached_data(filename: str | Path):
+    def cached_data(gc_cache: GCCache):
         """Get the version of the game"""
 
-        with open(filename, encoding='utf-8') as f:
-            cache_file = json.load(f)
+        cs2_client_version = gc_cache.get('cs2_client_version', 'unknown')
+        cs2_server_version = gc_cache.get('cs2_client_version', 'unknown')
+        cs2_patch_version = gc_cache.get('cs2_patch_version', 'unknown')
 
-        cs2_client_version = cache_file.get('cs2_client_version', 'unknown')
-        cs2_server_version = cache_file.get('cs2_client_version', 'unknown')
-        cs2_patch_version = cache_file.get('cs2_patch_version', 'unknown')
-
-        cs2_version_timestamp = cache_file.get('cs2_version_timestamp', 0)
+        cs2_version_timestamp = gc_cache.get('cs2_version_timestamp', 0)
         return GameVersionData(cs2_client_version,
                                cs2_server_version,
                                cs2_patch_version,
@@ -248,21 +243,23 @@ class ExchangeRate:
         return ExchangeRateData(**formatted_prices)
 
     @staticmethod
-    def cached_data(filename: str | Path):
+    def cached_data(core_cache: CoreCache):
         """Get the currencies for CS2 store"""
 
-        with open(filename, encoding='utf-8') as f:
-            key_prices = json.load(f).get('key_price')
+        key_prices = core_cache.get('key_price')
 
         if key_prices is None:
-            return {}
-
-        for cur in ('ARS', 'TRY'):   # these values could be left in the cache
-            if key_prices.get(cur):  # todo: remove later
-                del key_prices[cur]
+            # to allow chaining `ExchangeRate.cached_data().asdict()`
+            # and get more sensible error later on
+            return MockDict()
 
         return ExchangeRateData(**key_prices)
-    
+
+
+class MockDict(dict):
+    def asdict(self):
+        return self
+
 
 class GameServers:
     @classmethod
@@ -295,50 +292,42 @@ class GameServers:
                                       datacenters)
 
     @staticmethod
-    def cached_server_status(main_cache: Path, game_coordinator_cache: Path):
+    def cached_server_status(core_cache: CoreCache, gc_cache: GCCache):
         """Get the status of Counter-Strike servers"""
 
-        cache = caching.load_cache(main_cache)
-
-        game_server_dt = GameServers.latest_info_update(main_cache)
+        game_server_dt = GameServers.latest_info_update(core_cache)
         if game_server_dt == States.UNKNOWN:
             return States.UNKNOWN
 
-        gc_cache = caching.load_cache(game_coordinator_cache)
-
         gc_state = States.get_or_unknown(gc_cache.get('game_coordinator_state'))  # GC!!!!
-        sl_state = States.get_or_unknown(cache.get('sessions_logon_state'))
-        ms_state = States.get_or_unknown(cache.get('matchmaking_scheduler_state'))
-        sc_state = States.get_or_unknown(cache.get('steam_community_state'))
-        webapi_state = States.get_or_unknown(cache.get('webapi_state'))
+        sl_state = States.get_or_unknown(core_cache.get('sessions_logon_state'))
+        ms_state = States.get_or_unknown(core_cache.get('matchmaking_scheduler_state'))
+        sc_state = States.get_or_unknown(core_cache.get('steam_community_state'))
+        webapi_state = States.get_or_unknown(core_cache.get('webapi_state'))
 
         return ServerStatusData(game_server_dt,
                                 gc_state, sl_state, ms_state, sc_state, webapi_state)
     
     @staticmethod
-    def cached_matchmaking_stats(main_cache: Path, game_coordinator_cache: Path, graph_link_cache: Path):
-        cache = caching.load_cache(main_cache)
-
-        game_server_dt = GameServers.latest_info_update(main_cache)
+    def cached_matchmaking_stats(core_cache: CoreCache, gc_cache: GCCache, graph_cache: GraphCache):
+        game_server_dt = GameServers.latest_info_update(core_cache)
         if game_server_dt is States.UNKNOWN:
             return States.UNKNOWN
-
-        gc_cache = caching.load_cache(game_coordinator_cache)
-        graph_cache = caching.load_cache(graph_link_cache)
         
-        gc_state = States.get_or_unknown(cache.get('game_coordinator_state'))
-        sl_state = States.get_or_unknown(cache.get('sessions_logon_state'))
+        gc_state = States.get_or_unknown(core_cache.get('game_coordinator_state'))
+        sl_state = States.get_or_unknown(core_cache.get('sessions_logon_state'))
 
         graph_url = graph_cache.get('graph_url', '')  # graph!!!!
         online_players = gc_cache.get('online_players', 0)  # GC!!!!
-        online_servers = cache.get('online_servers', 0)
-        active_players = cache.get('active_players', 0)
-        average_search_time = cache.get('average_search_time', 0)
-        searching_players = cache.get('searching_players', 0)
 
-        player_24h_peak = cache.get('player_24h_peak', 0)
-        player_alltime_peak = cache.get('player_alltime_peak', 0)
-        monthly_unique_players = cache.get('monthly_unique_players', 0)
+        online_servers = core_cache.get('online_servers', 0)
+        active_players = core_cache.get('active_players', 0)
+        average_search_time = core_cache.get('average_search_time', 0)
+        searching_players = core_cache.get('searching_players', 0)
+
+        player_24h_peak = core_cache.get('player_24h_peak', 0)
+        player_alltime_peak = core_cache.get('player_alltime_peak', 0)
+        monthly_unique_players = core_cache.get('monthly_unique_players', 0)
 
         return MatchmakingStatsData(game_server_dt,
                                     gc_state, sl_state,
@@ -348,9 +337,7 @@ class GameServers:
                                     player_24h_peak, player_alltime_peak, monthly_unique_players)
     
     @staticmethod
-    def latest_info_update(filename: Path):
-        cache = caching.load_cache(filename)
-
+    def latest_info_update(cache: CoreCache):
         if cache.get('api_timestamp', 'unknown') == 'unknown':
             return States.UNKNOWN
 
@@ -424,19 +411,13 @@ class LeaderboardStats(NamedTuple):
         return [LeaderboardStats.from_json(person).asdict() for person in regional_leaderboard_data]
 
     @staticmethod
-    def cached_world_stats(filename: str | Path):
-        with open(filename, encoding='utf-8') as f:
-            cache_file = json.load(f)
-
-        world_leaderboard_stats = cache_file.get('world_leaderboard_stats', [])
+    def cached_world_stats(core_cache: CoreCache):
+        world_leaderboard_stats = core_cache.get('world_leaderboard_stats', [])
         return [LeaderboardStats(**person) for person in world_leaderboard_stats]
 
     @staticmethod
-    def cached_regional_stats(filename: str | Path, region: str):
-        with open(filename, encoding='utf-8') as f:
-            cache_file = json.load(f)
-
-        regional_leaderboard_stats = cache_file.get(f'regional_leaderboard_stats_{region}', [])
+    def cached_regional_stats(core_cache: CoreCache, region: str):
+        regional_leaderboard_stats = core_cache.get(f'regional_leaderboard_stats_{region}', [])
         return [LeaderboardStats(**person) for person in regional_leaderboard_stats]
 
     def asdict(self):
