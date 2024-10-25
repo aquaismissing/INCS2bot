@@ -13,9 +13,10 @@ if platform.system() == 'Linux':
     uvloop.install()
 
 import config
+from dcatlas import DatacenterAtlas
 from functions import caching, utime
 from l10n import locale
-from utypes import (ExchangeRate, DatacenterAtlas, Datacenter,
+from utypes import (ExchangeRate, Datacenter,
                     DatacenterRegion, DatacenterGroup, GameServers,
                     LeaderboardStats, State, SteamWebAPI,
                     LEADERBOARD_API_REGIONS)
@@ -135,8 +136,6 @@ async def update_cache_info():
     # noinspection PyBroadException
     try:
         cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
-
-        clear_from_deprecated_fields(cache)  # todo: I guess we can already delete that one?
 
         game_servers_data = GameServers.request(steam_webapi)
 

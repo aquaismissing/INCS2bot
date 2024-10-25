@@ -11,10 +11,11 @@ from pyrogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessa
 
 from bottypes import BotClient, UserSession
 import config
+from dcatlas import DatacenterAtlas
 from functions import info_formatters
 import keyboards
 from l10n import load_tags
-from utypes import (DatacenterAtlas, DatacenterInlineResult, ExchangeRate,
+from utypes import (DatacenterInlineResult, ExchangeRate,
                     GameServers, GameVersion,
                     drop_cap_reset_timer)
 

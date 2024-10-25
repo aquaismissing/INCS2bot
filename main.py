@@ -21,6 +21,7 @@ from telegraph.aio import Telegraph
 
 from bottypes import BotClient, BotLogger, ExtendedIKB, ExtendedIKM
 import config
+from dcatlas import DatacenterAtlas
 from db import db_session
 from functions import caching, info_formatters, utime
 from functions.decorators import ignore_message_not_modified
@@ -28,7 +29,7 @@ from functions.locale import get_available_languages
 import keyboards
 # noinspection PyPep8Naming
 from l10n import LocaleKeys as LK, locale as lc
-from utypes import (DatacenterAtlas, DatacenterVariation, ExchangeRate,
+from utypes import (DatacenterVariation, ExchangeRate,
                     GameServers, GameVersion, LeaderboardStats,
                     ProfileInfo,
                     States, UserGameStats, drop_cap_reset_timer)
@@ -945,14 +946,11 @@ async def regular_stats_report(client: BotClient):
     client.rstats.clear()
 
 
-async def drop_cap_reset_in_10_minutes(client: BotClient):
+async def drop_cap_reset_in_10_minutes(client: BotClient):  # todo: finish testing this damn thing
     if drop_cap_reset_timer()[1] != 0:
         await asyncio.sleep(60 * 60)  # to account timezone changing
-
-    a = await client.send_photo(config.LOGCHANNEL,
-                                'AgACAgIAAx0EcqmfAwACE_1ml3gYlVf65aXBmhaq54dI5NtctgACYOExG2LEwEj6jR-JjYwTMgAIAQADAgADeAAHHgQ',
-                                ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
-    print(a)
+    await client.send_message(config.LOGCHANNEL, ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
+    # 'AgACAgIAAx0EcqmfAwACE_1ml3gYlVf65aXBmhaq54dI5NtctgACYOExG2LEwEj6jR-JjYwTMgAIAQADAgADeAAHHgQ'
 
 
 async def main():
