@@ -8,25 +8,13 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 # noinspection PyPep8Naming
-from l10n import LocaleKeys as LK
-
-
 __all__ = ['load_gun_infos', 'GunInfo']
-
-
-gun_origins = {'Germany': LK.gun_origin_germany, 'Austria': LK.gun_origin_austria, 'Italy': LK.gun_origin_italy,
-               'Switzerland': LK.gun_origin_switzerland, 'Czech Republic': LK.gun_origin_czech_republic,
-               'Belgium': LK.gun_origin_belgium, 'Sweden': LK.gun_origin_sweden, 'Israel': LK.gun_origin_israel,
-               'United States': LK.gun_origin_us, 'Russia': LK.gun_origin_russia, 'France': LK.gun_origin_france,
-               'United Kingdom': LK.gun_origin_uk, 'South Africa': LK.gun_origin_south_africa}
 
 
 def load_gun_infos(filename: Path):
     with open(filename, encoding='utf-8') as f:
         data = json.load(f)
 
-    for gun_info in data:
-        gun_info['origin'] = gun_origins[gun_info['origin']]
     return {g_info['id']: GunInfo(**g_info) for g_info in data}
 
 

@@ -43,6 +43,12 @@ if TYPE_CHECKING:
     from utypes import GunInfo
 
 
+GUN_ORIGINS = {'Germany': LK.gun_origin_germany, 'Austria': LK.gun_origin_austria, 'Italy': LK.gun_origin_italy,
+               'Switzerland': LK.gun_origin_switzerland, 'Czech Republic': LK.gun_origin_czech_republic,
+               'Belgium': LK.gun_origin_belgium, 'Sweden': LK.gun_origin_sweden, 'Israel': LK.gun_origin_israel,
+               'United States': LK.gun_origin_us, 'Russia': LK.gun_origin_russia, 'France': LK.gun_origin_france,
+               'United Kingdom': LK.gun_origin_uk, 'South Africa': LK.gun_origin_south_africa}
+
 GUNS_INFO = load_gun_infos(config.GUN_DATA_FILE_PATH)
 AVAILABLE_LANGUAGES = get_available_languages()
 ALL_COMMANDS = ('start', 'help')
@@ -794,7 +800,7 @@ async def send_gun_info(client: BotClient, session: UserSession, bot_message: Me
 
     try:
         gun_info_dict = gun_info.asdict()
-        gun_info_dict['origin'] = session.locale.get(gun_info.origin)
+        gun_info_dict['origin'] = session.locale.get(GUN_ORIGINS[gun_info.origin])
         del gun_info_dict['id'], gun_info_dict['team']
 
         text = session.locale.gun_summary_text.format(*gun_info_dict.values())
