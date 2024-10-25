@@ -304,7 +304,8 @@ async def send_dc_state(client: BotClient, session: UserSession, bot_message: Me
         if game_servers_datetime is States.UNKNOWN:
             return await something_went_wrong(client, session, bot_message)
 
-        state = datacenter.cached_state(config.CORE_CACHE_FILE_PATH)
+        dc_cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)['datacenters']
+        state = datacenter.cached_state(dc_cache)
         text = info_formatters.format_datacenter_state(state, session.locale, game_servers_datetime)
 
         await bot_message.edit(text, reply_markup=reply_markup(session.locale))

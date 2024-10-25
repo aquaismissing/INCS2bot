@@ -1,15 +1,8 @@
 from __future__ import annotations
 
-import json
-from typing import NamedTuple, TYPE_CHECKING
+from typing import NamedTuple, Protocol
 
-from functions import caching
 from .states import State, States
-# noinspection PyPep8Naming
-
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 
 __all__ = ('Datacenter', 'DatacenterRegion', 'DatacenterGroup',
@@ -18,18 +11,22 @@ __all__ = ('Datacenter', 'DatacenterRegion', 'DatacenterGroup',
            'DatacenterVariation', 'DatacenterStateVariation')
 
 
+class DatacenterVariation(Protocol):
+    def cached_state(self, cache: dict[str, ...]) -> DatacenterStateVariation:
+        ...
+
+
 class Datacenter(NamedTuple):
     id: str
     symbol: str = ""
     l10n_key_name: str = ""
     l10n_key_title: str = ""
 
-    def cached_state(self, filename: Path) -> DatacenterState:
-        with open(filename, encoding='utf-8') as f:
-            cache_file = json.load(f)
+    def cached_state(self, cache: dict[str, ...]) -> DatacenterState:
+        dc_data = cache[self.id]
+        capacity = States.get(dc_data['capacity'])
+        load = States.get(dc_data['load'])
 
-        data = cache_file['datacenters'][self.id]
-        capacity, load = States.get(data['capacity']), States.get(data['load'])
         return DatacenterState(self, capacity, load)
 
 
@@ -40,17 +37,9 @@ class DatacenterRegion(NamedTuple):
     l10n_key_name: str = ""
     l10n_key_title: str = ""
 
-    def cached_state(self, filename: Path) -> DatacenterRegionState:
-        with open(filename, encoding='utf-8') as f:
-            cache_file = json.load(f)
-
-        obj_data = cache_file['datacenters'][self.id]
-        states = []
-
-        for dc in self.datacenters:
-            data = obj_data[dc.id]
-            capacity, load = States.get(data['capacity']), States.get(data['load'])
-            states.append(DatacenterState(dc, capacity, load))
+    def cached_state(self, cache: dict[str, ...]) -> DatacenterRegionState:
+        region_data = cache[self.id]
+        states = [dc.cached_state(region_data) for dc in self.datacenters]
 
         return DatacenterRegionState(self, states)
 
@@ -60,23 +49,9 @@ class DatacenterGroup(NamedTuple):
     regions: list[DatacenterRegion]
     l10n_key_title: str
 
-    def cached_state(self, filename: Path) -> DatacenterGroupState:
-        with open(filename, encoding='utf-8') as f:
-            cache_file = json.load(f)
-
-        obj_data = cache_file['datacenters'][self.id]
-        region_states = []
-
-        for region in self.regions:
-            region_data = obj_data[region.id]
-
-            states = []
-            for datacenter in region.datacenters:
-                data = region_data[datacenter.id]
-                capacity, load = States.get(data['capacity']), States.get(data['load'])
-
-                states.append(DatacenterState(datacenter, capacity, load))
-            region_states.append(DatacenterRegionState(region, states))
+    def cached_state(self, cache: dict[str, ...]) -> DatacenterGroupState:
+        group_data = cache[self.id]
+        region_states = [region.cached_state(group_data) for region in self.regions]
 
         return DatacenterGroupState(self, region_states)
 
@@ -97,7 +72,6 @@ class DatacenterGroupState(NamedTuple):
     region_states: list[DatacenterRegionState]
 
 
-DatacenterVariation = Datacenter | DatacenterRegion | DatacenterGroup
 DatacenterStateVariation = DatacenterState | DatacenterRegionState | DatacenterGroupState
 
 
