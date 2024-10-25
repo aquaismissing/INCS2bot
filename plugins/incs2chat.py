@@ -189,45 +189,45 @@ async def filter_message(message: Message):
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("addfilter"))
 async def addfilter(_, message: Message):
-    global filtered_channels_and_bots
-
     # todo: specific text filtering (for cases when the spammer sends a regular message)
     if message.command[1] == 'forward':
-        source_msg = message.reply_to_message
-        if not source_msg:
-            msg = await message.reply('Укажите ответом пересланное сообщение из канала, который вы хотите фильтровать.')
-            await asyncio.sleep(5)
-            await message.delete()
-            await msg.delete()
-            return
+        return await addfilter_forward(message)
 
-        things_to_filter = {}
-        if source_msg.via_bot:
-            things_to_filter[source_msg.via_bot.id] = source_msg.via_bot.username
-        if source_msg.forward_from:
-            things_to_filter[source_msg.forward_from.id] = source_msg.forward_from.username
-        if source_msg.forward_from_chat:
-            things_to_filter[source_msg.forward_from_chat.id] = source_msg.forward_from_chat.username
+    msg = await message.reply('Укажите правильный тип фильтрации (`forward`).')
+    await asyncio.sleep(5)
+    await message.delete()
+    await msg.delete()
 
-        if things_to_filter:
-            filtered_channels_and_bots |= things_to_filter
-            dump_message_filters(filtered_channels_and_bots)
-            msg = await message.reply('Фильтр был успешно обновлён.')
-            await source_msg.delete()
-            await asyncio.sleep(5)
-            await message.delete()
-            await msg.delete()
-        else:
-            msg = await message.reply('Не удалось найти параметры, по которым можно применить фильтр.')
-            await asyncio.sleep(5)
-            await message.delete()
-            await msg.delete()
-    else:
-        msg = await message.reply('Укажите правильный тип фильтрации (`forward`).')
+
+async def addfilter_forward(message: Message):
+    global filtered_channels_and_bots
+
+    source_msg = message.reply_to_message
+    if not source_msg:
+        msg = await message.reply('Укажите ответом пересланное сообщение из канала, который вы хотите фильтровать.')
         await asyncio.sleep(5)
         await message.delete()
         await msg.delete()
         return
+
+    things_to_filter = {}
+    for source in [source_msg.via_bot, source_msg.forward_from, source_msg.forward_from_chat]:
+        if source:
+            things_to_filter[source.id] = source.username
+
+    if things_to_filter:
+        filtered_channels_and_bots |= things_to_filter
+        dump_message_filters(filtered_channels_and_bots)
+        msg = await message.reply('Фильтр был успешно обновлён.')
+        await source_msg.delete()
+        await asyncio.sleep(5)
+        await message.delete()
+        await msg.delete()
+    else:
+        msg = await message.reply('Не удалось найти параметры, по которым можно применить фильтр.')
+        await asyncio.sleep(5)
+        await message.delete()
+        await msg.delete()
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("ban"))
@@ -272,9 +272,9 @@ async def warn(client: Client, message: Message):
     if not await is_administrator(chat, message.from_user):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
-    if message.reply_to_message:
-        og_msg = message.reply_to_message
-        await og_msg.reply_animation('CgACAgQAAx0CTFFE8AABCAWQZhBlULJVdtDBZfHrfrDasDc3TgEAApsDAALuLsxTbHEvGmmxl6geBA')
+    msg = message.reply_to_message
+    if msg:
+        await msg.reply_animation('CgACAgQAAx0CTFFE8AABCAWQZhBlULJVdtDBZfHrfrDasDc3TgEAApsDAALuLsxTbHEvGmmxl6geBA')
     await message.delete()
 
 
@@ -360,5 +360,5 @@ async def meow_meow_meow_meow(_, message: Message):
     if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug':
         if chance < 0.025:
             await message.reply('гав гав гав гав')
-        elif chance < 0.075:  # 0.05
+        elif chance < 0.075:
             await message.reply('мяу мяу мяу мяу')
