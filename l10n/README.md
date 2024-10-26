@@ -17,19 +17,19 @@ Then check the [Contributing](#contributing) section to know how to get started.
 |  da  | Danish     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  de  | German     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  es  | Spanish    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
-|  fa  | Persian    | █████████▒ 90%  |         missing: settings; need to confirm the correctness          |          [@A460N]          |
+|  fa  | Persian    | ████████▒▒ 80%  |     missing: bot_feedback_text; need to confirm the correctness     |          [@A460N]          |
 |  fi  | Finnish    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  fr  | French     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  hi  | Hindi      | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
-|  it  | Italian    | ██████████ 100% |                   need to confirm the correctness                   |         [MrJiavo]          |
+|  it  | Italian    | ████████▒▒ 80%  |     missing: bot_feedback_text; need to confirm the correctness     |         [MrJiavo]          |
 |  ja  | Japanese   | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  kk  | Kazakh     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  no  | Norwegian  | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  pl  | Polish     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  pt  | Portuguese | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  sv  | Swedish    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
-|  tr  | Turkish    | █████████▒ 90%  |         missing: settings; need to confirm the correctness          |         [@ITMiroN]         |
-|  uk  | Ukrainian  | ██████████ 100% |                   need to confirm the correctness                   | [akimerslys], [Agent47Dev] |
+|  tr  | Turkish    | █████████▒ 90%  |    some parts are untranslated; need to confirm the correctness     |         [@ITMiroN]         |
+|  uk  | Ukrainian  | ██████████ 100% |                             fully done                              | [akimerslys], [Agent47Dev] |
 |  uz  | Uzbek      | ████████▒▒ 80%  | missing: settings, user game stats; need to confirm the correctness |        [@d1az1337]         |
 |  zh  | Chinese    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 
