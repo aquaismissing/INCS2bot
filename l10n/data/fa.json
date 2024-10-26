@@ -7,7 +7,16 @@
         "/help .برای اطلاعات بیشتر  بر روی عبارت روبرو کلیک کنید و یا آن را تایپ کنید‌"
     ],
     "bot_help_text": "ℹ️   ساخته شده است @INCS2 این بات توسط چنل.  [GitHub](https://github.com/aquaismissing/INCS2bot).",
-    "bot_feedback_text": "💬  لطفا پیشنهادات و مشکلات خود را درباره‌ی بات با ما به اشتراک بگذارید",
+    "bot_feedback_text": [
+        "💬 You can report any bugs found in the bot or submit a suggestion on our [GitHub issues](https://github.com/aquaismissing/INCS2bot/issues).",
+        "If you plan to leave any feedback there, we kindly ask you to write it in English.",
+        "",
+        "Thanks in advance! ❤️"
+    ],
+    "bot_greetings_choose": [
+        "👋🏼 سلام, {}!",
+        "این بات برای بررسی تعداد پلیر ها و وضعیت سرورهای بازی کانتر-استرایک طراحی شده."
+    ],
     "bot_choose_cmd": "📖 یکی از کامند های زیر را استفاده کنید:",
     "bot_choose_func": "🔖 قابلیت مورد نظر خود را انتخاب کنید:",
     "bot_choose_setting": "⚙️ Use one of the following settings:",
@@ -21,7 +30,10 @@
     "bot_servers_stats": "وضعیت سرورها",
     "bot_profile_info": "اطلاعات پروفایل",
     "bot_extras": "امکانات اضافه",
-    "bot_settings": "Settings",
+    "bot_settings": "تنظیمات",
+    "bot_help_button_title": "کمک کنید",
+    "bot_aboutus_button_title": "درباره ما",
+    "bot_feedback_button_title": "بازخورد",
     "crosshair": "نشانه",
     "crosshair_generate": "تولید",
     "crosshair_decode": "رمزگشایی",

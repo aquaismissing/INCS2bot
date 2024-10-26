@@ -6,8 +6,17 @@
         "",
         "Qo'shimcha ma'lumot olish uchun /help buyrug'idan foydalaning."
     ],
-    "bot_help_text": "ℹ️ Ushbu bot @INCS2 telegram kanalini tomonidan ishlab chiqilgan. Manba kodi [GitHub](https://github.com/aquaismissing/INCS2bot) da mavjud.",
-    "bot_feedback_text": "💬 Botdan foydalanishda duch keladigan **Istaklaringiz**  yoki **muammolar** haqida bizga xabar bering.",
+    "bot_help_text": "ℹ️ Ushbu bot @INCS2 telegram kanalini tomonidan ishlab chiqilgan va yuritiladi. Manba kodi [GitHub](https://github.com/aquaismissing/INCS2bot) da mavjud.",
+    "bot_feedback_text": [
+        "💬 Вы можете рассказать об ошибках в работе бота, с которыми вы столкнулись, или предложить свою идею на нашем [GitHub](https://github.com/aquaismissing/INCS2bot/issues).",
+        "Убедительная просьба писать туда свои сообщения на английском или, в крайнем случае, на русском языке.",
+        "",
+        "Заранее спасибо! ❤️"
+    ],
+    "bot_greetings_choose": [
+        "👋🏼 Salom, {}!",
+        "Ushbu bot onlayn o'yinchilar sonini va Counter-Strike serverlarining mavjudligini tekshirish uchun mo'ljallangan."
+    ],
     "bot_choose_cmd": "📖 Ushbu buyruqlardan birini tanlang:",
     "bot_choose_func": "🔖 Hohlangan funksiyani tanlang:",
     "bot_choose_setting": "⚙️ Воспользуйтесь одной из приведённых настроек:",
@@ -22,6 +31,9 @@
     "bot_profile_info": "Steam profili haqida ma'lumot",
     "bot_extras": "Qoshimcha funktsiyalar ",
     "bot_settings": "Настройки",
+    "bot_help_button_title": "Yordam",
+    "bot_aboutus_button_title": "Biz haqimizda",
+    "bot_feedback_button_title": "Fikr-mulohaza",
     "crosshair": "Prisel",
     "crosshair_generate": "Yarating",
     "crosshair_decode": "Rashifrovka",

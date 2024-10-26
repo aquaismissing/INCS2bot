@@ -6,8 +6,17 @@
         "",
         "Per maggiori informazioni digita /help."
     ],
-    "bot_help_text": "ℹ️ Questo bot è stato sviluppato da @INCS2. Puoi visionare il codice sorgente su [GitHub](https://github.com/aquaismissing/INCS2bot).",
-    "bot_feedback_text": "💬 Per favore, inviaci pure i tuoi **suggerimenti** o segnalaci eventuali **problemi** che hai riscontrato usando il nostro bot.",
+    "bot_help_text": "ℹ️ Questo bot è sviluppato e gestito da @INCS2. Puoi visionare il codice sorgente su [GitHub](https://github.com/aquaismissing/INCS2bot).",
+    "bot_feedback_text": [
+        "💬 You can report any bugs found in the bot or submit a suggestion on our [GitHub issues](https://github.com/aquaismissing/INCS2bot/issues).",
+        "If you plan to leave any feedback there, we kindly ask you to write it in English.",
+        "",
+        "Thanks in advance! ❤️"
+    ],
+    "bot_greetings_choose": [
+        "👋🏼 Ciao, {}!",
+        "Questo bot è stato creato per controllare il numero dei giocatori online e la disponibilità dei server di Counter-Strike."
+    ],
     "bot_choose_cmd": "📖 Usa uno dei seguenti comandi:",
     "bot_choose_func": "🔖 Scegli la funzione desiderata:",
     "bot_choose_setting": "⚙️ Usa una delle seguenti impostazioni:",
@@ -22,6 +31,9 @@
     "bot_profile_info": "Informazioni del profilo",
     "bot_extras": "Funzioni extra",
     "bot_settings": "Impostazioni",
+    "bot_help_button_title": "Aiuto",
+    "bot_aboutus_button_title": "Chi siamo",
+    "bot_feedback_button_title": "Feedback",
     "crosshair": "Mirino",
     "crosshair_generate": "Genera",
     "crosshair_decode": "Decodifica",

@@ -6,8 +6,17 @@
         "",
         "Daha fazla bilgi için /help kullanın."
     ],
-    "bot_help_text": "ℹ️ Bu bot @INCS2 kanalı tarafından geliştirilmiştir. Kaynak kodu şu adreste bulunabilir: [GitHub](https://github.com/aquaismissing/INCS2bot).",
-    "bot_feedback_text": "💬 Lütfen botu kullanırken karşılaştığınız **dileklerinizi** veya **sorunlarınızı** bize bildirin.",
+    "bot_help_text": "ℹ️ Bu bot @INCS2 kanalı tarafından geliştirilip sürdürülmektedir. Kaynak kodu şu adreste bulunabilir: [GitHub](https://github.com/aquaismissing/INCS2bot).",
+    "bot_feedback_text": [
+        "💬 You can report any bugs found in the bot or submit a suggestion on our [GitHub issues](https://github.com/aquaismissing/INCS2bot/issues).",
+        "If you plan to leave any feedback there, we kindly ask you to write it in English.",
+        "",
+        "Thanks in advance! ❤️"
+    ],
+    "bot_greetings_choose": [
+        "👋🏼 Merhaba, {}!",
+        "Bu bot, çevrimiçi oyuncuların sayısını ve Counter-Strike sunucularının kullanılabilirliğini kontrol etmek için tasarlanmıştır."
+    ],
     "bot_choose_cmd": "📖 Aşağıdaki komutlardan birini kullanın:",
     "bot_choose_func": "🔖 İstediğiniz işlevi seçin:",
     "bot_choose_setting": "⚙️ Use one of the following settings:",
@@ -15,13 +24,16 @@
     "bot_feedback_success": "Harika! Mesajınız gönderildi.",
     "bot_pmonly_text": "Bu komut sadece özel mesajlarda çalışır.",
     "bot_back": "⏪ Geri",
-    "bot_loading": "🔄 Loading...",
+    "bot_loading": "🔄 Yükleniyor...",
     "bot_author_text": "🔫 Counter-Strike Güncellemeleri",
     "bot_author_link": "https://t.me/INCS2",
     "bot_servers_stats": "Sunucu istatistikleri",
     "bot_profile_info": "Profil bilgisi",
     "bot_extras": "Ek fonksyonlar",
-    "bot_settings": "Settings",
+    "bot_settings": "Ayarlar",
+    "bot_help_button_title": "Yardım",
+    "bot_aboutus_button_title": "Hakkımızda",
+    "bot_feedback_button_title": "Geri bildirim",
     "crosshair": "Nişangah",
     "crosshair_generate": "Yaratmak",
     "crosshair_decode": "Deşifre etmek",
