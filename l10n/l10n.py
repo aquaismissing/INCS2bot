@@ -17,6 +17,7 @@ class Locale(SLocale):
     bot_start_text: str
     bot_help_text: str
     bot_feedback_text: str
+    bot_greetings_choose: str
     bot_choose_cmd: str
     bot_choose_func: str
     bot_choose_setting: str
@@ -31,6 +32,9 @@ class Locale(SLocale):
     bot_profile_info: str
     bot_extras: str
     bot_settings: str
+    bot_help_button_title: str
+    bot_aboutus_button_title: str
+    bot_feedback_button_title: str
 
     # crosshair
     crosshair: str

@@ -1,2 +1,2 @@
-from . import decorators, info_formatters
+from . import decorators, info_formatters, utime
 from .locale import locale

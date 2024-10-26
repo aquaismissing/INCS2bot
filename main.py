@@ -106,7 +106,7 @@ async def handle_callbacks(client: BotClient, callback_query: CallbackQuery):
 @bot.navmenu(bot.WILDCARD, ignore_message_not_modified=True, session_timeout=True)
 async def main_menu(_, session: UserSession,
                     bot_message: Message, session_timeout: bool = False):
-    text = session.locale.bot_choose_cmd
+    text = session.locale.bot_greetings_choose.format(bot_message.chat.first_name)
 
     if session_timeout:
         text = session.locale.error_session_timeout + '\n\n' + text
@@ -866,6 +866,24 @@ async def language_process(client: BotClient, session: UserSession, callback_que
     return await language(client, session, bot_message)
 
 
+@bot.navmenu(LK.bot_help_button_title, came_from=main_menu, ignore_message_not_modified=True)
+async def bot_help_section(_, session: UserSession, bot_message: Message):
+    await bot_message.edit(session.locale.bot_choose_func,
+                           reply_markup=keyboards.help_markup(session.locale))
+
+
+@bot.funcmenu(LK.bot_aboutus_button_title, came_from=bot_help_section)
+async def about_us(_, session: UserSession, bot_message: Message):
+    await bot_message.edit(session.locale.bot_help_text,
+                           reply_markup=keyboards.help_markup(session.locale))
+
+
+@bot.funcmenu(LK.bot_feedback_button_title, came_from=bot_help_section)
+async def feedback(_, session: UserSession, bot_message: Message):
+    await bot_message.edit(session.locale.bot_feedback_text,
+                           reply_markup=keyboards.help_markup(session.locale))
+
+
 # cat: Commands
 
 
@@ -878,34 +896,6 @@ async def welcome(client: BotClient, session: UserSession, message: Message):
 
     text = session.locale.bot_start_text.format(message.from_user.first_name)
     await message.reply(text)
-
-    session.current_menu_id = main_menu.id
-    return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
-
-
-@bot.on_command('feedback')
-async def leave_feedback(client: BotClient, session: UserSession, message: Message):
-    """Send feedback"""
-
-    if message.chat.type != ChatType.PRIVATE:
-        return await pm_only(client, session, message)
-
-    await message.reply('You can report any bugs found in the bot '
-                        'or submit a suggestion on our '
-                        '[GitHub page](https://github.com/aquaismissing/INCS2bot/issues).')
-
-    session.current_menu_id = main_menu.id
-    return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
-
-
-@bot.on_command('help')
-async def _help(client: BotClient, session: UserSession, message: Message):
-    """/help message"""
-
-    if message.chat.type != ChatType.PRIVATE:
-        return await pm_only(client, session, message)
-
-    await message.reply(session.locale.bot_help_text)
 
     session.current_menu_id = main_menu.id
     return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))

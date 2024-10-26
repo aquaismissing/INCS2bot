@@ -17,12 +17,14 @@ _server_stats = ExtendedIKB(LK.bot_servers_stats)
 _profile_info = ExtendedIKB(LK.bot_profile_info)
 _extra_features = ExtendedIKB(LK.bot_extras)
 _settings = ExtendedIKB(LK.bot_settings)
+_help = ExtendedIKB(LK.bot_help_button_title)
 
 main_markup = ExtendedIKM([
     [_server_stats],
     [_profile_info],
     [_extra_features],
-    [_settings]
+    [_settings],
+    [_help]
 ])
 
 # Server Statistics
@@ -70,6 +72,16 @@ extra_markup = ExtendedIKM([
 _language = ExtendedIKB(LK.settings_language_button_title)
 settings_markup = ExtendedIKM([
     [_language],
+    [back_button]
+])
+
+# Help
+
+_about_us = ExtendedIKB(LK.bot_aboutus_button_title)
+_feedback = ExtendedIKB(LK.bot_feedback_button_title)
+help_markup = ExtendedIKM([
+    [_about_us],
+    [_feedback],
     [back_button]
 ])
 
