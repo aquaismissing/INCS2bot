@@ -28,7 +28,7 @@ Then check the [Contributing](#contributing) section to know how to get started.
 |  pl  | Polish     | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  pt  | Portuguese | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
 |  sv  | Swedish    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
-|  tr  | Turkish    | █████████▒ 90%  |    some parts are untranslated; need to confirm the correctness     |         [@ITMiroN]         |
+|  tr  | Turkish    | ███████▒▒▒ 70%  |    some parts are untranslated; need to confirm the correctness     |         [@ITMiroN]         |
 |  uk  | Ukrainian  | ██████████ 100% |                             fully done                              | [akimerslys], [Agent47Dev] |
 |  uz  | Uzbek      | ████████▒▒ 80%  | missing: settings, user game stats; need to confirm the correctness |        [@d1az1337]         |
 |  zh  | Chinese    | ▒▒▒▒▒▒▒▒▒▒ 0%   |                         contributors needed                         |                            |
