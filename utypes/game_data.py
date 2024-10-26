@@ -6,7 +6,6 @@ import datetime as dt
 from typing import NamedTuple, TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
-from functions import utime
 from .cache import CoreCache, GCCache, GraphCache
 from .states import States
 from .steam_webapi import SteamWebAPI
@@ -125,7 +124,7 @@ class BasicServerStatusData:
     sessions_logon_state: State
 
     def is_maintenance(self):
-        now = utime.utcnow()
+        now = dt.datetime.now(dt.UTC)
 
         between_tuesday_and_wednesday = (now.weekday() == 1 and now.hour > 21) or (now.weekday() == 2 and now.hour < 4)
         game_coordinator_is_fine = (self.game_coordinator_state is States.NORMAL)
