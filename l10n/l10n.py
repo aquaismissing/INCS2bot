@@ -17,12 +17,10 @@ class Locale(SLocale):
     bot_start_text: str
     bot_help_text: str
     bot_feedback_text: str
-    bot_greetings_choose: str
     bot_choose_cmd: str
     bot_choose_func: str
     bot_choose_setting: str
     bot_use_cancel: str
-    bot_feedback_success: str
     bot_pmonly_text: str
     bot_back: str
     bot_loading: str

@@ -2,26 +2,19 @@
     "lang": "🇹🇷 Türkçe",
     "bot_start_text": [
         "👋🏼 Merhaba, {}!",
-        "Bu bot, çevrimiçi oyuncuların sayısını ve Counter-Strike sunucularının kullanılabilirliğini kontrol etmek için tasarlanmıştır.",
-        "",
-        "Daha fazla bilgi için /help kullanın."
+        "Bu bot, çevrimiçi oyuncuların sayısını ve Counter-Strike sunucularının kullanılabilirliğini kontrol etmek için tasarlanmıştır."
     ],
-    "bot_help_text": "ℹ️ Bu bot @INCS2 kanalı tarafından geliştirilip sürdürülmektedir. Kaynak kodu şu adreste bulunabilir: [GitHub](https://github.com/aquaismissing/INCS2bot).",
+    "bot_help_text": "[‎](https://t.me/INCS2)ℹ️ Bu bot @INCS2 kanalı tarafından geliştirilip sürdürülmektedir. Kaynak kodu şu adreste bulunabilir: [GitHub](https://github.com/aquaismissing/INCS2bot).",
     "bot_feedback_text": [
         "💬 You can report any bugs found in the bot or submit a suggestion on our [GitHub issues](https://github.com/aquaismissing/INCS2bot/issues).",
         "If you plan to leave any feedback there, we kindly ask you to write it in English.",
         "",
         "Thanks in advance! ❤️"
     ],
-    "bot_greetings_choose": [
-        "👋🏼 Merhaba, {}!",
-        "Bu bot, çevrimiçi oyuncuların sayısını ve Counter-Strike sunucularının kullanılabilirliğini kontrol etmek için tasarlanmıştır."
-    ],
     "bot_choose_cmd": "📖 Aşağıdaki komutlardan birini kullanın:",
     "bot_choose_func": "🔖 İstediğiniz işlevi seçin:",
     "bot_choose_setting": "⚙️ Use one of the following settings:",
     "bot_use_cancel": "Bir komutu iptal etmek için /cancel kullanın.",
-    "bot_feedback_success": "Harika! Mesajınız gönderildi.",
     "bot_pmonly_text": "Bu komut sadece özel mesajlarda çalışır.",
     "bot_back": "⏪ Geri",
     "bot_loading": "🔄 Yükleniyor...",

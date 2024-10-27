@@ -2,26 +2,19 @@
     "lang": "🇬🇧 English",
     "bot_start_text": [
         "👋🏼 Hey, {}!",
-        "This bot is designed to check the number of online players and the availability of Counter-Strike servers.",
-        "",
-        "For more information type /help."
+        "This bot is designed to check the number of online players and the availability of Counter-Strike servers."
     ],
-    "bot_help_text": "ℹ️ This bot is developed and maintained by @INCS2. You can see the source code on [GitHub](https://github.com/aquaismissing/INCS2bot).",
+    "bot_help_text": "[‎](https://t.me/INCS2)ℹ️ This bot is developed and maintained by @INCS2. You can see the source code on [GitHub](https://github.com/aquaismissing/INCS2bot).",
     "bot_feedback_text": [
         "💬 You can report any bugs found in the bot or submit a suggestion on our [GitHub issues](https://github.com/aquaismissing/INCS2bot/issues).",
         "If you plan to leave any feedback there, we kindly ask you to write it in English.",
         "",
         "Thanks in advance! ❤️"
     ],
-    "bot_greetings_choose": [
-        "👋🏼 Hey, {}!",
-        "This bot is designed to check the number of online players and the availability of Counter-Strike servers."
-    ],
     "bot_choose_cmd": "📖 Use one of the following commands:",
     "bot_choose_func": "🔖 Choose the desired function:",
     "bot_choose_setting": "⚙️ Use one of the following settings:",
     "bot_use_cancel": "Use /cancel to cancel this command.",
-    "bot_feedback_success": "Nice! Your message has been sent.",
     "bot_pmonly_text": "This command only works in private messages.",
     "bot_back": "⏪ Back",
     "bot_loading": "🔄 Loading...",
