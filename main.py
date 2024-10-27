@@ -890,18 +890,18 @@ async def _help(client: BotClient, session: UserSession, message: Message):
     return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
 
 
-# cat: TESTING
+# cat: Reply through logger
 
 
 @bot.on_message(filters.command('reply'))
 async def reply_through_logger_command(client: BotClient, message: Message):
-    if message.from_user.id not in config.DEVS_IDS:
+    sender = message.from_user
+    if sender.id not in config.DEVS_IDS:
         return
 
-    user = message.from_user
-    session = client.sessions.get(user.id)
+    session = client.sessions.get(sender.id)
     if session is None:
-        session = await client.register_session(user, message)
+        session = await client.register_session(sender, message)
 
     _, recipient_id, message_to_send = message.text.split(maxsplit=2)
 
@@ -914,7 +914,7 @@ async def reply_through_logger_command(client: BotClient, message: Message):
         return await message.reply(session.locale.bot_choose_cmd,
                                    reply_markup=keyboards.main_markup(session.locale))
 
-    await client.send_message(recipient_pm_chat.id, f'The developers sent a personal message for you!:\n'
+    await client.send_message(recipient_pm_chat.id, f'You have received a new message from the developers!:\n'
                                                     f'\n'
                                                     f'<blockquote>{message_to_send}</blockquote>')
 
@@ -927,6 +927,8 @@ async def reply_through_logger_command(client: BotClient, message: Message):
 async def reply_through_logger_callback(client: BotClient, session: UserSession,
                                         callback_query: CallbackQuery, recipient_id: int):
     sender = callback_query.from_user
+    if sender.id not in config.DEVS_IDS:
+        return
     sender_pm_chat = await client.get_chat(sender.username)
 
     e = await client.send_message(sender_pm_chat.id, "Loading...")
@@ -962,7 +964,7 @@ async def reply_through_logger_callback(client: BotClient, session: UserSession,
         return await e.reply(session.locale.bot_choose_cmd,
                              reply_markup=keyboards.main_markup(session.locale))
 
-    await client.send_message(recipient_pm_chat.id, f'The developers sent a personal message for you!:\n'
+    await client.send_message(recipient_pm_chat.id, f'You have received a new message from the developers!\n'
                                                     f'\n'
                                                     f'<blockquote>{message_to_send.text}</blockquote>')
 
