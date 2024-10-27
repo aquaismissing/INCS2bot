@@ -11,7 +11,7 @@ from bottypes import ExtendedIKB, ExtendedIKM
 
 def event_log_markup_builder(user: User) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(f"Reply to {user.username or user.first_name}", f"reply_through_logger_{user.id}")]
+        [InlineKeyboardButton(f"Reply to {f'@{user.username}' or user.first_name}", f"reply_through_logger_{user.id}")]
     ])
 
 
