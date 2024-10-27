@@ -246,10 +246,10 @@ class BotClient(Client):
         return decorator
 
     async def handle_message(self, message: Message):
-        user = message.from_user
-
         if message.text is None:
             return
+
+        user = message.from_user
 
         if message.chat.type != ChatType.PRIVATE:
             text = message.text
@@ -260,7 +260,7 @@ class BotClient(Client):
 
         session = await self.register_session(user, message)
 
-        current_menu = self.get_menu(session.current_menu_id)
+        current_menu = self.get_menu_by_id(session.current_menu_id)
         if isinstance(current_menu, NavMenu) and current_menu.has_message_process():
             if session.last_bot_pm_id is None:  # handling message processes after reload
                 menu = self.get_wildcard_menu()
@@ -280,8 +280,11 @@ class BotClient(Client):
             return
         if '@' in prompt:
             prompt, username = prompt.split('@', 2)
+            username, *commands_args = username.split()
             if username != self.me.username:
                 return
+
+        prompt = prompt.split()[0]
 
         func, args, kwargs = self.get_func_by_command(prompt)
         await message.reply_chat_action(ChatAction.TYPING)
@@ -291,7 +294,7 @@ class BotClient(Client):
         if '@' in prompt:
             prompt, _ = prompt.split('@', 2)
 
-        return prompt in self._commands
+        return prompt.split()[0] in self._commands
 
     async def handle_callback(self, callback_query: CallbackQuery):
         if callback_query.message.chat.type != ChatType.PRIVATE:
@@ -317,21 +320,18 @@ class BotClient(Client):
     def get_func_by_command(self, prompt: str):
         return self._commands.get(prompt)
 
-    def get_wildcard_menu(self):
-        return self._menu_routes.get(self.WILDCARD)
-
     async def get_menu_by_callback(self, session: UserSession, callback_query: CallbackQuery):
-        is_wildcard_menu = False
-        try:
-            possible_menus = self._menu_routes[callback_query.data]
-            if isinstance(possible_menus, Menu):
-                menu = possible_menus
-            else:
-                menu = possible_menus[session.current_menu_id]
-        except KeyError:
-            current_menu = self.get_menu(session.current_menu_id)
-            if current_menu is None and self.WILDCARD in self._menu_routes:  # happens if the user clicks on the menu
-                session.current_menu_id = self.get_wildcard_menu().id        # but there is no user data
+        is_going_to_wildcard_menu = False
+        wildcard_menu = self.get_wildcard_menu()
+
+        menu = self.get_menu_by_query(session.current_menu_id, callback_query.data)
+        if menu is None:
+            if wildcard_menu is None:
+                return
+
+            current_menu = self.get_menu_by_id(session.current_menu_id)
+            if current_menu is None:                        # happens if the user clicks on the menu
+                session.current_menu_id = wildcard_menu.id  # but there is no user data
                 return await self.get_menu_by_callback(session, callback_query)
 
             if isinstance(current_menu, NavMenu) and current_menu.has_callback_process():
@@ -340,17 +340,14 @@ class BotClient(Client):
                 except asyncio.exceptions.TimeoutError:
                     return
 
-            if self.WILDCARD not in self._menu_routes:
-                return
-            menu = self.get_wildcard_menu()
-            is_wildcard_menu = True
+            is_going_to_wildcard_menu = True
 
         self.rstats.callback_queries_handled += 1
 
         bot_message = callback_query.message
         try:
-            if is_wildcard_menu:
-                return await self.jump_to_menu(session, bot_message, menu)
+            if is_going_to_wildcard_menu:
+                return await self.jump_to_menu(session, bot_message, wildcard_menu)
             await self.go_to_menu(session, bot_message, menu)
         except Exception as e:
             self.rstats.exceptions_caught += 1
@@ -360,8 +357,21 @@ class BotClient(Client):
         if menu not in self._menus.values():
             self._menus[menu.id] = menu
 
-    def get_menu(self, _id: str):
+    def get_menu_by_id(self, _id: str):
         return self._menus.get(_id)
+
+    def get_menus_by_query(self, query: str):
+        return self._menu_routes.get(query)
+
+    def get_menu_by_query(self, current_menu_id: str, query: str):
+        possible_menus = self.get_menus_by_query(query)
+        if isinstance(possible_menus, Menu):
+            return possible_menus
+
+        return possible_menus[current_menu_id]
+
+    def get_wildcard_menu(self):
+        return self._menu_routes.get(self.WILDCARD)
 
     async def go_to_menu(self, session: UserSession, bot_message: Message, menu: Menu):
         """
@@ -372,7 +382,7 @@ class BotClient(Client):
         """
 
         if not menu.can_come_from(session.current_menu_id):
-            raise AttributeError(f'Can\'t access {menu} from {self.get_menu(session.current_menu_id)}')
+            raise AttributeError(f"Can't access {menu} from {self.get_menu_by_id(session.current_menu_id)}")
 
         return await self.jump_to_menu(session, bot_message, menu)
 
@@ -388,14 +398,19 @@ class BotClient(Client):
             session.last_bot_pm_id = result.id
         return result
 
-    async def go_back(self, session: UserSession, bot_message: Message):
-        if session.previous_menu_id is None:
-            if self.WILDCARD not in self._menu_routes:
-                return
-            func = self.get_wildcard_menu()
-            return await func(self, session, bot_message)
+    async def jump_to_wildcard_menu(self, session: UserSession, bot_message: Message):
+        menu = self.get_wildcard_menu()
+        if menu is None:
+            return
+        return await menu(self, session, bot_message)
 
-        previous_menu = self._menus[session.previous_menu_id]
+    async def go_back(self, session: UserSession, bot_message: Message):
+        previous_menu = self.get_menu_by_id(session.previous_menu_id)
+        if previous_menu is None:
+            previous_menu = self.get_wildcard_menu()
+            if previous_menu is None:
+                return
+
         return await self.jump_to_menu(session, bot_message, previous_menu)
 
     # noinspection PyUnresolvedReferences

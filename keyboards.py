@@ -1,7 +1,18 @@
 # noinspection PyPep8Naming
 from l10n import LocaleKeys as LK, get_available_languages
 
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, User
+
 from bottypes import ExtendedIKB, ExtendedIKM
+
+
+# "Reply through logger" markup builder
+# FOR TESTING PURPOSES ONLY
+
+def event_log_markup_builder(user: User) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(f"Reply to {user.username or user.first_name}", f"reply_through_logger_{user.id}")]
+    ])
 
 
 # Back button
