@@ -73,7 +73,7 @@ bot = BotClient(config.BOT_NAME,
 telegraph = Telegraph(access_token=config.TELEGRAPH_ACCESS_TOKEN)
 
 
-# cat: Main
+# cat: Utilities
 
 @bot.on_callback_exception()
 async def handle_exceptions_in_callback(client: BotClient, session: UserSession, bot_message: Message, exc: Exception):
@@ -102,16 +102,18 @@ async def handle_callbacks(client: BotClient, callback_query: CallbackQuery):
     return await client.handle_callback(callback_query)
 
 
+# cat: Index
+
 @bot.navmenu('main', ignore_message_not_modified=True)
 @bot.navmenu(bot.WILDCARD, ignore_message_not_modified=True, session_timeout=True)
 async def main_menu(_, session: UserSession,
                     bot_message: Message, session_timeout: bool = False):
-    text = session.locale.bot_greetings_choose.format(bot_message.chat.first_name)
+    text = session.locale.bot_start_text.format(bot_message.chat.first_name)
 
     if session_timeout:
         text = session.locale.error_session_timeout + '\n\n' + text
         if text == bot_message.text:  # rare edge case
-            text += '‎'  # use empty char to bypass
+            text += '‎'  # use empty char to bypass  # todo: might be unnecessary anymore
 
     await bot_message.edit(text, reply_markup=keyboards.main_markup(session.locale))
 
@@ -881,6 +883,7 @@ async def about_us(_, session: UserSession, bot_message: Message):
 @bot.funcmenu(LK.bot_feedback_button_title, came_from=bot_help_section)
 async def feedback(_, session: UserSession, bot_message: Message):
     await bot_message.edit(session.locale.bot_feedback_text,
+                           disable_web_page_preview=True,
                            reply_markup=keyboards.help_markup(session.locale))
 
 
@@ -889,16 +892,13 @@ async def feedback(_, session: UserSession, bot_message: Message):
 
 @bot.on_command('start')
 async def welcome(client: BotClient, session: UserSession, message: Message):
-    """First bot's message"""
-
     if message.chat.type != ChatType.PRIVATE:
         return await pm_only(client, session, message)
 
     text = session.locale.bot_start_text.format(message.from_user.first_name)
-    await message.reply(text)
 
     session.current_menu_id = main_menu.id
-    return await message.reply(session.locale.bot_choose_cmd, reply_markup=keyboards.main_markup(session.locale))
+    return await message.reply(text, reply_markup=keyboards.main_markup(session.locale))
 
 
 # cat: Service
@@ -925,8 +925,6 @@ async def send_about_maintenance(_, session: UserSession, bot_message: Message):
 
 @ignore_message_not_modified
 async def something_went_wrong(_, session: UserSession, bot_message: Message):
-    """If anything goes wrong"""
-
     session.current_menu_id = main_menu.id
     await bot_message.edit(session.locale.error_internal,
                            reply_markup=keyboards.main_markup(session.locale))
@@ -937,6 +935,9 @@ async def unknown_request(_, session: UserSession, bot_message: Message,
                           reply_markup: ExtendedIKM = keyboards.main_markup):
     await bot_message.edit(session.locale.error_unknownrequest,
                            reply_markup=reply_markup(session.locale))
+
+
+# cat: Scheduled events
 
 
 async def regular_stats_report(client: BotClient):
@@ -962,6 +963,9 @@ async def drop_cap_reset_in_10_minutes(client: BotClient):  # todo: finish testi
         await asyncio.sleep(60 * 60)  # to account timezone changing
     await client.send_message(config.LOGCHANNEL, ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
     # 'AgACAgIAAx0EcqmfAwACE_1ml3gYlVf65aXBmhaq54dI5NtctgACYOExG2LEwEj6jR-JjYwTMgAIAQADAgADeAAHHgQ'
+
+
+# cat: Main
 
 
 async def main():
