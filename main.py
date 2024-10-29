@@ -5,7 +5,6 @@ import datetime as dt
 from json import JSONDecodeError
 import traceback
 from typing import TYPE_CHECKING
-import logging
 from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
