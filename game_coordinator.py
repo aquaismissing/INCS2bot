@@ -36,7 +36,9 @@ AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
                     'cs2_app_changenumber': loc.notifs_build_cs2_client,
                     'cs2_server_changenumber': loc.notifs_build_cs2_server,
                     'backup_branch_created': loc.notifs_backup_branch_created,
+                    'backup_branch_created_sync': f'{loc.notifs_backup_branch_created} 🔃',
                     'backup_branch_updated': loc.notifs_backup_branch_updated,
+                    'backup_branch_updated_sync': f'{loc.notifs_backup_branch_created} 🔃',
                     'backup_branch_deleted': loc.notifs_backup_branch_deleted,
                     'private_branch_created': loc.notifs_private_branch_created,
                     'private_branch_updated': loc.notifs_private_branch_updated,
@@ -179,7 +181,7 @@ async def update_depots():
             continue
 
         if key == 'branches':
-            await check_for_new_branches(old_value, new_value)
+            await check_for_new_branches(cache, old_value, new_value)
             await check_for_removed_branches(old_value, new_value)
             # mutates `cache` var in case of "public" branch update
             await check_for_branches_updates(cache, old_value, new_value)
@@ -194,7 +196,9 @@ async def update_depots():
     logger.info('Successfully dumped game version data.')
 
 
-async def check_for_new_branches(cached_branches: dict, current_branches: dict):
+async def check_for_new_branches(cache: dict, cached_branches: dict, current_branches: dict):
+    cs2_patch_version = cache.get('cs2_patch_version')
+
     new_branches = current_branches.keys() - cached_branches.keys()
     if not new_branches:
         return
@@ -203,7 +207,7 @@ async def check_for_new_branches(cached_branches: dict, current_branches: dict):
         branch_data = current_branches[branch_name]
 
         if is_backup_branch(branch_name):
-            event = 'backup_branch_created'
+            event = 'backup_branch_created_sync' if branch_name == cs2_patch_version else 'backup_branch_created'
         elif branch_data.get('pwdrequired') == '1':  # why the fuck it's a string? Valve???
             event = 'private_branch_created'
         else:
@@ -226,6 +230,7 @@ async def check_for_removed_branches(cached_branches: dict, current_branches: di
 
 async def check_for_branches_updates(cache: dict, cached_branches: dict, current_branches: dict):
     public_buildid = cached_branches.get('public', {}).get('buildid')
+    cs2_patch_version = cache.get('cs2_patch_version')
 
     for branch_name, branch_data in current_branches.items():
         cached_branch_data = cached_branches.get(branch_name)
@@ -246,7 +251,7 @@ async def check_for_branches_updates(cache: dict, cached_branches: dict, current
         elif branch_name == 'dprp':
             event = 'dprp_branch_sync' if new_buildid == public_buildid else 'dprp_branch_updated'
         elif is_backup_branch(branch_name):
-            event = 'backup_branch_updated'
+            event = 'backup_branch_updated_sync' if branch_name == cs2_patch_version else 'backup_branch_updated'
         elif branch_data.get('pwdrequired') == '1':
             event = 'private_branch_updated'
         else:
