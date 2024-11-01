@@ -19,23 +19,37 @@ MESSAGE_FILTERS_FILE = config.DATA_FOLDER / 'filtered.json'
 
 if not MESSAGE_FILTERS_FILE.exists():
     with open(MESSAGE_FILTERS_FILE, 'w', encoding='utf-8') as _f:
-        json.dump({}, _f)
+        json.dump({'text': [], 'forwards': {}}, _f)
 
 
-def load_message_filters() -> dict[int, str]:
+def load_message_filters() -> dict[str, list | dict[str, str]]:
     with open(MESSAGE_FILTERS_FILE, encoding='utf-8') as f:
         return json.load(f)
 
 
-def dump_message_filters(_filters: dict[int, str]):
+def dump_message_filters(_filters: dict[str, list | dict[str, str]]):
     with open(MESSAGE_FILTERS_FILE, 'w', encoding='utf-8') as f:
         json.dump(_filters, f)
 
 
-filtered_channels_and_bots = load_message_filters()  # {id: name} (for easier recognition)
+filtered_stuff = load_message_filters()  # {'text': [str], 'forwards': {id: name}}
+if filtered_stuff.get('text') is None:
+    filtered_stuff = {'text': [], 'forwards': filtered_stuff.copy()}
+    dump_message_filters(filtered_stuff)
 
 
 logger = logging.getLogger('INCS2bot')
+
+
+async def send_temp_reply(message: Message, text: str, timeout: int = 5, delete_original_before: bool = False):
+    msg = await message.reply(text)
+    if delete_original_before:
+        await message.delete()
+    await asyncio.sleep(timeout)
+    if not delete_original_before:
+        await message.delete()
+    await msg.delete()
+    return
 
 
 async def is_administrator(chat: Chat, user: User) -> bool:
@@ -177,21 +191,25 @@ async def cs_l10n_update(message: Message):
 
 
 async def filter_message(message: Message):
-    senders = set()
-    if message.via_bot:
-        senders.add(message.via_bot.id)
-    if message.forward_from:
-        senders.add(message.forward_from.id)
-    if message.forward_from_chat:
-        senders.add(message.forward_from_chat.id)
+    senders_ids = set()
 
-    if senders & filtered_channels_and_bots.keys():
+    if message.via_bot:
+        senders_ids.add(message.via_bot.id)
+    if message.forward_from:
+        senders_ids.add(message.forward_from.id)
+    if message.forward_from_chat:
+        senders_ids.add(message.forward_from_chat.id)
+
+    if (senders_ids & filtered_stuff['forwards'].keys()
+            or message.text in filtered_stuff['text']):
         await message.delete()
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("addfilter"))
 async def addfilter(_, message: Message):
     # todo: specific text filtering (for cases when the spammer sends a regular message)
+    if message.command[1] == 'text':
+        return await addfilter_text(message)
     if message.command[1] == 'forward':
         return await addfilter_forward(message)
 
@@ -202,14 +220,12 @@ async def addfilter(_, message: Message):
 
 
 async def addfilter_forward(message: Message):
-    global filtered_channels_and_bots
+    global filtered_stuff
 
     source_msg = message.reply_to_message
     if not source_msg:
-        msg = await message.reply('Укажите ответом пересланное сообщение из канала, который вы хотите фильтровать.')
-        await asyncio.sleep(5)
-        await message.delete()
-        await msg.delete()
+        await send_temp_reply(message,
+                              'Укажите ответом пересланное сообщение из канала, который вы хотите фильтровать.')
         return
 
     things_to_filter = {}
@@ -218,18 +234,49 @@ async def addfilter_forward(message: Message):
             things_to_filter[source.id] = source.username
 
     if things_to_filter:
-        filtered_channels_and_bots |= things_to_filter
-        dump_message_filters(filtered_channels_and_bots)
-        msg = await message.reply('Фильтр был успешно обновлён.')
+        filtered_stuff['forwards'] |= things_to_filter
+        dump_message_filters(filtered_stuff)
         await source_msg.delete()
-        await asyncio.sleep(5)
-        await message.delete()
-        await msg.delete()
+        await send_temp_reply(message, 'Фильтр был успешно обновлён.', delete_original_before=True)
     else:
-        msg = await message.reply('Не удалось найти параметры, по которым можно применить фильтр.')
-        await asyncio.sleep(5)
-        await message.delete()
-        await msg.delete()
+        await send_temp_reply(message,
+                              'Не удалось найти параметры, по которым можно применить фильтр.')
+
+
+async def addfilter_text(message: Message):
+    global filtered_stuff
+
+    source_msg = message.reply_to_message
+
+    if not source_msg and len(message.command) < 3:
+        await send_temp_reply(message, 'Укажите ответом сообщение или напишите текст в кавычках, '
+                                       'по которому будет применятся фильтр.')
+        return
+    if source_msg and len(message.command) >= 3:
+        await send_temp_reply(message, 'Определитесь, к чему вы хотите применить фильтр: к тексту сообщения, '
+                                       'на которое вы отвечаете, или же к тексту в самой команде.')
+        return
+
+    if source_msg:
+        text_to_filter = source_msg.text
+        filtered_stuff['text'].append(text_to_filter)
+        dump_message_filters(filtered_stuff)
+        await source_msg.delete()
+        await send_temp_reply(message, 'Фильтр был успешно обновлён.', delete_original_before=True)
+        return
+
+    if len(message.command) != 3:
+        await send_temp_reply(message, 'Укажите только один текст, в кавычках.')
+        return
+
+    text_to_filter = message.command[2]
+    if not text_to_filter:
+        await send_temp_reply(message, 'Пустой текст.')
+        return
+
+    filtered_stuff['text'].append(text_to_filter)
+    dump_message_filters(filtered_stuff)
+    await send_temp_reply(message, 'Фильтр был успешно обновлён.', delete_original_before=True)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("ban"))
@@ -343,6 +390,11 @@ async def handle_new_post(client: Client, message: Message):
     if is_sent_by_correct_chat and is_forwarded_from_correct_chat:
         await cs_l10n_update(message)
         await forward_to_discord(client, message)
+
+
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.text)
+async def filter_text(_, message: Message):
+    await filter_message(message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.forwarded)
