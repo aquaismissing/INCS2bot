@@ -9,10 +9,7 @@ class DatacenterAtlas:
     AFRICA = DatacenterRegion(
         "south_africa",
         [
-            Datacenter(
-                "johannesburg",
-                l10n_key_title=LK.dc_africa_johannesburg
-            ),
+            Datacenter("johannesburg", l10n_key_title=LK.dc_africa_johannesburg),
         ],
         "🇿🇦",
         LK.regions_africa,
@@ -22,10 +19,7 @@ class DatacenterAtlas:
     AUSTRALIA = DatacenterRegion(
         "australia",
         [
-            Datacenter(
-                "sydney",
-                l10n_key_title=LK.dc_australia_sydney
-            ),
+            Datacenter("sydney", l10n_key_title=LK.dc_australia_sydney),
         ],
         "🇦🇺",
         LK.regions_australia,
@@ -35,10 +29,7 @@ class DatacenterAtlas:
     AUSTRIA = DatacenterRegion(
         "austria",
         [
-            Datacenter(
-                "vienna",
-                l10n_key_title=LK.dc_austria_vienna
-            ),
+            Datacenter("vienna", l10n_key_title=LK.dc_austria_vienna),
         ],
         "🇦🇹",
         LK.dc_austria,
@@ -48,10 +39,7 @@ class DatacenterAtlas:
     FINLAND = DatacenterRegion(
         "finland",
         [
-            Datacenter(
-                "helsinki",
-                l10n_key_title=LK.dc_finland_helsinki
-            ),
+            Datacenter("helsinki", l10n_key_title=LK.dc_finland_helsinki),
         ],
         "🇫🇮",
         LK.dc_finland,
@@ -61,10 +49,7 @@ class DatacenterAtlas:
     GERMANY = DatacenterRegion(
         "germany",
         [
-            Datacenter(
-                "frankfurt",
-                l10n_key_title=LK.dc_germany_frankfurt
-            ),
+            Datacenter("frankfurt", l10n_key_title=LK.dc_germany_frankfurt),
         ],
         "🇩🇪",
         LK.dc_germany,
@@ -74,10 +59,7 @@ class DatacenterAtlas:
     # NETHERLANDS = DatacenterRegion(
     #     "netherlands",
     #     [
-    #         Datacenter(
-    #             "amsterdam",
-    #             l10n_key_title=LK.dc_netherlands_amsterdam
-    #         ),
+    #         Datacenter("amsterdam", l10n_key_title=LK.dc_netherlands_amsterdam),
     #     ],
     #     "🇳🇱",
     #     LK.dc_netherlands,
@@ -87,10 +69,7 @@ class DatacenterAtlas:
     POLAND = DatacenterRegion(
         "poland",
         [
-            Datacenter(
-                "warsaw",
-                l10n_key_title=LK.dc_poland_warsaw
-            ),
+            Datacenter("warsaw", l10n_key_title=LK.dc_poland_warsaw),
         ],
         "🇵🇱",
         LK.dc_poland,
@@ -100,10 +79,7 @@ class DatacenterAtlas:
     SPAIN = DatacenterRegion(
         "spain",
         [
-            Datacenter(
-                "madrid",
-                l10n_key_title=LK.dc_spain_madrid
-            ),
+            Datacenter("madrid", l10n_key_title=LK.dc_spain_madrid),
         ],
         "🇪🇸",
         LK.dc_spain,
@@ -113,10 +89,7 @@ class DatacenterAtlas:
     SWEDEN = DatacenterRegion(
         "sweden",
         [
-            Datacenter(
-                "stockholm",
-                l10n_key_title=LK.dc_sweden_stockholm
-            ),
+            Datacenter("stockholm", l10n_key_title=LK.dc_sweden_stockholm),
         ],
         "🇸🇪",
         LK.dc_sweden,
@@ -126,10 +99,7 @@ class DatacenterAtlas:
     UK = DatacenterRegion(
         "uk",
         [
-            Datacenter(
-                "london",
-                l10n_key_title=LK.dc_uk_london
-            ),
+            Datacenter("london", l10n_key_title=LK.dc_uk_london),
         ],
         "🇬🇧",
         LK.dc_uk,
@@ -139,22 +109,13 @@ class DatacenterAtlas:
     US_EAST = DatacenterRegion(
         "us_east",
         [
-            Datacenter(
-                "chicago",
-                l10n_key_title=LK.dc_us_chicago
-            ),
-            Datacenter(
-                "sterling",
-                l10n_key_title=LK.dc_us_sterling
-            ),
+            Datacenter("chicago", l10n_key_title=LK.dc_us_chicago),
+            Datacenter("sterling", l10n_key_title=LK.dc_us_sterling),
             # Datacenter(
             #     "new_york",
             #     l10n_key_title=LK.dc_us_new_york
             # ),
-            Datacenter(
-                "atlanta",
-                l10n_key_title=LK.dc_us_atlanta
-            )
+            Datacenter("atlanta", l10n_key_title=LK.dc_us_atlanta)
         ],
         "🇺🇸",
         LK.dc_east,
@@ -164,14 +125,8 @@ class DatacenterAtlas:
     US_WEST = DatacenterRegion(
         "us_west",
         [
-            Datacenter(
-                "los_angeles",
-                l10n_key_title=LK.dc_us_los_angeles
-            ),
-            Datacenter(
-                "seattle",
-                l10n_key_title=LK.dc_us_seattle
-            )
+            Datacenter("los_angeles", l10n_key_title=LK.dc_us_los_angeles),
+            Datacenter("seattle", l10n_key_title=LK.dc_us_seattle)
         ],
         "🇺🇸",
         LK.dc_west,
@@ -181,10 +136,7 @@ class DatacenterAtlas:
     ARGENTINA = DatacenterRegion(
         "argentina",
         [
-            Datacenter(
-                "buenos_aires",
-                l10n_key_title=LK.dc_argentina_buenos_aires
-            ),
+            Datacenter("buenos_aires", l10n_key_title=LK.dc_argentina_buenos_aires),
         ],
         "🇦🇷",
         LK.dc_argentina,
@@ -194,10 +146,7 @@ class DatacenterAtlas:
     BRAZIL = DatacenterRegion(
         "brazil",
         [
-            Datacenter(
-                "sao_paulo",
-                l10n_key_title=LK.dc_brazil_sao_paulo
-            ),
+            Datacenter("sao_paulo", l10n_key_title=LK.dc_brazil_sao_paulo),
         ],
         "🇧🇷",
         LK.dc_brazil,
@@ -207,10 +156,7 @@ class DatacenterAtlas:
     CHILE = DatacenterRegion(
         "chile",
         [
-            Datacenter(
-                "santiago",
-                l10n_key_title=LK.dc_chile_santiago
-            ),
+            Datacenter("santiago", l10n_key_title=LK.dc_chile_santiago),
         ],
         "🇨🇱",
         LK.dc_chile,
@@ -220,10 +166,7 @@ class DatacenterAtlas:
     PERU = DatacenterRegion(
         "peru",
         [
-            Datacenter(
-                "lima",
-                l10n_key_title=LK.dc_peru_lima
-            ),
+            Datacenter("lima", l10n_key_title=LK.dc_peru_lima),
         ],
         "🇵🇪",
         LK.dc_peru,
@@ -244,18 +187,12 @@ class DatacenterAtlas:
             #     "bombay",
             #     l10n_key_title=LK.dc_india_bombay
             # ),
-            Datacenter(
-                "chennai",
-                l10n_key_title=LK.dc_india_chennai
-            ),
+            Datacenter("chennai", l10n_key_title=LK.dc_india_chennai),
             # Datacenter(
             #     "madras",
             #     l10n_key_title=LK.dc_india_madras
             # ),
-            Datacenter(
-                "mumbai",
-                l10n_key_title=LK.dc_india_mumbai
-            ),
+            Datacenter("mumbai", l10n_key_title=LK.dc_india_mumbai),
         ],
         "🇮🇳",
         LK.dc_india,
@@ -265,22 +202,10 @@ class DatacenterAtlas:
     CHINA = DatacenterRegion(
         "china",
         [
-            Datacenter(
-                "tianjin",
-                l10n_key_title=LK.dc_china_tianjin
-            ),
-            Datacenter(
-                "guangzhou",
-                l10n_key_title=LK.dc_china_guangzhou
-            ),
-            Datacenter(
-                "chengdu",
-                l10n_key_title=LK.dc_china_chengdu
-            ),
-            Datacenter(
-                "pudong",
-                l10n_key_title=LK.dc_china_pudong
-            ),
+            Datacenter("tianjin", l10n_key_title=LK.dc_china_tianjin),
+            Datacenter("guangzhou", l10n_key_title=LK.dc_china_guangzhou),
+            Datacenter("chengdu", l10n_key_title=LK.dc_china_chengdu),
+            Datacenter("pudong", l10n_key_title=LK.dc_china_pudong),
         ],
         "🇨🇳",
         LK.regions_china,
@@ -290,10 +215,7 @@ class DatacenterAtlas:
     SOUTH_KOREA = DatacenterRegion(
         "south_korea",
         [
-            Datacenter(
-                "seoul",
-                l10n_key_title=LK.dc_southkorea_seoul
-            ),
+            Datacenter("seoul", l10n_key_title=LK.dc_southkorea_seoul),
         ],
         "🇰🇷",
         LK.dc_southkorea,
@@ -310,10 +232,7 @@ class DatacenterAtlas:
     EMIRATES = DatacenterRegion(
         "emirates",
         [
-            Datacenter(
-                "dubai",
-                l10n_key_title=LK.dc_emirates_dubai
-            ),
+            Datacenter("dubai", l10n_key_title=LK.dc_emirates_dubai),
         ],
         "🇦🇪",
         LK.dc_emirates,
@@ -323,10 +242,7 @@ class DatacenterAtlas:
     JAPAN = DatacenterRegion(
         "japan",
         [
-            Datacenter(
-                "tokyo",
-                l10n_key_title=LK.dc_japan_tokyo
-            ),
+            Datacenter("tokyo", l10n_key_title=LK.dc_japan_tokyo),
         ],
         "🇯🇵",
         LK.dc_japan,

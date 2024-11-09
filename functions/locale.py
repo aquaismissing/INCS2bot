@@ -3,16 +3,13 @@ from babel import Locale as BabelLocale, UnknownLocaleError
 from l10n import Locale, locale as _loc, get_available_languages
 
 
-CIS_LANG_CODES = ('kk',)
-
-
 __all__ = ['locale', 'get_refined_lang_code', 'get_available_languages']
 
 
 def locale(lang: str = 'en') -> Locale:
     """Returns a Locale object based of user's language."""
 
-    if lang in CIS_LANG_CODES and lang not in get_available_languages():
+    if lang == 'kk' and lang not in get_available_languages():  # todo: Kazakh localization pls
         lang = 'ru'
 
     return _loc(lang)

@@ -13,12 +13,12 @@ if typing.TYPE_CHECKING:
 
 
 def limit_message_length(text: str, limit: int = 4000) -> str:
+    if len(text) <= limit:
+        return text
+
     warning_message = ('\n\n'
                        '&lt;The original log message is too long to display fully.&gt;\n'
                        '&lt;Syb: looks like some shit really hit the fan&gt;')
-
-    if len(text) <= limit:
-        return text
 
     return text[:limit - len(warning_message) - 3] + '...' + warning_message
 

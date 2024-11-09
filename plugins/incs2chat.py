@@ -201,13 +201,12 @@ async def filter_message(message: Message):
         senders_ids.add(message.forward_from_chat.id)
 
     if (senders_ids & filtered_stuff['forwards'].keys()
-            or message.text in filtered_stuff['text']):
+            or message.text in filtered_stuff['text']):  # todo: check for text *inclusion*, not equality?
         await message.delete()
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("addfilter"))
 async def addfilter(_, message: Message):
-    # todo: specific text filtering (for cases when the spammer sends a regular message)
     if message.command[1] == 'text':
         return await addfilter_text(message)
     if message.command[1] == 'forward':
