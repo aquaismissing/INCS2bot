@@ -953,7 +953,7 @@ async def reply_through_logger_callback(client: BotClient, session: UserSession,
     sender = callback_query.from_user
     if sender.id not in config.DEVS_IDS:
         return
-    sender_pm_chat = await client.get_chat(sender.username)
+    sender_pm_chat = await client.get_chat(sender.id)
 
     e = await client.send_message(sender_pm_chat.id, "Loading...")
 
