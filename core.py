@@ -17,13 +17,9 @@ from dcatlas import DatacenterAtlas
 from functions import caching, utime
 from functions.ulogging import get_logger
 from l10n import locale
-from utypes import (ExchangeRate, Datacenter,
-                    DatacenterRegion, DatacenterGroup, GameServers,
+from utypes import (ExchangeRate, DatacenterStateVariation, GameServers,
                     LeaderboardStats, State, SteamWebAPI,
                     LEADERBOARD_API_REGIONS)
-
-
-UNKNOWN_DC_STATE = {"capacity": "unknown", "load": "unknown"}
 
 execution_start_dt = dt.datetime.now()
 execution_cron = (execution_start_dt + dt.timedelta(minutes=2)).replace(second=0)
@@ -48,32 +44,13 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
 
 
-def remap_dc(info: dict, dc: Datacenter):
-    return info.get(dc.associated_api_id, UNKNOWN_DC_STATE)
-
-
-def remap_dc_region(info: dict, region: DatacenterRegion):
-    return {dc.id: remap_dc(info, dc) for dc in region.datacenters}
-
-
-def remap_dc_group(info: dict, group: DatacenterGroup):
-    return {region.id: remap_dc_region(info, region) for region in group.regions}
-
-
 def remap_datacenters_info(info: dict) -> dict:
-    dcs = DatacenterAtlas.available_dcs()
-    
     remapped_info = {}
-    for dc in dcs:
-        match dc:
-            case Datacenter(id=i):
-                remapped_info[i] = remap_dc(info, dc)
-            case DatacenterRegion(id=i):
-                remapped_info[i] = remap_dc_region(info, dc)
-            case DatacenterGroup(id=i):
-                remapped_info[i] = remap_dc_group(info, dc)
-            case _:
-                logger.warning(f'Found non-datacenter object in DatacenterAtlas: {dc}')
+    for dc in DatacenterAtlas.available_dcs():
+        if isinstance(dc, DatacenterStateVariation):
+            remapped_info[dc.id] = dc.remap(info)
+        else:
+            logger.warning(f'Found non-datacenter object in DatacenterAtlas: {dc}')
 
     return remapped_info
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import NamedTuple, Protocol
+from typing import NamedTuple, Protocol, runtime_checkable
 
 from .states import State, States
 
@@ -11,8 +11,15 @@ __all__ = ('Datacenter', 'DatacenterRegion', 'DatacenterGroup',
            'DatacenterVariation', 'DatacenterStateVariation')
 
 
+UNKNOWN_DC_STATE = {'capacity': States.UNKNOWN.literal, 'load': States.UNKNOWN.literal}
+
+
+@runtime_checkable
 class DatacenterVariation(Protocol):
     def cached_state(self, cache: dict[str, ...]) -> DatacenterStateVariation:
+        ...
+
+    def remap(self, data: dict[str, dict[str, str]]) -> dict[str, str]:
         ...
 
 
@@ -30,6 +37,9 @@ class Datacenter(NamedTuple):
 
         return DatacenterState(self, capacity, load)
 
+    def remap(self, data: dict[str, dict[str, str]]):
+        return data.get(self.associated_api_id, UNKNOWN_DC_STATE)
+
 
 class DatacenterRegion(NamedTuple):
     id: str
@@ -44,6 +54,9 @@ class DatacenterRegion(NamedTuple):
 
         return DatacenterRegionState(self, states)
 
+    def remap(self, data: dict[str, dict[str, str]]):
+        return {dc.id: dc.remap(data) for dc in self.datacenters}
+
 
 class DatacenterGroup(NamedTuple):
     id: str
@@ -55,6 +68,9 @@ class DatacenterGroup(NamedTuple):
         region_states = [region.cached_state(group_data) for region in self.regions]
 
         return DatacenterGroupState(self, region_states)
+
+    def remap(self, data: dict[str, dict[str, str]]):
+        return {region.id: region.remap(data) for region in self.regions}
 
 
 class DatacenterState(NamedTuple):
