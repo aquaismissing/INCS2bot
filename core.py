@@ -4,9 +4,10 @@ import platform
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
+# noinspection PyPackageRequirements
 from pyrogram import Client
 if platform.system() == 'Linux':
-    # noinspection PyPackageRequirements
+    # noinspection PyPackageRequirements,PyUnresolvedReferences
     import uvloop
 
     uvloop.install()
@@ -22,46 +23,7 @@ from utypes import (ExchangeRate, Datacenter,
                     LEADERBOARD_API_REGIONS)
 
 
-DATACENTER_API_FIELDS = {
-    'south_africa': {'johannesburg': 'South Africa'},
-    'australia': {'sydney': 'Australia'},
-    'sweden': {'stockholm': 'EU Sweden'},
-    'germany': {'frankfurt': 'EU Germany'},
-    'finland': {'helsinki': 'EU Finland'},
-    'spain': {'madrid': 'EU Spain'},
-    'netherlands': {'amsterdam': 'EU Holland'},  # unknown
-    'austria': {'vienna': 'EU Austria'},
-    'poland': {'warsaw': 'EU Poland'},
-    'us_east': {'chicago': 'US Chicago',
-                'sterling': 'US Virginia',
-                'new_york': 'US NewYork',  # unknown
-                'atlanta': 'US Atlanta'},
-    'us_west': {'seattle': 'US Seattle',
-                'los_angeles': 'US California'},
-    'brazil': {'sao_paulo': 'Brazil'},
-    'chile': {'santiago': 'Chile'},
-    'peru': {'lima': 'Peru'},
-    'argentina': {'buenos_aires': 'Argentina'},
-    'hongkong': 'Hong Kong',
-    'india': {'mumbai': 'India Mumbai',
-              'chennai': 'India Chennai',
-              'bombay': 'India Bombay',  # unknown
-              'madras': 'India Madras'},  # unknown
-    'uk': {'london': 'United Kingdom'},
-    'china': {'shanghai': 'China Shanghai',  # unknown
-              'tianjin': 'China Tianjin',
-              'guangzhou': 'China Guangzhou',
-              'chengdu': 'China Chengdu',
-              'pudong': 'China Pudong'},
-    'south_korea': {'seoul': 'South Korea'},
-    'singapore': 'Singapore',
-    'emirates': {'dubai': 'Emirates'},
-    'japan': {'tokyo': 'Japan'},
-}
-
-
 UNKNOWN_DC_STATE = {"capacity": "unknown", "load": "unknown"}
-
 
 execution_start_dt = dt.datetime.now()
 execution_cron = (execution_start_dt + dt.timedelta(minutes=2)).replace(second=0)
@@ -86,19 +48,16 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
 
 
-def remap_dc(info: dict, fields: dict[str, str], dc: Datacenter):
-    api_info_field = fields[dc.id]
-    return info.get(api_info_field, UNKNOWN_DC_STATE)
+def remap_dc(info: dict, dc: Datacenter):
+    return info.get(dc.associated_api_id, UNKNOWN_DC_STATE)
 
 
-def remap_dc_region(info: dict, fields: dict[str, dict[str, str]], region: DatacenterRegion):
-    region_fields = fields[region.id]
-    return {dc.id: remap_dc(info, region_fields, dc) for dc in region.datacenters}
+def remap_dc_region(info: dict, region: DatacenterRegion):
+    return {dc.id: remap_dc(info, dc) for dc in region.datacenters}
 
 
-def remap_dc_group(info: dict, fields: dict[str, dict[str, dict[str, str]]], group: DatacenterGroup):
-    group_fields = fields[group.id]
-    return {region.id: remap_dc_region(info, group_fields, region) for region in group.regions}
+def remap_dc_group(info: dict, group: DatacenterGroup):
+    return {region.id: remap_dc_region(info, region) for region in group.regions}
 
 
 def remap_datacenters_info(info: dict) -> dict:
@@ -108,11 +67,11 @@ def remap_datacenters_info(info: dict) -> dict:
     for dc in dcs:
         match dc:
             case Datacenter(id=i):
-                remapped_info[i] = remap_dc(info, DATACENTER_API_FIELDS, dc)
+                remapped_info[i] = remap_dc(info, dc)
             case DatacenterRegion(id=i):
-                remapped_info[i] = remap_dc_region(info, DATACENTER_API_FIELDS, dc)
+                remapped_info[i] = remap_dc_region(info, dc)
             case DatacenterGroup(id=i):
-                remapped_info[i] = remap_dc_group(info, DATACENTER_API_FIELDS, dc)
+                remapped_info[i] = remap_dc_group(info, dc)
             case _:
                 logger.warning(f'Found non-datacenter object in DatacenterAtlas: {dc}')
 

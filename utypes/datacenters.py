@@ -18,9 +18,10 @@ class DatacenterVariation(Protocol):
 
 class Datacenter(NamedTuple):
     id: str
-    symbol: str = ""
-    l10n_key_name: str = ""
-    l10n_key_title: str = ""
+    associated_api_id: str
+    symbol: str = ''
+    l10n_key_name: str = ''
+    l10n_key_title: str = ''
 
     def cached_state(self, cache: dict[str, ...]) -> DatacenterState:
         dc_data = cache[self.id]
@@ -33,9 +34,9 @@ class Datacenter(NamedTuple):
 class DatacenterRegion(NamedTuple):
     id: str
     datacenters: list[Datacenter]
-    symbol: str = ""
-    l10n_key_name: str = ""
-    l10n_key_title: str = ""
+    symbol: str = ''
+    l10n_key_name: str = ''
+    l10n_key_title: str = ''
 
     def cached_state(self, cache: dict[str, ...]) -> DatacenterRegionState:
         region_data = cache[self.id]
