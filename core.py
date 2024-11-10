@@ -17,7 +17,7 @@ from dcatlas import DatacenterAtlas
 from functions import caching, utime
 from functions.ulogging import get_logger
 from l10n import locale
-from utypes import (ExchangeRate, DatacenterStateVariation, GameServers,
+from utypes import (ExchangeRate, GameServers,
                     LeaderboardStats, State, SteamWebAPI,
                     LEADERBOARD_API_REGIONS)
 
@@ -44,13 +44,8 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
 
 
-def remap_datacenters_info(info: dict) -> dict:
-    remapped_info = {}
-    for dc in DatacenterAtlas.available_dcs():
-        if isinstance(dc, DatacenterStateVariation):
-            remapped_info[dc.id] = dc.remap(info)
-        else:
-            logger.warning(f'Found non-datacenter object in DatacenterAtlas: {dc}')
+def remap_datacenters_info(info: dict[str, dict[str, str]]):
+    return {dc.id: dc.remap(info) for dc in DatacenterAtlas.available_dcs()}
 
     return remapped_info
 

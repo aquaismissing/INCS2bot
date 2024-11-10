@@ -1,6 +1,5 @@
 from l10n import LocaleKeys as LK
-from utypes import Datacenter, DatacenterRegion
-
+from utypes import Datacenter, DatacenterRegion, DatacenterVariation
 
 __all__ = ["DatacenterAtlas"]
 
@@ -244,5 +243,4 @@ class DatacenterAtlas:
 
     @classmethod
     def available_dcs(cls):
-        return (v for k, v in vars(DatacenterAtlas).items()
-                if not (k.startswith('__') or callable(v)))
+        return (v for k, v in vars(DatacenterAtlas).items() if isinstance(v, DatacenterVariation))
