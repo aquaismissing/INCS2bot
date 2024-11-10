@@ -4,6 +4,7 @@ import platform
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
+from pandas import DataFrame
 # noinspection PyPackageRequirements
 from pyrogram import Client
 if platform.system() == 'Linux':
@@ -47,7 +48,13 @@ steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS
 def remap_datacenters_info(info: dict[str, dict[str, str]]):
     return {dc.id: dc.remap(info) for dc in DatacenterAtlas.available_dcs()}
 
-    return remapped_info
+
+def get_player_24h_peak(df: DataFrame):
+    now = utime.utcnow()
+    end_date = f'{now:%Y-%m-%d %H:%M:%S}'
+    start_date = f'{(now - dt.timedelta(days=1)):%Y-%m-%d %H:%M:%S}'
+    mask = (df['DateTime'] > start_date) & (df['DateTime'] <= end_date)
+    return int(df.loc[mask]['Players'].max())
 
 
 @scheduler.scheduled_job('interval', seconds=update_cache_interval)
@@ -75,13 +82,7 @@ async def update_cache_info():
             cache['player_alltime_peak'] = cache['online_players']
 
         df = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
-        now = utime.utcnow()
-        end_date = f'{now:%Y-%m-%d %H:%M:%S}'
-        start_date = f'{(now - dt.timedelta(days=1)):%Y-%m-%d %H:%M:%S}'
-        mask = (df['DateTime'] > start_date) & (df['DateTime'] <= end_date)
-        player_24h_peak = int(df.loc[mask]['Players'].max())
-
-        cache['player_24h_peak'] = player_24h_peak
+        cache['player_24h_peak'] = get_player_24h_peak(df)
 
         caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
     except Exception:
