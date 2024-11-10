@@ -23,40 +23,40 @@ from utypes import (ExchangeRate, Datacenter,
 
 
 DATACENTER_API_FIELDS = {
-    ('south_africa', 'johannesburg'): 'South Africa',
-    ('australia', 'sydney'): 'Australia',
-    ('sweden', 'stockholm'): 'EU Sweden',
-    ('germany', 'frankfurt'): 'EU Germany',
-    ('finland', 'helsinki'): 'EU Finland',
-    ('spain', 'madrid'): 'EU Spain',
-    ('netherlands', 'amsterdam'): 'EU Holland',  # unknown
-    ('austria', 'vienna'): 'EU Austria',
-    ('poland', 'warsaw'): 'EU Poland',
-    ('us_east', 'chicago'): 'US Chicago',
-    ('us_east', 'sterling'): 'US Virginia',
-    ('us_east', 'new_york'): 'US NewYork',  # unknown
-    ('us_east', 'atlanta'): 'US Atlanta',
-    ('us_west', 'seattle'): 'US Seattle',
-    ('us_west', 'los_angeles'): 'US California',
-    ('brazil', 'sao_paulo'): 'Brazil',
-    ('chile', 'santiago'): 'Chile',
-    ('peru', 'lima'): 'Peru',
-    ('argentina', 'buenos_aires'): 'Argentina',
+    'south_africa': {'johannesburg': 'South Africa'},
+    'australia': {'sydney': 'Australia'},
+    'sweden': {'stockholm': 'EU Sweden'},
+    'germany': {'frankfurt': 'EU Germany'},
+    'finland': {'helsinki': 'EU Finland'},
+    'spain': {'madrid': 'EU Spain'},
+    'netherlands': {'amsterdam': 'EU Holland'},  # unknown
+    'austria': {'vienna': 'EU Austria'},
+    'poland': {'warsaw': 'EU Poland'},
+    'us_east': {'chicago': 'US Chicago',
+                'sterling': 'US Virginia',
+                'new_york': 'US NewYork',  # unknown
+                'atlanta': 'US Atlanta'},
+    'us_west': {'seattle': 'US Seattle',
+                'los_angeles': 'US California'},
+    'brazil': {'sao_paulo': 'Brazil'},
+    'chile': {'santiago': 'Chile'},
+    'peru': {'lima': 'Peru'},
+    'argentina': {'buenos_aires': 'Argentina'},
     'hongkong': 'Hong Kong',
-    ('india', 'mumbai'): 'India Mumbai',
-    ('india', 'chennai'): 'India Chennai',
-    ('india', 'bombay'): 'India Bombay',  # unknown
-    ('india', 'madras'): 'India Madras',  # unknown
-    ('uk', 'london'): 'United Kingdom',
-    ('china', 'shanghai'): 'China Shanghai',  # unknown
-    ('china', 'tianjin'): 'China Tianjin',
-    ('china', 'guangzhou'): 'China Guangzhou',
-    ('china', 'chengdu'): 'China Chengdu',
-    ('china', 'pudong'): 'China Pudong',
-    ('south_korea', 'seoul'): 'South Korea',
+    'india': {'mumbai': 'India Mumbai',
+              'chennai': 'India Chennai',
+              'bombay': 'India Bombay',  # unknown
+              'madras': 'India Madras'},  # unknown
+    'uk': {'london': 'United Kingdom'},
+    'china': {'shanghai': 'China Shanghai',  # unknown
+              'tianjin': 'China Tianjin',
+              'guangzhou': 'China Guangzhou',
+              'chengdu': 'China Chengdu',
+              'pudong': 'China Pudong'},
+    'south_korea': {'seoul': 'South Korea'},
     'singapore': 'Singapore',
-    ('emirates', 'dubai'): 'Emirates',
-    ('japan', 'tokyo'): 'Japan',
+    'emirates': {'dubai': 'Emirates'},
+    'japan': {'tokyo': 'Japan'},
 }
 
 
@@ -64,12 +64,12 @@ UNKNOWN_DC_STATE = {"capacity": "unknown", "load": "unknown"}
 
 
 execution_start_dt = dt.datetime.now()
+execution_cron = (execution_start_dt + dt.timedelta(minutes=2)).replace(second=0)
 
-execution_cron_hour = execution_start_dt.hour
-execution_cron_minute = execution_start_dt.minute + 1
-if execution_cron_minute >= 60:
-    execution_cron_hour += 1
-    execution_cron_minute %= 60
+update_cache_interval = 40
+unique_monthly_timing = 0
+check_currency_timing = 15
+fetch_leaderboard_timing = 30
 
 loc = locale('ru')
 
@@ -86,50 +86,40 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
 
 
-def remap_dc(info: dict, dc: Datacenter):
-    api_info_field = DATACENTER_API_FIELDS[dc.id]
+def remap_dc(info: dict, fields: dict[str, str], dc: Datacenter):
+    api_info_field = fields[dc.id]
     return info.get(api_info_field, UNKNOWN_DC_STATE)
 
 
-def remap_dc_region(info: dict, region: DatacenterRegion):
-    result = {}
-    for dc in region.datacenters:
-        api_info_field = DATACENTER_API_FIELDS[region.id, dc.id]
-        result[dc.id] = info.get(api_info_field, UNKNOWN_DC_STATE)
-
-    return result
+def remap_dc_region(info: dict, fields: dict[str, dict[str, str]], region: DatacenterRegion):
+    region_fields = fields[region.id]
+    return {dc.id: remap_dc(info, region_fields, dc) for dc in region.datacenters}
 
 
-def remap_dc_group(info: dict, group: DatacenterGroup):
-    result = {}
-    for region in group.regions:
-        result[region.id] = {}
-        for dc in region.datacenters:
-            api_info_field = DATACENTER_API_FIELDS[group.id, region.id, dc.id]
-            result[region.id][dc.id] = info.get(api_info_field, UNKNOWN_DC_STATE)
-
-    return result
+def remap_dc_group(info: dict, fields: dict[str, dict[str, dict[str, str]]], group: DatacenterGroup):
+    group_fields = fields[group.id]
+    return {region.id: remap_dc_region(info, group_fields, region) for region in group.regions}
 
 
 def remap_datacenters_info(info: dict) -> dict:
     dcs = DatacenterAtlas.available_dcs()
     
     remapped_info = {}
-    for obj in dcs:
-        match obj:
-            case Datacenter(id=_id):
-                remapped_info[_id] = remap_dc(info, obj)
-
-            case DatacenterRegion(id=_id):
-                remapped_info[_id] = remap_dc_region(info, obj)
-
-            case DatacenterGroup(id=_id):
-                remapped_info[_id] = remap_dc_group(info, obj)
+    for dc in dcs:
+        match dc:
+            case Datacenter(id=i):
+                remapped_info[i] = remap_dc(info, DATACENTER_API_FIELDS, dc)
+            case DatacenterRegion(id=i):
+                remapped_info[i] = remap_dc_region(info, DATACENTER_API_FIELDS, dc)
+            case DatacenterGroup(id=i):
+                remapped_info[i] = remap_dc_group(info, DATACENTER_API_FIELDS, dc)
+            case _:
+                logger.warning(f'Found non-datacenter object in DatacenterAtlas: {dc}')
 
     return remapped_info
 
 
-@scheduler.scheduled_job('interval', seconds=40)
+@scheduler.scheduled_job('interval', seconds=update_cache_interval)
 async def update_cache_info():
     # noinspection PyBroadException
     try:
@@ -167,21 +157,22 @@ async def update_cache_info():
         logger.exception('Caught exception while updating the cache!')
 
         
-@scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute)
+@scheduler.scheduled_job('cron',
+                         hour=execution_cron.hour, minute=execution_cron.minute, second=unique_monthly_timing)
 async def unique_monthly():
     # noinspection PyBroadException
     try:
-        data = steam_webapi.csgo_get_monthly_player_count()
+        new_player_count = steam_webapi.csgo_get_monthly_player_count()
 
         cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
 
         if cache.get('monthly_unique_players') is None:
-            cache['monthly_unique_players'] = data
+            cache['monthly_unique_players'] = new_player_count
 
-        if data != cache['monthly_unique_players']:
+        if new_player_count != cache['monthly_unique_players']:
             await send_alert('monthly_unique_players',
-                             (cache['monthly_unique_players'], data))
-            cache['monthly_unique_players'] = data
+                             (cache['monthly_unique_players'], new_player_count))
+            cache['monthly_unique_players'] = new_player_count
 
         caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
     except Exception:
@@ -190,7 +181,8 @@ async def unique_monthly():
         return await unique_monthly()
 
 
-@scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute, second=15)
+@scheduler.scheduled_job('cron',
+                         hour=execution_cron.hour, minute=execution_cron.minute, second=check_currency_timing)
 async def check_currency():
     # noinspection PyBroadException
     try:
@@ -203,7 +195,8 @@ async def check_currency():
         return await check_currency()
 
 
-@scheduler.scheduled_job('cron', hour=execution_cron_hour, minute=execution_cron_minute, second=30)
+@scheduler.scheduled_job('cron',
+                         hour=execution_cron.hour, minute=execution_cron.minute, second=fetch_leaderboard_timing)
 async def fetch_leaderboard():
     # noinspection PyBroadException
     try:
@@ -258,7 +251,7 @@ def main():
     try:
         scheduler.start()
         bot.run()
-    except TypeError:  # catching TypeError because Pyrogram propogates it at stop for some reason
+    except TypeError:  # catching TypeError because Pyrogram propagates it at stop for some reason
         logger.info('Shutting down the bot...')
     finally:
         steam_webapi.close()
