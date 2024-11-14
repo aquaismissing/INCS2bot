@@ -39,20 +39,4 @@ class States:
 
     @classmethod
     def get_or_unknown(cls, data: str | None) -> State:
-        """Same as ``States.get()``, but returns ``States.UNKNOWN`` if there's no such state."""
-
         return cls.get(data, States.UNKNOWN)
-
-    @classmethod
-    def converter(cls, data: State | str | None) -> State:
-        """
-        Used for convertion in ``@attrs.define``.
-
-        You can use it as you would use a ``from_dict()`` method,
-        but it returns the same object if you passed it as an argument.
-        """
-
-        if isinstance(data, State):
-            return data
-
-        return cls.get_or_unknown(data)

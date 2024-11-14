@@ -202,9 +202,9 @@ class GameVersion:
     def cached_data(gc_cache: GCCache):
         """Get the version of the game"""
 
-        cs2_client_version = gc_cache.get('cs2_client_version', 'unknown')
-        cs2_server_version = gc_cache.get('cs2_client_version', 'unknown')
-        cs2_patch_version = gc_cache.get('cs2_patch_version', 'unknown')
+        cs2_client_version = gc_cache.get('cs2_client_version', States.UNKNOWN.literal)
+        cs2_server_version = gc_cache.get('cs2_client_version', States.UNKNOWN.literal)
+        cs2_patch_version = gc_cache.get('cs2_patch_version', States.UNKNOWN.literal)
 
         cs2_version_timestamp = gc_cache.get('cs2_version_timestamp', 0)
         return GameVersionData(cs2_client_version,
@@ -337,7 +337,7 @@ class GameServers:
     
     @staticmethod
     def latest_info_update(cache: CoreCache):
-        if cache.get('api_timestamp', 'unknown') == 'unknown':
+        if cache.get('api_timestamp', States.UNKNOWN) == States.UNKNOWN:
             return States.UNKNOWN
 
         return dt.datetime.fromtimestamp(cache['api_timestamp'], dt.UTC)
@@ -374,23 +374,9 @@ class LeaderboardStats(NamedTuple):
             for map_id, map_name in MAPS.items():
                 last_wins[map_name] = ((stats[19] << (4 * map_id)) & 0xF0000000) >> 4 * 7
         timestamp = stats.get(20, -1)
-        region = REGIONS.get(stats.get(21), 'unknown')
+        region = REGIONS.get(stats.get(21), States.UNKNOWN.literal)
 
         return cls(rank, rating, name, wins, ties, losses, last_wins, timestamp, region)
-
-    @classmethod
-    def converter(cls, data: list[Any]):
-        """
-        Used for convertion in ``@attrs.define``.
-
-        You can use it as you would use a ``from_dict()`` method,
-        but it returns the same object if you passed it as an argument.
-        """
-
-        if isinstance(data, cls):
-            return data
-
-        return [LeaderboardStats.from_json(person) for person in data]
 
     @staticmethod
     def request_world(session: requests.Session):

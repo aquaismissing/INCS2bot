@@ -16,6 +16,8 @@ UNKNOWN_DC_STATE = {'capacity': States.UNKNOWN.literal, 'load': States.UNKNOWN.l
 
 @runtime_checkable
 class DatacenterVariation(Protocol):
+    id: str
+
     def cached_state(self, cache: dict[str, ...]) -> DatacenterStateVariation:
         ...
 
