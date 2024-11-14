@@ -10,7 +10,7 @@ from l10n import Locale
 from .locale import get_refined_lang_code
 from utypes import (DatacenterState, DatacenterRegionState, DatacenterGroupState,
                     DatacenterStateVariation, GameVersionData, ServerStatusData,
-                    MatchmakingStatsData, States, LeaderboardStats)
+                    MatchmakingStatsData, States, LeaderboardStats, Datacenter, DatacenterRegion)
 
 
 MINUTE = 60
@@ -118,38 +118,59 @@ def format_matchmaking_stats(data: MatchmakingStatsData, locale: Locale) -> str:
 
 def format_datacenter_state(state: DatacenterStateVariation, locale: Locale, latest_info_update_at: dt.datetime):
     if isinstance(state, DatacenterState):
-        header = locale.dc_status_text_title.format(state.datacenter.symbol,
-                                                    locale.get(state.datacenter.l10n_key_title))
-        summary = locale.dc_status_text_summary_city.format(locale.get(state.load.l10n_key),
-                                                            locale.get(state.capacity.l10n_key))
-        return '\n\n'.join((header, summary, format_latest_info_updated(latest_info_update_at, locale)))
+        info = pack_formatting_singular_datacenter_state(state, locale)
+        return '\n\n'.join((*info, format_latest_info_updated(latest_info_update_at, locale)))
 
     if isinstance(state, DatacenterRegionState):
-        header = locale.dc_status_text_title.format(state.region.symbol,
-                                                    locale.get(state.region.l10n_key_title))
+        info = pack_formatting_datacenter_region_state(state, locale)
+        return '\n\n'.join((*info, format_latest_info_updated(latest_info_update_at, locale)))
+
+    if isinstance(state, DatacenterGroupState):
+        info = pack_formatting_datacenter_group_state(state, locale)
+        return '\n\n'.join((*info, format_latest_info_updated(latest_info_update_at, locale)))
+
+
+def pack_formatting_singular_datacenter_state(state: DatacenterState, locale: Locale):
+    header = format_datacenter_state_header(state.datacenter, locale)
+    summary = format_datacenter_state_summary(state, locale)
+
+    return header, summary
+
+
+def pack_formatting_datacenter_region_state(state: DatacenterRegionState, locale: Locale):
+    header = format_datacenter_state_header(state.region, locale)
+    summaries = format_datacenter_state_summary(state, locale)
+
+    return header, *summaries
+
+
+def pack_formatting_datacenter_group_state(state: DatacenterGroupState, locale: Locale):
+    infos = []
+    for region_state in state.region_states:
+        info = pack_formatting_datacenter_region_state(region_state, locale)
+        infos.extend(info)
+
+    return infos
+
+
+def format_datacenter_state_header(dc: Datacenter | DatacenterRegion, locale: Locale):
+    return locale.dc_status_text_title.format(dc.symbol,
+                                              locale.get(dc.l10n_key_title))
+
+
+def format_datacenter_state_summary(state: DatacenterState | DatacenterRegionState, locale: Locale):
+    if isinstance(state, DatacenterState):
+        return locale.dc_status_text_summary_city.format(locale.get(state.load.l10n_key),
+                                                         locale.get(state.capacity.l10n_key))
+
+    if isinstance(state, DatacenterRegionState):
         summaries = []
         for dc_state in state.states:
             summary = locale.dc_status_text_summary.format(locale.get(dc_state.datacenter.l10n_key_title),
                                                            locale.get(dc_state.load.l10n_key),
                                                            locale.get(dc_state.capacity.l10n_key))
             summaries.append(summary)
-        return '\n\n'.join((header, '\n\n'.join(summaries), format_latest_info_updated(latest_info_update_at, locale)))
-
-    if isinstance(state, DatacenterGroupState):
-        infos = []
-        for region_state in state.region_states:
-            header = locale.dc_status_text_title.format(region_state.region.symbol,
-                                                        locale.get(region_state.region.l10n_key_title))
-            summaries = []
-            for dc_state in region_state.states:
-                summary = locale.dc_status_text_summary.format(locale.get(dc_state.datacenter.l10n_key_title),
-                                                               locale.get(dc_state.load.l10n_key),
-                                                               locale.get(dc_state.capacity.l10n_key))
-                summaries.append(summary)
-            infos.append(header + '\n\n' + '\n\n'.join(summaries))
-
-        infos.append(format_latest_info_updated(latest_info_update_at, locale))
-        return '\n\n'.join(infos)
+        return summaries
 
 
 def format_game_version_info(data: GameVersionData, locale: Locale) -> str:
