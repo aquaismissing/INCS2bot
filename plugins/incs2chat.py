@@ -257,7 +257,7 @@ async def addfilter_text(message: Message):
         return
 
     if source_msg:
-        text_to_filter = source_msg.text
+        text_to_filter = source_msg.text if source_msg.text else source_msg.caption
         if not text_to_filter:
             await send_temp_reply(message, 'Пустой текст.')
             return
