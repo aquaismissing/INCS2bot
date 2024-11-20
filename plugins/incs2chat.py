@@ -258,6 +258,9 @@ async def addfilter_text(message: Message):
 
     if source_msg:
         text_to_filter = source_msg.text
+        if not text_to_filter:
+            await send_temp_reply(message, 'Пустой текст.')
+            return
         filtered_stuff['text'].append(text_to_filter)
         dump_message_filters(filtered_stuff)
         await source_msg.delete()
