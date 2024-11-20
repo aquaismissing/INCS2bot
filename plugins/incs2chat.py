@@ -29,10 +29,10 @@ def load_message_filters() -> dict[str, list | dict[str, str]]:
 
 def dump_message_filters(_filters: dict[str, list | dict[str, str]]):
     with open(MESSAGE_FILTERS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(_filters, f)
+        json.dump(_filters, f, indent=4)
 
 
-filtered_stuff = load_message_filters()  # {'text': [str], 'forwards': {id: name}}
+filtered_stuff = load_message_filters()  # {'text': [str], 'forwards': {id: username}}
 if filtered_stuff.get('text') is None:
     filtered_stuff = {'text': [], 'forwards': filtered_stuff.copy()}
     dump_message_filters(filtered_stuff)
