@@ -197,6 +197,7 @@ class DatacenterAtlas:
             Datacenter("guangzhou", associated_api_id="China Guangzhou", l10n_key_title=LK.dc_china_guangzhou),
             Datacenter("chengdu", associated_api_id="China Chengdu", l10n_key_title=LK.dc_china_chengdu),
             Datacenter("pudong", associated_api_id="China Pudong", l10n_key_title=LK.dc_china_pudong),
+            Datacenter("guangdong", associated_api_id="China Guangdong", l10n_key_title=LK.dc_china_guangdong)
         ],
         "🇨🇳",
         LK.regions_china,
