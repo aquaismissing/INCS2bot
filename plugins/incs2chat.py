@@ -285,22 +285,32 @@ async def addfilter_text(message: Message):
 async def ban(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
 
-    admins = chat.get_members(filter=ChatMembersFilter.ADMINISTRATORS)
-    admins = {admin.user.id async for admin in admins}
-
-    if message.from_user.id not in admins:
+    if not await is_administrator(chat, message.from_user):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     original_msg = message.reply_to_message
     if original_msg:
-        user_to_ban = original_msg.from_user
+        who_to_ban = original_msg.from_user or original_msg.sender_chat
 
         # if not chat.get_member(user_to_ban.id):  # probably already banned, untested
         #     return await message.reply(f"{user_to_ban.first_name} не находится в этом чате."
         #                                f" Возможно, он(а) уже получил(а) VAC бан.")
 
-        await chat.ban_member(user_to_ban.id)
-        await message.reply(f"{user_to_ban.first_name} получил(а) VAC бан.")
+        await chat.ban_member(who_to_ban.id)
+        await message.reply(f"{who_to_ban.first_name} получил(а) VAC бан.")
+
+
+# @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("check"))
+# async def check(client: Client, message: Message):
+#     chat = await client.get_chat(config.INCS2CHAT)
+#
+#     if not await is_administrator(chat, message.from_user):
+#         return
+#
+#     original_msg = message.reply_to_message
+#     msg = await message.reply(f'```\n{original_msg}\n```', quote=False)
+#     await asyncio.sleep(5)
+#     await msg.delete()
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("unban"))
