@@ -417,11 +417,11 @@ def drop_cap_reset_timer() -> tuple[int, int, int, int]:
     """Get drop cap reset time"""
 
     wanted_weekday = 1
-    wanted_time = 17
+    wanted_time = 18
 
     now = dt.datetime.now(tz=VALVE_TIMEZONE)
-    if is_pdt(now):
-        wanted_time += 1
+    # if is_pdt(now):
+    #     wanted_time += 1
 
     days_until_wanted_weekday = (wanted_weekday - now.weekday()) % 7
 
