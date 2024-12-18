@@ -206,7 +206,12 @@ async def filter_message(message: Message):
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("addfilter"))
-async def addfilter(_, message: Message):
+async def addfilter(client: Client, message: Message):
+    chat = await client.get_chat(config.INCS2CHAT)
+
+    if not await is_administrator(chat, message.from_user):
+        return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
+
     if message.command[1] == 'text':
         return await addfilter_text(message)
     if message.command[1] == 'forward':
@@ -300,17 +305,17 @@ async def ban(client: Client, message: Message):
         await message.reply(f"{who_to_ban.first_name} получил(а) VAC бан.")
 
 
-# @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("check"))
-# async def check(client: Client, message: Message):
-#     chat = await client.get_chat(config.INCS2CHAT)
-#
-#     if not await is_administrator(chat, message.from_user):
-#         return
-#
-#     original_msg = message.reply_to_message
-#     msg = await message.reply(f'```\n{original_msg}\n```', quote=False)
-#     await asyncio.sleep(5)
-#     await msg.delete()
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("check"))
+async def check(client: Client, message: Message):
+    chat = await client.get_chat(config.INCS2CHAT)
+
+    await message.delete()
+    if not await is_administrator(chat, message.from_user):
+        return
+
+    original_message = message.reply_to_message
+    receipt = message.from_user
+    await client.send_message(receipt.id, f'```\n{original_message}\n```')
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("unban"))
