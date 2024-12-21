@@ -15,7 +15,7 @@ from pyrogram.enums import ChatType, ChatAction, ParseMode
 from pyrogram.errors import MessageDeleteForbidden, MessageNotModified, PeerIdInvalid
 from pyrogram.types import CallbackQuery, Message
 # noinspection PyUnresolvedReferences
-from pyropatch import pyropatch  # do not delete!!
+from pyropatch import pyropatch  # do not remove this!!
 from telegraph.aio import Telegraph
 
 from bottypes import BotClient, ExtendedIKB, ExtendedIKM
@@ -52,7 +52,7 @@ GUN_ORIGINS = {'Germany': LK.gun_origin_germany, 'Austria': LK.gun_origin_austri
 
 GUNS_INFO = load_gun_infos(config.GUN_DATA_FILE_PATH)
 AVAILABLE_LANGUAGES = get_available_languages()
-ALL_COMMANDS = ('start', 'help')
+
 ASK_TIMEOUT = 5 * 60
 ENGLISH_LOCALE = lc('en')
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
@@ -96,7 +96,6 @@ async def handle_callbacks(client: BotClient, callback_query: CallbackQuery):
     if callback_query.message.chat.id == client.telegram_logger.log_channel_id:
         return await handle_callbacks_in_logger(client, callback_query)
 
-    # Render selection indicator on selectable markups
     for markup in keyboards.all_selectable_markups:
         markup.select_button_by_key(callback_query.data)
 
@@ -125,8 +124,8 @@ async def main_menu(_, session: UserSession,
 
     if session_timeout:
         text = session.locale.error_session_timeout + '\n\n' + text
-        if text == bot_message.text:  # rare edge case
-            text += '‎'  # use empty char to bypass  # todo: might be unnecessary anymore
+        # if text == bot_message.text:  # rare edge case
+        #     text += '‎'  # use empty char to bypass  # todo: might be unnecessary anymore
 
     await bot_message.edit(text, reply_markup=keyboards.main_markup(session.locale))
 
@@ -477,16 +476,13 @@ async def user_info_handle_error(_, session: UserSession, user_input: Message, e
         await user_input.delete()
         raise exc
 
-    error_msg = session.locale.user_invalidrequest_error
     if exc.code == ErrorCode.INVALID_LINK:
-        error_msg = session.locale.user_invalidlink_error
-    elif exc.code == ErrorCode.PROFILE_IS_PRIVATE:
-        error_msg = '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + \
-                    session.locale.user_privateprofile_error
-    elif exc.code == ErrorCode.NO_STATS_AVAILABLE:
-        error_msg = session.locale.user_nostatsavailable_error
-
-    return error_msg
+        return session.locale.user_invalidlink_error
+    if exc.code == ErrorCode.PROFILE_IS_PRIVATE:
+        return '<a href="https://i.imgur.com/CAjblvT.mp4">‎</a>' + session.locale.user_privateprofile_error
+    if exc.code == ErrorCode.NO_STATS_AVAILABLE:
+        return session.locale.user_nostatsavailable_error
+    return session.locale.user_invalidrequest_error
 
 
 # cat: Extra features
@@ -500,8 +496,8 @@ async def extra_features(_, session: UserSession, bot_message: Message):
 
 @bot.navmenu(LK.crosshair, came_from=extra_features, ignore_message_not_modified=True)
 async def crosshair(_, session: UserSession, bot_message: Message):
-    return await bot_message.edit(session.locale.bot_choose_func,
-                                  reply_markup=keyboards.crosshair_markup(session.locale))  # must return
+    await bot_message.edit(session.locale.bot_choose_func,
+                           reply_markup=keyboards.crosshair_markup(session.locale))
 
 
 @bot.funcmenu(LK.crosshair_generate, came_from=crosshair, ignore_message_not_modified=True)
@@ -933,7 +929,7 @@ async def reply_through_logger_command(client: BotClient, message: Message):
         recipient = await client.get_users(recipient_id)
         recipient_pm_chat = await client.get_chat(recipient.username)
     except PeerIdInvalid:
-        await message.reply("You can't send messages to this user (perhaps, they didn't interact with the bot yet).")
+        await message.reply("You can't send messages to this user (perhaps, they haven't interacted with the bot yet).")
         session.current_menu_id = main_menu.id
         return await message.reply(session.locale.bot_choose_cmd,
                                    reply_markup=keyboards.main_markup(session.locale))
@@ -1058,8 +1054,11 @@ async def regular_stats_report(client: BotClient):
 async def drop_cap_reset_in_10_minutes(client: BotClient):  # todo: finish testing this damn thing
     if drop_cap_reset_timer()[1] != 0:
         await asyncio.sleep(60 * 60)  # to account timezone changing
-    await client.send_message(config.LOGCHANNEL, ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
-    # 'AgACAgIAAx0EcqmfAwACE_1ml3gYlVf65aXBmhaq54dI5NtctgACYOExG2LEwEj6jR-JjYwTMgAIAQADAgADeAAHHgQ'
+    msg = await client.send_message(config.LOGCHANNEL,
+                                    ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
+
+    photo_id = 'AgACAgIAAx0CTFFE8AABCYWXZ2KpYuYqxiiKIE_UYFsCp5_Ea4QAAt7oMRtf8RFLUksk2TKBIxIACAEAAwIAA3gABx4E'
+    await msg.reply_photo(photo_id)
 
 
 # cat: Main
