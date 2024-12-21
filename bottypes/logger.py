@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-import typing
+from typing import NamedTuple, TYPE_CHECKING
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
+    from typing import Callable
+
     from pyrogram.enums import ParseMode
-
-    from pyrogram.types import (CallbackQuery, InlineQuery, InlineKeyboardMarkup, Message, User)
+    from pyrogram.types import CallbackQuery, InlineQuery, InlineKeyboardMarkup, Message, User
 
     from .botclient import BotClient
     from .sessions import UserSession
@@ -23,7 +24,7 @@ def limit_message_length(text: str, limit: int = 4000) -> str:
     return text[:limit - len(warning_message) - 3] + '...' + warning_message
 
 
-class SystemLogPayload(typing.NamedTuple):
+class SystemLogPayload(NamedTuple):
     client: BotClient
     text: str
     disable_notification: bool
@@ -31,7 +32,7 @@ class SystemLogPayload(typing.NamedTuple):
     parse_mode: ParseMode
 
 
-class EventLogPayload(typing.NamedTuple):
+class EventLogPayload(NamedTuple):
     client: BotClient
     user: User
     session: UserSession
@@ -162,7 +163,7 @@ class PlainBotLogger(BotLogger):
 
 class ReplyBackBotLogger(BotLogger):
     def __init__(self, log_channel_id: int,
-                 event_reply_markup_builder: typing.Callable[[User], InlineKeyboardMarkup] = lambda _: None):
+                 event_reply_markup_builder: Callable[[User], InlineKeyboardMarkup] = lambda _: None):
         super().__init__(log_channel_id)
 
         self.event_reply_markup_builder = event_reply_markup_builder

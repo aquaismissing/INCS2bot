@@ -4,7 +4,13 @@ from utypes import Datacenter, DatacenterRegion, DatacenterVariation
 __all__ = ["DatacenterAtlas"]
 
 
-class DatacenterAtlas:
+class _DCAtlasMethods:
+    @classmethod
+    def available_dcs(cls):
+        return (v for k, v in vars(cls).items() if isinstance(v, DatacenterVariation))
+
+
+class DatacenterAtlas(_DCAtlasMethods):
     AFRICA = DatacenterRegion(
         "south_africa",
         [
@@ -241,7 +247,3 @@ class DatacenterAtlas:
         LK.dc_japan,
         LK.dc_japan_title
     )
-
-    @classmethod
-    def available_dcs(cls):
-        return (v for k, v in vars(DatacenterAtlas).items() if isinstance(v, DatacenterVariation))

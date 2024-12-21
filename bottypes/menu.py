@@ -55,6 +55,14 @@ class Menu:
 
 
 class NavMenu(Menu):
+    """
+    Unlike ``FuncMenu``, this one can have input processing functions connected
+    (a message process or a callback process).
+
+    It's also used to mark the menu as a route one,
+    so we can keep track of what menus the user goes through.
+    """
+
     def __init__(self,
                  _id: str,
                  func: callable,

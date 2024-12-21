@@ -1,8 +1,8 @@
 import logging
 from pathlib import Path
 
-from sqlalchemy.orm import DeclarativeBase, Session
-from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession, async_sessionmaker, create_async_engine
 
 
 logger = logging.getLogger('INCS2bot.db')
@@ -35,5 +35,5 @@ async def init(db_file: Path):
     _factory = async_sessionmaker(bind=engine, expire_on_commit=False)
 
 
-def create_session() -> Session:
+def create_session() -> AsyncSession:
     return _factory()

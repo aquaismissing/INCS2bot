@@ -163,10 +163,10 @@ class BotClient(Client):
                 self._menu_routes[query] = menu
                 return menu
 
-            if self._menu_routes.get(query):
-                self._menu_routes[query][came_from.id] = menu
-            else:
-                self._menu_routes[query] = {came_from.id: menu}
+            if self._menu_routes.get(query) is None:
+                self._menu_routes[query] = {}
+            self._menu_routes[query][came_from.id] = menu
+
             return menu
 
         return decorator
@@ -178,6 +178,13 @@ class BotClient(Client):
                 came_from: callable | Menu = None,
                 ignore_message_not_modified: bool = False,
                 **kwargs):
+        """
+        Creates a :py:class:`NavMenu` object out of the decorated function.
+
+        You can pass additional arguments to the function
+        with each menu query trigger by using ``**kwargs``.
+        """
+
         return self._menu_factory(NavMenu,
                                   query,
                                   *args,
@@ -193,6 +200,12 @@ class BotClient(Client):
                  came_from: callable | Menu = None,
                  ignore_message_not_modified: bool = False,
                  **kwargs):
+        """
+        Creates a :py:class:`FuncMenu` object out of the decorated function.
+
+        You can pass additional arguments to the function with each menu query trigger by using ``kwargs``.
+        """
+
         return self._menu_factory(FuncMenu,
                                   query,
                                   *args,
@@ -205,7 +218,7 @@ class BotClient(Client):
     def callback_process(of: callable | NavMenu):
         def decorator(func: callable):
             if not isinstance(of, NavMenu):
-                raise TypeError('process can be set only to navmenu u doofus')
+                raise TypeError('Process can only be attached to a NavMenu object.')
 
             async def inner(client: BotClient, session: UserSession, query: CallbackQuery,
                             *args, **kwargs):
@@ -222,7 +235,7 @@ class BotClient(Client):
     def message_process(of: callable | NavMenu):
         def decorator(func: callable):
             if not isinstance(of, NavMenu):
-                raise TypeError('process can be set only to navmenu u doofus')
+                raise TypeError('Process can only be attached to a NavMenu object.')
 
             async def inner(client: BotClient, session: UserSession, bot_message: Message, user_input: Message,
                             *args, **kwargs):
@@ -278,6 +291,7 @@ class BotClient(Client):
 
         if not self.has_a_command(prompt):
             return
+
         if '@' in prompt:
             prompt, username = prompt.split('@', 2)
             username, *commands_args = username.split()
@@ -378,11 +392,12 @@ class BotClient(Client):
         Sends user to a specific menu if we can access that menu from the current one.
 
         Note:
-            You can use ``BotClient.jump_to_menu(session, callback_query, menu)`` to avoid access check.
+            You can use ``BotClient.jump_to_menu(session, callback_query, menu)``
+            to avoid access check.
         """
 
         if not menu.can_come_from(session.current_menu_id):
-            raise AttributeError(f"Can't access {menu} from {self.get_menu_by_id(session.current_menu_id)}")
+            raise Exception(f"Can't access {menu} from {self.get_menu_by_id(session.current_menu_id)}")
 
         return await self.jump_to_menu(session, bot_message, menu)
 

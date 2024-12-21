@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from pyrogram.types import (CallbackGame,
                             InlineKeyboardButton,
                             InlineKeyboardMarkup,
@@ -52,8 +54,9 @@ class ExtendedIKB(InlineKeyboardButton):
             self.text = f'{self.SELECTION_INDICATOR} {self.text} {self.SELECTION_INDICATOR}'
 
     def localed(self, locale: Locale):
-        self.set_localed_text(locale)
-        return self
+        copy = deepcopy(self)
+        copy.set_localed_text(locale)
+        return copy
 
     def __call__(self, locale: Locale):
         return self.localed(locale)
@@ -71,8 +74,9 @@ class ExtendedIKM(InlineKeyboardMarkup):
                 button.set_localed_text(locale)
 
     def localed(self, locale: Locale):
-        self.update_locale(locale)
-        return self
+        copy = deepcopy(self)
+        copy.update_locale(locale)
+        return copy
 
     def __call__(self, locale: Locale):
         return self.localed(locale)
