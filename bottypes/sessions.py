@@ -4,6 +4,7 @@ import datetime as dt
 import logging
 
 from pyrogram.types import Message, User
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from db import db_session, User as DBUser
@@ -31,16 +32,21 @@ class UserSession:
         self.last_bot_pm_id = dbuser.last_bot_pm_id
         self.locale = locale(self.lang_code)
 
+    async def sync_with_db_session(self, db_sess: AsyncSession):
+        """Don't forget to call ``await db_sess.commit()`` to save changes!!!"""
+
+        # noinspection PyTypeChecker
+        query = select(DBUser).where(DBUser.id == self.dbuser_id)
+        dbuser = (await db_sess.execute(query)).scalar()
+        dbuser.current_menu_id = self.current_menu_id
+        dbuser.previous_menu_id = self.previous_menu_id
+        dbuser.language = self.lang_code
+        dbuser.last_bot_pm_id = self.last_bot_pm_id
+        return dbuser
+
     async def sync_with_db(self):
         async with db_session.create_session() as db_sess:
-            # noinspection PyTypeChecker
-            query = select(DBUser).where(DBUser.id == self.dbuser_id)
-            dbuser = (await db_sess.execute(query)).scalar()
-            dbuser.current_menu_id = self.current_menu_id
-            dbuser.previous_menu_id = self.previous_menu_id
-            dbuser.language = self.lang_code
-            dbuser.last_bot_pm_id = self.last_bot_pm_id
-
+            dbuser = await self.sync_with_db_session(db_sess)
             logger.info(f'UserSession synced with db! {dbuser=}')
             await db_sess.commit()
 
@@ -62,13 +68,7 @@ class UserSessions(dict[int, UserSession]):
     async def sync_with_db(self):
         async with db_session.create_session() as db_sess:
             for session in self.values():
-                # noinspection PyTypeChecker
-                query = select(DBUser).where(DBUser.id == session.dbuser_id)
-                dbuser = (await db_sess.execute(query)).scalar()
-                dbuser.current_menu_id = session.current_menu_id
-                dbuser.previous_menu_id = session.previous_menu_id
-                dbuser.language = session.lang_code
-                dbuser.last_bot_pm_id = session.last_bot_pm_id
+                await session.sync_with_db_session(db_sess)
 
             logger.info(f'UserSessions synced with db! {len(self)} sessions were synced.')
             await db_sess.commit()
@@ -102,12 +102,15 @@ class UserSessions(dict[int, UserSession]):
         now = dt.datetime.now()
 
         sessions_timed_out = 0
-        for _id, session in self.copy().items():
-            session_time = dt.datetime.fromtimestamp(session.timestamp)
-            if (now - session_time) > self.SESSIONS_LIFETIME:
-                await session.sync_with_db()
-                del self[_id]
-                sessions_timed_out += 1
+        async with db_session.create_session() as db_sess:
+            for _id, session in self.copy().items():
+                session_time = dt.datetime.fromtimestamp(session.timestamp)
+                if (now - session_time) > self.SESSIONS_LIFETIME:
+                    await session.sync_with_db_session(db_sess)
+                    del self[_id]
+                    sessions_timed_out += 1
+
+            await db_sess.commit()
 
         if sessions_timed_out != 0:
             logger.info(f'Cleared {sessions_timed_out} timed-out sessions.')
