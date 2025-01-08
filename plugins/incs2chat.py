@@ -428,8 +428,14 @@ async def filter_via_bot(_, message: Message):
 async def meow_meow_meow_meow(_, message: Message):
     chance = random.random()
 
-    if message.sticker.file_unique_id == 'AgADtD0AAu4r4Ug':
-        if chance < 0.025:
-            await message.reply('гав гав гав гав')
-        elif chance < 0.075:
-            await message.reply('мяу мяу мяу мяу')
+    match message.sticker.file_unique_id:
+        case 'AgADtD0AAu4r4Ug':
+            if chance < 0.025:
+                await message.reply('гав гав гав гав')
+            elif chance < 0.075:
+                await message.reply('мяу мяу мяу мяу')
+        case "AQADQ1wAAvi0sEty":
+            if chance < 0.025:
+                await message.reply('уям уям уям уям')
+            elif chance < 0.075:
+                await message.reply('урм урм урм урм')
