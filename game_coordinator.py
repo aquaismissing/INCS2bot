@@ -36,8 +36,8 @@ AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
                     'backup_branch_updated': loc.notifs_backup_branch_updated,
                     'backup_branch_updated_sync': f'{loc.notifs_backup_branch_created} 🔃',
                     'backup_branch_deleted': loc.notifs_backup_branch_deleted,
-                    'private_branch_created': loc.notifs_private_branch_created,
-                    'private_branch_updated': loc.notifs_private_branch_updated,
+                    # 'private_branch_created': loc.notifs_private_branch_created,
+                    # 'private_branch_updated': loc.notifs_private_branch_updated,
                     'misc_branch_created': loc.notifs_misc_branch_created,
                     'misc_branch_updated': loc.notifs_misc_branch_updated,
                     'branch_deleted': loc.notifs_branch_deleted}
@@ -204,8 +204,6 @@ async def check_for_new_branches(cache: dict, cached_branches: dict, current_bra
 
         if is_backup_branch(branch_name):
             event = 'backup_branch_created_sync' if branch_name == cs2_patch_version else 'backup_branch_created'
-        elif branch_data.get('pwdrequired') == '1':  # why the fuck it's a string? Valve???
-            event = 'private_branch_created'
         else:
             event = 'misc_branch_created'
         await send_branch_alert(branch_name, event, branch_data['buildid'])
@@ -243,8 +241,6 @@ async def check_for_branches_updates(cache: dict, cached_branches: dict, current
             event = 'public_branch_updated'
         elif is_backup_branch(branch_name):
             event = 'backup_branch_updated_sync' if branch_name == cs2_patch_version else 'backup_branch_updated'
-        elif branch_data.get('pwdrequired') == '1':
-            event = 'private_branch_updated'
         else:
             event = 'misc_branch_updated'
         await send_branch_alert(branch_name, event, new_buildid)
