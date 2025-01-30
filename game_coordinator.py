@@ -29,10 +29,6 @@ VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
 loc = locale('ru')
 
 AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
-                    'dpr_branch_updated': loc.notifs_build_dpr,
-                    'dprp_branch_updated': loc.notifs_build_dprp,
-                    'dpr_branch_sync': f'{loc.notifs_build_dpr} 🔃',
-                    'dprp_branch_sync': f'{loc.notifs_build_dprp} 🔃',
                     'cs2_app_changenumber': loc.notifs_build_cs2_client,
                     'cs2_server_changenumber': loc.notifs_build_cs2_server,
                     'backup_branch_created': loc.notifs_backup_branch_created,
@@ -45,7 +41,7 @@ AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
                     'misc_branch_created': loc.notifs_misc_branch_created,
                     'misc_branch_updated': loc.notifs_misc_branch_updated,
                     'branch_deleted': loc.notifs_branch_deleted}
-MAIN_BRANCHES = {'public', 'dpr', 'dprp', '<null>'}  # <null> is for other important things
+MAIN_BRANCHES = {'public', '<null>'}  # <null> is for other important things
 
 logger = get_logger('game_coordinator', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
@@ -162,7 +158,7 @@ async def update_depots():
     except Exception:
         logger.exception('Caught an exception while trying to fetch depots!')
         return
-    except gevent.Timeout:  # just crash and restart the entire thing
+    except gevent.Timeout:  # still no idea how to solve it so just crash and restart the entire thing
         going_to_shutdown = True
         logger.exception('Caught gevent.Timeout, we\'re going to shutdown...')
         return
@@ -229,7 +225,6 @@ async def check_for_removed_branches(cached_branches: dict, current_branches: di
 
 
 async def check_for_branches_updates(cache: dict, cached_branches: dict, current_branches: dict):
-    public_buildid = cached_branches.get('public', {}).get('buildid')
     cs2_patch_version = cache.get('cs2_patch_version')
 
     for branch_name, branch_data in current_branches.items():
@@ -246,10 +241,6 @@ async def check_for_branches_updates(cache: dict, cached_branches: dict, current
             game_version_data = await get_game_version_loop(cache.get('cs2_client_version'))
             cache.update(game_version_data.asdict())
             event = 'public_branch_updated'
-        elif branch_name == 'dpr':
-            event = 'dpr_branch_sync' if new_buildid == public_buildid else 'dpr_branch_updated'
-        elif branch_name == 'dprp':
-            event = 'dprp_branch_sync' if new_buildid == public_buildid else 'dprp_branch_updated'
         elif is_backup_branch(branch_name):
             event = 'backup_branch_updated_sync' if branch_name == cs2_patch_version else 'backup_branch_updated'
         elif branch_data.get('pwdrequired') == '1':
