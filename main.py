@@ -883,13 +883,13 @@ async def bot_help_section(_, session: UserSession, bot_message: Message):
                            reply_markup=keyboards.help_markup(session.locale))
 
 
-@bot.funcmenu(LK.bot_aboutus_button_title, came_from=bot_help_section)
+@bot.funcmenu(LK.bot_aboutus_button_title, came_from=bot_help_section, ignore_message_not_modified=True)
 async def about_us(_, session: UserSession, bot_message: Message):
     await bot_message.edit(session.locale.bot_help_text,
                            reply_markup=keyboards.help_markup(session.locale))
 
 
-@bot.funcmenu(LK.bot_feedback_button_title, came_from=bot_help_section)
+@bot.funcmenu(LK.bot_feedback_button_title, came_from=bot_help_section, ignore_message_not_modified=True)
 async def feedback(_, session: UserSession, bot_message: Message):
     await bot_message.edit(session.locale.bot_feedback_text,
                            disable_web_page_preview=True,
