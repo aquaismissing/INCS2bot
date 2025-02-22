@@ -1,5 +1,6 @@
 import json
 import time
+from typing import TYPE_CHECKING
 
 import requests
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -14,6 +15,9 @@ import seaborn as sns
 import config
 from functions import utime
 from functions.ulogging import get_logger
+
+if TYPE_CHECKING:
+    from typing import BinaryIO
 
 MINUTE = 60
 MAX_ONLINE_MARKS = (MINUTE // 10) * 24 * 7 * 2  # = 2016 marks - every 10 minutes for the last two weeks
@@ -31,26 +35,39 @@ colorbar_ticks_format = FixedFormatter(['0', '250K', '500K', '750K', '1M', '1.25
 fig_ticks_format = ['' for _ in ticks]
 
 x_major_locator = mdates.DayLocator()
-x_major_formatter = mdates.DateFormatter("%b %d")
+x_major_formatter = mdates.DateFormatter('%b %d')
 
 
-def post_image_to_catbox() -> str:
-    with open(config.GRAPH_IMG_FILE_PATH, 'rb') as f:
-        try:
-            response = requests.post('https://catbox.moe/user/api.php',
-                                     headers=config.REQUESTS_HEADERS,
-                                     data={'reqtype': 'fileupload'},
-                                     files={'fileToUpload': f})
+def upload_image_online(image: BinaryIO, host: str) -> str:
+    allowed_hosts = {'i.supa.codes', 'kappa.lol', 'gachi.gay', 'femboy.beauty'}  # https://github.com/0Supa/uploader
 
-            if response.status_code != 200:
-                logger.error("Caught error in when posting graph image to Catbox!",
-                             response.status_code, response.reason, response.text)
-                return ''
+    if host not in allowed_hosts:
+        raise TypeError(f'unknown host, choose one of these: {allowed_hosts}')
 
-            return response.text
-        except requests.HTTPError:
-            logger.exception('Caught exception in when posting graph image to Catbox!')
-            return ''
+    response = requests.post(f'https://{host}/api/upload',
+                             headers=config.REQUESTS_HEADERS,
+                             files={'file': image})
+
+    if response.status_code != 200:
+        logger.error(f'Caught error while uploading graph image to the file uploader ({host})!',
+                     response.status_code, response.reason, response.text)
+        return ''
+
+    return response.text
+
+
+def upload_image_to_catbox(image: BinaryIO) -> str:  # might be blocked on some hostings
+    response = requests.post('https://catbox.moe/user/api.php',
+                             headers=config.REQUESTS_HEADERS,
+                             data={'reqtype': 'fileupload'},
+                             files={'fileToUpload': image})
+
+    if response.status_code != 200:
+        logger.error('Caught error while uploading graph image to the file uploader (catbox.moe)!',
+                     response.status_code, response.reason, response.text)
+        return ''
+
+    return response.text
 
 
 @scheduler.scheduled_job('cron', hour='*', minute='0,10,20,30,40,50', second='0')
@@ -72,7 +89,7 @@ def graph_maker():
 
         temp_player_data = pd.DataFrame(
             [[f'{utime.utcnow():%Y-%m-%d %H:%M:%S}', player_count]],
-            columns=["DateTime", "Players"],
+            columns=['DateTime', 'Players'],
         )
 
         new_player_data = pd.concat([old_player_data, temp_player_data])
@@ -118,7 +135,12 @@ def graph_maker():
         fig.savefig(config.GRAPH_IMG_FILE_PATH, dpi=200)
         plt.close()
 
-        image_url = post_image_to_catbox()
+        try:
+            with open(config.GRAPH_IMG_FILE_PATH, 'rb') as f:
+                image_url = upload_image_online(f, 'i.supa.codes')
+        except requests.HTTPError:
+            logger.exception('Caught exception while uploading graph image to the file uploader!')
+            image_url = ''
 
         with open(config.GRAPH_CACHE_FILE_PATH, encoding='utf-8') as f:
             cache = json.load(f)
@@ -142,5 +164,5 @@ def main():
         logger.info('Terminated.')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
