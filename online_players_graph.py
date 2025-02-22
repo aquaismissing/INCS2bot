@@ -36,16 +36,21 @@ x_major_formatter = mdates.DateFormatter("%b %d")
 
 def post_image_to_catbox() -> str:
     with open(config.GRAPH_IMG_FILE_PATH, 'rb') as f:
-        response = requests.post('https://catbox.moe/user/api.php',
-                                 headers=config.REQUESTS_HEADERS,
-                                 data={'reqtype': 'fileupload'},
-                                 files={'fileToUpload': f})
+        try:
+            response = requests.post('https://catbox.moe/user/api.php',
+                                     headers=config.REQUESTS_HEADERS,
+                                     data={'reqtype': 'fileupload'},
+                                     files={'fileToUpload': f})
 
-        if response.status_code != 200:
-            print(response.status_code, response.reason, response.text)
+            if response.status_code != 200:
+                logger.error("Caught error in when posting graph image to Catbox!",
+                             response.status_code, response.reason, response.text)
+                return ''
+
+            return response.text
+        except requests.HTTPError:
+            logger.exception('Caught exception in when posting graph image to Catbox!')
             return ''
-
-        return response.text
 
 
 @scheduler.scheduled_job('cron', hour='*', minute='0,10,20,30,40,50', second='0')
