@@ -36,9 +36,9 @@ x_major_formatter = mdates.DateFormatter("%b %d")
 
 def post_image_to_catbox() -> str:
     with open(config.GRAPH_IMG_FILE_PATH, 'rb') as f:
-        response = requests.post('https://litterbox.catbox.moe/resources/internals/api.php',
+        response = requests.post('https://catbox.moe/user/api.php',
                                  headers=config.REQUESTS_HEADERS,
-                                 data={'reqtype': 'fileupload', 'time': '72h'},
+                                 data={'reqtype': 'fileupload'},
                                  files={'fileToUpload': f})
 
         if response.status_code != 200:
