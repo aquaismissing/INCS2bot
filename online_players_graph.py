@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import time
 from typing import TYPE_CHECKING
@@ -157,9 +159,9 @@ def graph_maker():
 
 
 def main():
-    logger.info('Started.')
     try:
         scheduler.start()
+        logger.info('Started.')
     except KeyboardInterrupt:
         logger.info('Terminated.')
 
