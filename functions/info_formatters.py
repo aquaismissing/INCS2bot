@@ -27,7 +27,6 @@ CLOCKS = ('🕛', '🕐', '🕑', '🕒', '🕓', '🕔',
 env = Environment(loader=FileSystemLoader(Path(__file__).parent.parent))
 game_stats_template = env.get_template('game_stats_template.html')
 
-WEB_LEADERBOARD_LINK = 'https://csleaderboards.net/premier'
 WEB_LEADERBOARD_REGIONS = {'africa': 'af',
                            'asia': 'as',
                            'australia': 'au',
@@ -204,11 +203,10 @@ def format_user_game_stats(stats, locale: Locale) -> str:
 
 
 def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) -> str:
-    text = f'{locale.game_leaderboard_header_world}\n\n'
-    link_text = locale.game_leaderboard_detailed_link.format(WEB_LEADERBOARD_LINK)
+    text = f'{locale.game_leaderboard_header_world} (Season 1)\n\n'
 
     if not data:
-        text += f'{locale.data_not_found}\n\n{link_text}'
+        text += f'{locale.data_not_found}'
         return text
 
     for person in data:
@@ -218,17 +216,20 @@ def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) 
             name = name[:name_span_limit - 2] + '...'
         text += f'`{person.rank:2d}.` `{name:<{name_span_limit}}` `{person.rating:>6,}` `{person.region}`\n'
 
-    text += f'\n{link_text}'
+    text += ("\n⛔ We are unable to display the Season 2 leaderboard " 
+             "since CS2 developers locked the existing leaderboard's API, "
+             "thus making data retrieval impossible.\n\n"
+             "⛔ We are currently exploring other ways to bring back the leaderboard. "
+             "Thanks for your understanding.")
+
     return text
 
 
-def format_game_regional_leaderboard(region: str, data: list[LeaderboardStats], locale: Locale) -> str:
-    text = f'{locale.game_leaderboard_header_regional}\n\n'
-    link = WEB_LEADERBOARD_LINK + f'?lb={WEB_LEADERBOARD_REGIONS.get(region, region)}'
-    link_text = locale.game_leaderboard_detailed_link.format(link)
+def format_game_regional_leaderboard(data: list[LeaderboardStats], locale: Locale) -> str:
+    text = f'{locale.game_leaderboard_header_regional} (Season 1)\n\n'
 
     if not data:
-        text += f'{locale.data_not_found}\n\n{link_text}'
+        text += f'{locale.data_not_found}'
         return text
 
     for person in data:
@@ -238,5 +239,10 @@ def format_game_regional_leaderboard(region: str, data: list[LeaderboardStats], 
             name = name[:name_span_limit - 2] + '...'
         text += f'`{person.rank:2d}.` `{name:<{name_span_limit}}` `{person.rating:>6,}`\n'
 
-    text += f'\n{link_text}'
+    text += ("\n⛔ We are unable to display the Season 2 leaderboard "
+             "since CS2 developers locked the existing leaderboard's API, "
+             "thus making data retrieval impossible.\n\n"
+             "⛔ We are currently exploring other ways to bring back the leaderboard. "
+             "Thanks for your understanding.")
+
     return text

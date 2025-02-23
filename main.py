@@ -648,7 +648,7 @@ async def send_game_leaderboard(_, session: UserSession, bot_message: Message,
         text = info_formatters.format_game_world_leaderboard(data, session.locale)
     else:
         data = LeaderboardStats.cached_regional_stats(core_cache, region)
-        text = info_formatters.format_game_regional_leaderboard(region, data, session.locale)
+        text = info_formatters.format_game_regional_leaderboard(data, session.locale)
 
     await bot_message.edit(text, reply_markup=keyboards.leaderboard_markup(session.locale))
 

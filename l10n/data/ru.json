@@ -281,7 +281,7 @@
     "game_dropcaptimer_inline_title": "Сброс ограничений",
     "game_dropcaptimer_inline_description": "Время до сброса ограничений опыта и дропа",
     "game_dropcaptimer_text": "⏳ Время до сброса ограничений опыта и дропа: {} д. {} ч. {} мин. {} сек.",
-    "game_leaderboard_button_title": "Таблицы лидеров CS2",
+    "game_leaderboard_button_title": "⛔ Таблицы лидеров CS2",
     "game_leaderboard_world": "Мир",
     "game_leaderboard_header_world": "Лучшие игроки CS2 по миру:",
     "game_leaderboard_header_regional": "Лучшие игроки CS2 по этому региону:",
