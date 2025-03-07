@@ -36,8 +36,6 @@ AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
                     'backup_branch_updated': loc.notifs_backup_branch_updated,
                     'backup_branch_updated_sync': f'{loc.notifs_backup_branch_created} 🔃',
                     'backup_branch_deleted': loc.notifs_backup_branch_deleted,
-                    # 'private_branch_created': loc.notifs_private_branch_created,
-                    # 'private_branch_updated': loc.notifs_private_branch_updated,
                     'misc_branch_created': loc.notifs_misc_branch_created,
                     'misc_branch_updated': loc.notifs_misc_branch_updated,
                     'branch_deleted': loc.notifs_branch_deleted}
@@ -47,14 +45,14 @@ logger = get_logger('game_coordinator', config.LOGS_FOLDER, config.LOGS_CONFIG_F
 
 
 class PatchedSteamClient(SteamClient):
-    """*Probably* fixes an infinite program blocking when unable to connect to CM."""
+    """Fixes an infinite program blocking when unable to connect to CM."""
 
     def _pre_login(self):
         if self.logged_on:
             raise RuntimeError("Already logged on")
 
         if not self.connected and not self._connecting:
-            if not self.connect(retry=10):
+            if not self.connect(retry=10):  # the only change made compared to parent
                 return EResult.Fail
 
         if not self.channel_secured:
@@ -89,51 +87,58 @@ def is_backup_branch(name: str) -> bool:
     return name.startswith('1.4') or name.startswith('1.3')
 
 
-@client.on('error')
+@client.on(SteamClient.EVENT_ERROR)
 def handle_error(result):
     logger.error(f'Logon result: {result!r}')
 
 
-@client.on('channel_secured')
-def send_relogin():
+@client.on(SteamClient.EVENT_CHANNEL_SECURED)
+def send_relogin():  # todo: do we actually need this?
+    logger.debug(f'"{SteamClient.EVENT_CHANNEL_SECURED}" event triggered...')
     if client.relogin_available:
         client.relogin()
+        logger.debug('"client.relogin()" executed successfully..?')
 
 
-@client.on('connected')
+@client.on(SteamClient.EVENT_CONNECTED)
 def log_connect():
     logger.info(f'Connected to {client.current_server_addr}')
 
 
-@client.on('reconnect')
+@client.on(SteamClient.EVENT_RECONNECT)
 def handle_reconnect(delay):
-    logger.info(f'Reconnect in {delay}s...')
+    logger.info(f'Reconnecting in {delay}s...')
 
 
-@client.on('disconnected')
+@client.on(SteamClient.EVENT_DISCONNECTED)
 def handle_disconnect():
     logger.warning('Disconnected.')
 
-    # if client.relogin_available:
-    #     logger.info('Reconnecting...')
-    #     client.reconnect(maxdelay=30)    # todo: could be broken - needs to be tested somehow
+    logger.info('Reconnecting...')
+    success = client.reconnect(maxdelay=30)
 
-    sys.exit()
+    if not success:
+        logger.warning('Failed to reconnect, shutting down the script.')
+        loop = asyncio.get_running_loop()
+        loop.create_task(terminate_all_connections())
+        sys.exit()
+
+    logger.info('Reconnected successfully.')
 
 
-@client.on('logged_on')
+@client.on(SteamClient.EVENT_LOGGED_ON)
 def handle_after_logon():
     cs.launch()
     async_scheduler.start()
     gevent_scheduler.start()
 
 
-@cs.on('ready')
+@cs.on(CSGOClient.EVENT_READY)
 def cs_launched():
     logger.info('CS launched.')
 
 
-@cs.on('connection_status')
+@cs.on(CSGOClient.EVENT_CONNECTION_STATUS)
 def update_gc_status(status):
     statuses = {0: States.NORMAL, 1: States.INTERNAL_SERVER_ERROR, 2: States.OFFLINE,
                 3: States.RELOADING, 4: States.INTERNAL_STEAM_ERROR}
@@ -344,9 +349,21 @@ async def mainloop():
         try:
             await task
             if going_to_shutdown:
+                await terminate_all_connections()
                 sys.exit()
         except asyncio.CancelledError:
             break
+
+
+async def terminate_all_connections():
+    cs.exit()
+    if client.connected:
+        logger.info('Logout...')
+        client.logout()
+    await bot.stop()
+    async_scheduler.shutdown()
+    gevent_scheduler.shutdown()
+    logger.info('Terminated.')
 
 
 async def main():
@@ -363,10 +380,7 @@ async def main():
         await bot.start()
         await mainloop()
     except KeyboardInterrupt:
-        if client.connected:
-            logger.info('Logout...')
-            client.logout()
-        logger.info('Terminated.')
+        await terminate_all_connections()
         raise
 
 
