@@ -448,5 +448,5 @@ async def meow_meow_meow_meow(_, message: Message):
     elif chance < 0.075:
         chance = "rare"
     reply = replies.get(message.sticker.file_unique_id, None)
-    if reply is not None:
+    if reply is not None and isinstance(chance, str):
         await message.reply(reply[chance])
