@@ -29,11 +29,11 @@ def load_message_filters() -> dict[str, list | dict[str, str]]:
 
 def dump_message_filters(_filters: dict[str, list | dict[str, str]]):
     with open(MESSAGE_FILTERS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(_filters, f, indent=4)
+        json.dump(_filters, f, indent=4, ensure_ascii=False)
 
 
 filtered_stuff = load_message_filters()  # {'text': [str], 'forwards': {id: username}}
-if filtered_stuff.get('text') is None:
+if not filtered_stuff.get('text'):
     filtered_stuff = {'text': [], 'forwards': filtered_stuff.copy()}
     dump_message_filters(filtered_stuff)
 
@@ -218,7 +218,7 @@ async def addfilter(client: Client, message: Message):
     if message.command[1] == 'forward':
         return await addfilter_forward(message)
 
-    msg = await message.reply('Укажите правильный тип фильтрации (`forward`).')
+    msg = await message.reply('Укажите правильный тип фильтрации (`text`, `forward`).')
     await asyncio.sleep(5)
     await message.delete()
     await msg.delete()
@@ -238,14 +238,14 @@ async def addfilter_forward(message: Message):
         if source:
             things_to_filter[source.id] = source.username
 
-    if things_to_filter:
-        filtered_stuff['forwards'] |= things_to_filter
-        dump_message_filters(filtered_stuff)
-        await source_msg.delete()
-        await send_temp_reply(message, 'Фильтр был успешно обновлён.', delete_original_before=True)
-    else:
-        await send_temp_reply(message,
-                              'Не удалось найти параметры, по которым можно применить фильтр.')
+    if not things_to_filter:
+        await send_temp_reply(message, 'Не удалось найти параметры, по которым можно применить фильтр.')
+        return
+
+    filtered_stuff['forwards'] |= things_to_filter
+    dump_message_filters(filtered_stuff)
+    await source_msg.delete()
+    await send_temp_reply(message, 'Фильтр был успешно обновлён.', delete_original_before=True)
 
 
 async def addfilter_text(message: Message, input_text: str = None):
