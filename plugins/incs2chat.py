@@ -201,6 +201,7 @@ async def filter_message(message: Message):
         senders_ids.add(message.forward_from_chat.id)
 
     if (senders_ids & filtered_stuff['forwards'].keys()
+            or (message.dice and message.dice.emoji in filtered_stuff['text'])
             or message.text in filtered_stuff['text']):  # todo: check for text *inclusion*, not equality?
         await message.delete()
 
@@ -213,7 +214,7 @@ async def addfilter(client: Client, message: Message):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.command[1] == 'text':
-        return await addfilter_text(message)
+        return await addfilter_text(message, message.text.removeprefix('/addfilter text ').strip('"'))
     if message.command[1] == 'forward':
         return await addfilter_forward(message)
 
@@ -247,7 +248,7 @@ async def addfilter_forward(message: Message):
                               'Не удалось найти параметры, по которым можно применить фильтр.')
 
 
-async def addfilter_text(message: Message):
+async def addfilter_text(message: Message, input_text: str = None):
     global filtered_stuff
 
     source_msg = message.reply_to_message
@@ -262,26 +263,18 @@ async def addfilter_text(message: Message):
         return
 
     if source_msg:
-        text_to_filter = source_msg.text if source_msg.text else source_msg.caption
-        if not text_to_filter:
-            await send_temp_reply(message, 'Пустой текст.')
-            return
-        filtered_stuff['text'].append(text_to_filter)
-        dump_message_filters(filtered_stuff)
+        text_to_filter = source_msg.dice.emoji if source_msg.dice \
+            else source_msg.text if source_msg.text \
+            else source_msg.caption
+
         await source_msg.delete()
-        await send_temp_reply(message, 'Фильтр был успешно обновлён.', delete_original_before=True)
-        return
+        return await addfilter_text(message, text_to_filter)
 
-    if len(message.command) != 3:
-        await send_temp_reply(message, 'Укажите только один текст, в кавычках.')
-        return
-
-    text_to_filter = message.command[2]
-    if not text_to_filter:
+    if not input_text:
         await send_temp_reply(message, 'Пустой текст.')
         return
 
-    filtered_stuff['text'].append(text_to_filter)
+    filtered_stuff['text'].append(input_text)
     dump_message_filters(filtered_stuff)
     await send_temp_reply(message, 'Фильтр был успешно обновлён.', delete_original_before=True)
 
@@ -407,6 +400,11 @@ async def handle_new_post(client: Client, message: Message):
     if is_sent_by_correct_chat and is_forwarded_from_correct_chat:
         await cs_l10n_update(message)
         await forward_to_discord(client, message)
+
+
+@Client.on_message(filters.chat(config.INCS2CHAT) & filters.dice)
+async def filter_dices(_, message: Message):
+    await filter_message(message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.text)
