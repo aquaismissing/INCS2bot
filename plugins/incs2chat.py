@@ -268,6 +268,7 @@ async def addfilter_text(message: Message, input_text: str = None):
             else source_msg.caption
 
         await source_msg.delete()
+        message.reply_to_message = None
         return await addfilter_text(message, text_to_filter)
 
     if not input_text:
