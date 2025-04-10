@@ -253,11 +253,11 @@ async def addfilter_text(message: Message, input_text: str = None):
 
     source_msg = message.reply_to_message
 
-    if not source_msg and len(message.command) < 3:
+    if not (source_msg or input_text):
         await send_temp_reply(message, 'Укажите ответом сообщение или напишите текст в кавычках, '
                                        'по которому будет применятся фильтр.')
         return
-    if source_msg and len(message.command) >= 3:
+    if source_msg and input_text:
         await send_temp_reply(message, 'Определитесь, к чему вы хотите применить фильтр: к тексту сообщения, '
                                        'на которое вы отвечаете, или же к тексту в самой команде.')
         return
