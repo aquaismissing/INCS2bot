@@ -214,7 +214,8 @@ async def addfilter(client: Client, message: Message):
         return await message.reply("Эта команда недоступна, Вы не являетесь разработчиком Valve.")
 
     if message.command[1] == 'text':
-        return await addfilter_text(message, message.text.removeprefix('/addfilter text ').strip('"'))
+        text = message.text.removeprefix('/addfilter text').strip(' "')
+        return await addfilter_text(message, text)
     if message.command[1] == 'forward':
         return await addfilter_forward(message)
 
@@ -252,6 +253,9 @@ async def addfilter_text(message: Message, input_text: str = None):
     global filtered_stuff
 
     source_msg = message.reply_to_message
+
+    print(source_msg)
+    print(input_text)
 
     if not (source_msg or input_text):
         await send_temp_reply(message, 'Укажите ответом сообщение или напишите текст в кавычках, '
