@@ -254,9 +254,6 @@ async def addfilter_text(message: Message, input_text: str = None):
 
     source_msg = message.reply_to_message
 
-    print(source_msg)
-    print(input_text)
-
     if not (source_msg or input_text):
         await send_temp_reply(message, 'Укажите ответом сообщение или напишите текст в кавычках, '
                                        'по которому будет применятся фильтр.')
