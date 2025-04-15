@@ -4,7 +4,6 @@ import platform
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
-from pandas import DataFrame
 # noinspection PyPackageRequirements
 from pyrogram import Client
 if platform.system() == 'Linux':
@@ -48,12 +47,14 @@ def remap_datacenters_info(info: dict[str, dict[str, str]]):
     return {dc.id: dc.remap(info) for dc in DatacenterAtlas.available_dcs()}
 
 
-def get_player_24h_peak(df: DataFrame):
+def get_player_24h_peak(df: pd.DataFrame):
     now = utime.utcnow()
     end_date = f'{now:%Y-%m-%d %H:%M:%S}'
     start_date = f'{(now - dt.timedelta(days=1)):%Y-%m-%d %H:%M:%S}'
     mask = (df['DateTime'] > start_date) & (df['DateTime'] <= end_date)
-    return int(df.loc[mask]['Players'].max())
+
+    player_24h_peak = df.loc[mask]['Players'].max()
+    return int(player_24h_peak) if pd.notna(player_24h_peak) else 0
 
 
 @scheduler.scheduled_job('interval', seconds=update_cache_interval)
