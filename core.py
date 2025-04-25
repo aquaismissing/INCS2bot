@@ -1,6 +1,7 @@
 import asyncio
 import datetime as dt
 import platform
+from functools import wraps
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
@@ -23,10 +24,7 @@ from utypes import ExchangeRate, GameServers, State, SteamWebAPI
 execution_start_dt = dt.datetime.now()
 execution_cron = (execution_start_dt + dt.timedelta(minutes=2)).replace(second=0)
 
-update_cache_interval = 40
-unique_monthly_timing = 0
-check_currency_timing = 15
-fetch_leaderboard_timing = 30
+UPDATE_CACHE_INTERVAL = 40
 
 loc = locale('ru')
 
@@ -43,6 +41,23 @@ bot = Client(config.BOT_CORE_MODULE_NAME,
 steam_webapi = SteamWebAPI(config.STEAM_API_KEY, headers=config.REQUESTS_HEADERS)
 
 
+def exception_handler(*, message: str, retry: bool = False, timeout: int = 45):
+    def decorator(func):
+        @wraps(func)
+        async def inner(*args, **kwargs):
+            # noinspection PyBroadException
+            try:
+                await func(*args, **kwargs)
+            except Exception:
+                logger.exception(message)
+                if retry:
+                    await asyncio.sleep(timeout)
+                    return await inner(*args, **kwargs)
+
+        return inner
+    return decorator
+
+
 def remap_datacenters_info(info: dict[str, dict[str, str]]):
     return {dc.id: dc.remap(info) for dc in DatacenterAtlas.available_dcs()}
 
@@ -57,74 +72,62 @@ def get_player_24h_peak(df: pd.DataFrame):
     return int(player_24h_peak) if pd.notna(player_24h_peak) else 0
 
 
-@scheduler.scheduled_job('interval', seconds=update_cache_interval)
+@scheduler.scheduled_job('interval', seconds=UPDATE_CACHE_INTERVAL)
+@exception_handler(message='Caught exception while updating the cache!')
 async def update_cache_info():
-    # noinspection PyBroadException
-    try:
-        cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
+    cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
+    gc_cache = caching.load_cache(config.GC_CACHE_FILE_PATH)
 
-        game_servers_data = GameServers.request(steam_webapi)
+    game_servers_data = GameServers.request(steam_webapi)
 
-        for key, value in game_servers_data.asdict().items():
-            if key == 'datacenters':
-                continue
-            if isinstance(value, State):
-                value = value.literal
-            cache[key] = value
+    for key, value in game_servers_data.asdict().items():
+        if key == 'datacenters':
+            continue
+        if isinstance(value, State):
+            value = value.literal
+        cache[key] = value
 
-        cache['datacenters'] = remap_datacenters_info(game_servers_data.datacenters)
+    cache['datacenters'] = remap_datacenters_info(game_servers_data.datacenters)
 
-        if cache.get('online_players', 0) > cache.get('player_alltime_peak', 1):
-            if scheduler.get_job('players_peak') is None:
-                # to collect new peak for 15 minutes and then post the highest one
-                scheduler.add_job(alert_players_peak, id='players_peak',
-                                  next_run_time=dt.datetime.now() + dt.timedelta(minutes=15), coalesce=True)
-            cache['player_alltime_peak'] = cache['online_players']
+    if gc_cache.get('online_players', 0) > cache.get('player_alltime_peak', 1):
+        if scheduler.get_job('players_peak') is None:
+            # to collect new peak for 15 minutes and then post the highest one
+            delay = dt.datetime.now() + dt.timedelta(minutes=15)
+            scheduler.add_job(alert_players_peak, id='players_peak', next_run_time=delay, coalesce=True)
+        cache['player_alltime_peak'] = gc_cache['online_players']
 
-        df = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
-        cache['player_24h_peak'] = get_player_24h_peak(df)
+    df = pd.read_csv(config.PLAYER_CHART_FILE_PATH, parse_dates=['DateTime'])
+    cache['player_24h_peak'] = get_player_24h_peak(df)
 
-        caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
-    except Exception:
-        logger.exception('Caught exception while updating the cache!')
+    caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
 
         
 @scheduler.scheduled_job('cron',
-                         hour=execution_cron.hour, minute=execution_cron.minute, second=unique_monthly_timing)
+                         hour=execution_cron.hour, minute=execution_cron.minute, second=0)
+@exception_handler(message='Caught exception while gathering monthly players!', retry=True)
 async def unique_monthly():
-    # noinspection PyBroadException
-    try:
-        new_player_count = steam_webapi.csgo_get_monthly_player_count()
+    new_player_count = steam_webapi.csgo_get_monthly_player_count()
 
-        cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
+    cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
 
-        if cache.get('monthly_unique_players') is None:
-            cache['monthly_unique_players'] = new_player_count
+    if cache.get('monthly_unique_players') is None:
+        cache['monthly_unique_players'] = new_player_count
 
-        if new_player_count != cache['monthly_unique_players']:
-            await send_alert('monthly_unique_players',
-                             (cache['monthly_unique_players'], new_player_count))
-            cache['monthly_unique_players'] = new_player_count
+    if new_player_count != cache['monthly_unique_players']:
+        await send_alert('monthly_unique_players',
+                         (cache['monthly_unique_players'], new_player_count))
+        cache['monthly_unique_players'] = new_player_count
 
-        caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
-    except Exception:
-        logger.exception('Caught exception while gathering monthly players!')
-        await asyncio.sleep(45)
-        return await unique_monthly()
+    caching.dump_cache(config.CORE_CACHE_FILE_PATH, cache)
 
 
 @scheduler.scheduled_job('cron',
-                         hour=execution_cron.hour, minute=execution_cron.minute, second=check_currency_timing)
+                         hour=execution_cron.hour, minute=execution_cron.minute, second=0)
+@exception_handler(message='Caught exception while gathering key price!', retry=True)
 async def check_currency():
-    # noinspection PyBroadException
-    try:
-        new_prices = ExchangeRate.request(steam_webapi).asdict()
+    new_prices = ExchangeRate.request(steam_webapi).asdict()
 
-        caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, {'key_price': new_prices})
-    except Exception:
-        logger.exception('Caught exception while gathering key price!')
-        await asyncio.sleep(45)
-        return await check_currency()
+    caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, {'key_price': new_prices})
 
 
 # fixme: doesn't work since Season 2
@@ -147,16 +150,11 @@ async def check_currency():
 #         return await fetch_leaderboard()
 
 
+@exception_handler(message='Caught exception while gathering key price!', retry=True)
 async def alert_players_peak():
-    # noinspection PyBroadException
-    try:
-        cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
+    cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
 
-        await send_alert('online_players', cache['player_alltime_peak'])
-    except Exception:
-        logger.exception('Caught exception while alerting players peak!')
-        await asyncio.sleep(45)
-        return await alert_players_peak()
+    await send_alert('online_players', cache['player_alltime_peak'])
 
 
 async def send_alert(key, new_value):
@@ -187,6 +185,7 @@ def main():
     except TypeError:  # catching TypeError because Pyrogram propagates it at stop for some reason
         logger.info('Shutting down the bot...')
     finally:
+        scheduler.shutdown()
         steam_webapi.close()
         logger.info('Terminated.')
 
