@@ -35,7 +35,7 @@ from utypes import (DatacenterVariation, ExchangeRate,
                     ProfileInfo,
                     States, UserGameStats, drop_cap_reset_timer)
 from utypes.gun_info import load_gun_infos
-from utypes.profiles import ErrorCode, ParseUserStatsError  # to clearly indicate relation
+from utypes.profiles import ErrorCode, FACEITRequestsHandler, ParseUserStatsError  # to clearly indicate relation
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -375,7 +375,8 @@ async def user_profile_info_process(client: BotClient, session: UserSession, bot
     await client.send_chat_action(bot_message.chat.id, ChatAction.TYPING)
 
     try:
-        info = await ProfileInfo.get(user_input.text)
+        async with FACEITRequestsHandler(config.FACEIT_API_KEY) as faceit_handler:
+            info = await ProfileInfo.get(faceit_handler, user_input.text)
     except ParseUserStatsError as e:
         await user_input.delete()
         error_msg = await user_info_handle_error(client, session, user_input, e)

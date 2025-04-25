@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import astuple, dataclass
 from enum import auto, StrEnum
+import httpx
 import re
 from typing import NamedTuple
 
@@ -13,7 +14,7 @@ import config
 from .steam_webapi import SteamWebAPI
 
 
-__all__ = ('ErrorCode', 'ParseUserStatsError', 'ProfileInfo', 'UserGameStats')
+__all__ = ['ErrorCode', 'FACEITRequestsHandler', 'ParseUserStatsError', 'ProfileInfo', 'UserGameStats']
 
 STEAM_PROFILE_LINK_PATTERN = re.compile(r'(?:https?://)?steamcommunity\.com/(?:profiles|id)/[a-zA-Z0-9]+(/?)\w')
 _csgofrcode_chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -278,6 +279,99 @@ class UserGameStats(NamedTuple):
             raise e
 
 
+class FACEITRequestsHandler:
+    BASE_URL = 'open.faceit.com'
+    DEFAULT_HEADERS = {}
+    DEFAULT_TIMEOUT = 15
+
+    def __init__(self, api_key: str, *, headers: dict = None, timeout: int = None):
+        self.api_key = api_key
+        self.headers = (headers or self.DEFAULT_HEADERS) | {'Authorization': f'Bearer {api_key}'}
+        self.timeout = timeout or self.DEFAULT_TIMEOUT
+
+        self.client = httpx.AsyncClient()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.aclose()
+
+    async def aclose(self):
+        await self.client.aclose()
+
+    async def _method(self, request_method: str, category: str, api_method: str, params: dict = None):
+        params = params.copy() if params else {}
+        params['key'] = self.api_key
+
+        response = await self.client.request(
+            request_method,
+            f'https://{self.BASE_URL}/{category}/v4/{api_method}',
+            params=params,
+            headers=self.headers,
+            timeout=self.timeout
+        )
+
+        return response.json()
+
+    async def _get(self, category: str, api_method: str, params: dict = None):  # only supports GET methods btw
+        return await self._method('GET', category, api_method, params)
+
+    @staticmethod
+    def _user_havent_played_the_game(response: dict[str, ...]):
+        return response.get('errors') and response['errors'][0]['http_status'] == 404
+
+    async def get_account_by_game(self, steam_id: SteamID, game: str):
+        response = await self._get('data', 'players',
+                                   params={'game': game, 'game_player_id': str(steam_id)})
+        if self._user_havent_played_the_game(response):
+            return
+
+        return response
+
+    async def get_account(self, steam_id: SteamID):
+        response = await self.get_account_by_game(steam_id, 'cs2')
+
+        if response is None:
+            return await self.get_account_by_game(steam_id, 'csgo')
+
+        return response
+
+    async def get_player_general_stats(self, user_id: str):
+        return await self._get('data', f'players/{user_id}')
+
+    async def get_player_detailed_cs2_stats(self, user_id: str):
+        return await self._get('data', f'players/{user_id}/stats/cs2')
+
+    async def get_player_bans(self, user_id: str):
+        return await self._get('data', f'players/{user_id}/bans')
+
+    async def get_account_info(self, steamid64: SteamID):
+        account = await self.get_account(steamid64)
+
+        if account is None:
+            return
+
+        player_id = account['player_id']
+
+        general_stats = await self.get_player_general_stats(player_id)
+
+        url = general_stats['faceit_url'].format(lang='en')
+        bans_data = await self.get_player_bans(player_id)
+
+        is_banned = bool(bans_data['items'])
+
+        elo_data = general_stats['games'].get('cs2')
+        if elo_data is not None:
+            level = elo_data.get('skill_level', 0)
+            elo = elo_data.get('faceit_elo', 0)
+        else:
+            level = 0
+            elo = 0
+
+        return elo, level, url, is_banned  # FACEITBanStatus(is_banned, ban_reason, ban_ends_at)
+
+
 @dataclass(slots=True)
 class ProfileInfo:
     vanity_url: str
@@ -323,7 +417,7 @@ class ProfileInfo:
         return faceit_elo, faceit_lvl, faceit_url, faceit_ban
 
     @staticmethod
-    async def get(data: str) -> ProfileInfo:
+    async def get(faceit_handler: FACEITRequestsHandler, data: str) -> ProfileInfo:
         try:
             _id = parse_steamid(data)
 
@@ -341,10 +435,7 @@ class ProfileInfo:
             if vanity_url == str(_id.as_64):
                 vanity_url = None
 
-            faceit_api_link = f'https://api.faceit.com/search/v2/players?query={_id.as_64}'
-            faceit_api_response = api.session.get(faceit_api_link, headers=config.REQUESTS_HEADERS,
-                                                  timeout=15).json()['payload']['results']
-            faceit_elo, faceit_lvl, faceit_url, faceit_ban = ProfileInfo._extract_faceit_data(faceit_api_response)
+            faceit_elo, faceit_lvl, faceit_url, faceit_ban = await faceit_handler.get_account_info(_id)
 
             bans_data = bans['players'][0]
 
