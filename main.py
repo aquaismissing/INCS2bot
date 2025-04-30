@@ -1037,7 +1037,7 @@ async def unknown_request(_, session: UserSession, bot_message: Message,
 async def regular_stats_report(client: BotClient):
     now = utime.utcnow()
 
-    text = (f'📊 **Some stats for the past 8 hours:**\n'
+    text = (f'📊 **Some stats for the past 24 hours:**\n'
             f'\n'
             f'• Unique users served: {len(client.rstats.unique_users_served)}\n'
             f'• Callback queries handled: {client.rstats.callback_queries_handled}\n'
@@ -1052,28 +1052,14 @@ async def regular_stats_report(client: BotClient):
     client.rstats.clear()
 
 
-async def drop_cap_reset_in_10_minutes(client: BotClient):  # todo: finish testing this damn thing
-    if drop_cap_reset_timer()[1] != 0:
-        await asyncio.sleep(60 * 60)  # to account timezone changing
-    msg = await client.send_message(config.LOGCHANNEL,
-                                    ENGLISH_LOCALE.game_dropcaptimer_text.format(*drop_cap_reset_timer()))
-
-    photo_id = 'AgACAgIAAx0CTFFE8AABCYWXZ2KpYuYqxiiKIE_UYFsCp5_Ea4QAAt7oMRtf8RFLUksk2TKBIxIACAEAAwIAA3gABx4E'
-    await msg.reply_photo(photo_id)
-
-
 # cat: Main
 
 
 async def main():
     logger.info('Started.')
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(bot.clear_timeout_sessions, 'interval', minutes=30)
-    scheduler.add_job(regular_stats_report, 'interval', hours=8,
-                      args=(bot,))
-    scheduler.add_job(drop_cap_reset_in_10_minutes, 'cron', day_of_week=1, hour=16, minute=49, second=59,
-                      timezone=VALVE_TIMEZONE,
-                      args=(bot,))
+    scheduler.add_job(bot.clear_timeout_sessions, trigger='interval', minutes=30)
+    scheduler.add_job(regular_stats_report, args=(bot,), trigger='interval', hours=24)
 
     try:
         await db_session.init(config.USER_DB_FILE_PATH)
