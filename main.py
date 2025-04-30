@@ -124,8 +124,6 @@ async def main_menu(_, session: UserSession,
 
     if session_timeout:
         text = session.locale.error_session_timeout + '\n\n' + text
-        # if text == bot_message.text:  # rare edge case
-        #     text += '‎'  # use empty char to bypass  # todo: might be unnecessary anymore
 
     await bot_message.edit(text, reply_markup=keyboards.main_markup(session.locale))
 
@@ -654,39 +652,6 @@ async def send_game_leaderboard(_, session: UserSession, bot_message: Message,
     await bot_message.edit(text, reply_markup=keyboards.leaderboard_markup(session.locale))
 
 
-# cat: Crosshair editor
-# note: shelved until better times
-
-# async def edit_crosshair_style(client: BotClient, session: UserSession, bot_message: Message, data: dict = None):
-#     chosen_style = await client.ask_callback_silently(bot_message,
-#                                                       'Choose a style for your crosshair',
-#                                                       reply_markup=ExtendedIKM([
-#                                                           [ExtendedIKB('Classic', 'classic')],
-#                                                           [ExtendedIKB('Classic Static', 'classic_static')],
-#                                                           [ExtendedIKB('Traditional', 'traditional')],
-#                                                           [keyboards.back_button],
-#                                                       ]),
-#                                                       timeout=ASK_TIMEOUT)
-#
-#
-# # @bot.callback_process(of=edit_crosshair_style)
-# async def edit_crosshair_style_process(client: BotClient, session: UserSession, callback_query: CallbackQuery):
-#     await client.log_callback(session, callback_query)
-#
-#     styles = {'classic': 0, 'classic_static': 0, 'traditional': 0}  # todo: what are the real values
-#
-#     chosen_style = callback_query.data
-#     bot_message = callback_query.message
-#
-#     if chosen_style in styles:
-#         keyboards.pistols_markup.select_button_by_key(chosen_style)
-#         return await send_gun_info(client, session, bot_message, pistols, styles[chosen_style],
-#                                    reply_markup=keyboards.pistols_markup)
-#     if chosen_style == LK.bot_back:
-#         return await client.go_back(session, bot_message)
-#     return await unknown_request(client, session, bot_message, keyboards.pistols_markup)
-
-
 # cat: Guns info
 
 
@@ -1010,8 +975,8 @@ async def reply_through_logger_callback(client: BotClient, session: UserSession,
 async def pm_only(_, session: UserSession, message: Message):
     msg = await message.reply(session.locale.bot_pmonly_text)
 
+    await asyncio.sleep(10)
     try:
-        await asyncio.sleep(10)
         await message.delete()
     except MessageDeleteForbidden:
         pass
@@ -1080,12 +1045,13 @@ async def main():
         logger.exception('The bot got terminated because of exception!')
         await bot.log(f'Bot got terminated because of exception!\n'
                       f'\n'
-                      f'❗️ {"".join(traceback.format_exception(e))}', disable_notification=True, instant=True)
+                      f'❗️ {"".join(traceback.format_exception(e))}', instant=True,
+                      disable_notification=False, parse_mode=ParseMode.DISABLED)
     finally:
         logger.info('Shutting down the bot...')
         await bot.log('Bot is shutting down...', instant=True)
         await bot.dump_sessions()
-        await bot.stop(block=False)
+        await bot.stop()
         logger.info('Terminated.')
 
 
