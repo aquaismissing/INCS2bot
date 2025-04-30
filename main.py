@@ -928,16 +928,20 @@ async def reply_through_logger_command(client: BotClient, message: Message):
 
     try:
         recipient = await client.get_users(recipient_id)
-        recipient_pm_chat = await client.get_chat(recipient.username)
+        recipient_pm_chat = await client.get_chat(recipient.id)
     except PeerIdInvalid:
         await message.reply("You can't send messages to this user (perhaps, they haven't interacted with the bot yet).")
         session.current_menu_id = main_menu.id
         return await message.reply(session.locale.bot_choose_cmd,
                                    reply_markup=keyboards.main_markup(session.locale))
 
+    formatted_username = f'@{recipient.username}' if recipient.username else recipient.first_name
     await client.send_message(recipient_pm_chat.id, f'You have received a new message from the developers!:\n'
                                                     f'\n'
                                                     f'<blockquote>{message_to_send}</blockquote>')
+    await client.log(f'Sent a message to {formatted_username}\n'
+                     f'\n'
+                     f'<blockquote>{message_to_send.text}</blockquote>', instant=True)
 
     await message.reply('Successfully sent the message.')
     session.current_menu_id = main_menu.id
@@ -950,36 +954,38 @@ async def reply_through_logger_callback(client: BotClient, session: UserSession,
     sender = callback_query.from_user
     if sender.id not in config.DEVS_IDS:
         return
+
     sender_pm_chat = await client.get_chat(sender.id)
 
     e = await client.send_message(sender_pm_chat.id, "Loading...")
 
     try:
         recipient = await client.get_users(recipient_id)
-        recipient_pm_chat = await client.get_chat(recipient.username)
+        recipient_pm_chat = await client.get_chat(recipient.id)
     except PeerIdInvalid:
         await e.edit("You can't send messages to this user (perhaps, they blocked the bot).")
         session.current_menu_id = main_menu.id
         return await e.reply(session.locale.bot_choose_cmd,
                              reply_markup=keyboards.main_markup(session.locale))
 
+    formatted_username = f'@{recipient.username}' if recipient.username else recipient.first_name
     try:
         message_to_send = await client.ask_message_silently(
             e,
-            f'Enter the message you want to send to {recipient.username}... \n'
+            f'Enter the message you want to send to {formatted_username}... \n'
             f'\n'
             f'(or use /cancel)',
             timeout=ASK_TIMEOUT
         )
     except asyncio.exceptions.TimeoutError:
-        await e.reply("Timed out.")
+        await e.reply('Timed out.')
 
         session.current_menu_id = main_menu.id
         return await e.reply(session.locale.bot_choose_cmd,
                              reply_markup=keyboards.main_markup(session.locale))
 
     if message_to_send.text == '/cancel':
-        await e.reply("Canceled.")
+        await e.reply('Cancelled.')
 
         session.current_menu_id = main_menu.id
         return await e.reply(session.locale.bot_choose_cmd,
@@ -988,6 +994,9 @@ async def reply_through_logger_callback(client: BotClient, session: UserSession,
     await client.send_message(recipient_pm_chat.id, f'You have received a new message from the developers!\n'
                                                     f'\n'
                                                     f'<blockquote>{message_to_send.text}</blockquote>')
+    await client.log(f'Sent a message to {formatted_username}\n'
+                     f'\n'
+                     f'<blockquote>{message_to_send.text}</blockquote>', instant=True)
 
     await message_to_send.reply('Successfully sent the message.')
     session.current_menu_id = main_menu.id
