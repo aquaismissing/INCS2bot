@@ -371,7 +371,7 @@ async def user_profile_info_process(client: BotClient, session: UserSession, bot
         await user_input.delete()
         return await profile_info(client, session, bot_message)
 
-    await bot_message.edit(session.locale.bot_loading)
+    info_message = await user_input.reply(session.locale.bot_loading)
     await client.send_chat_action(bot_message.chat.id, ChatAction.TYPING)
 
     try:
@@ -418,7 +418,7 @@ async def user_profile_info_process(client: BotClient, session: UserSession, bot
 
     text = session.locale.user_profileinfo_text.format(*info.to_tuple())
 
-    await user_input.reply(text, disable_web_page_preview=True)
+    await info_message.edit(text, disable_web_page_preview=True)
     return await user_input.reply(session.locale.bot_loading)
 
 
