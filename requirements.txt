@@ -12,7 +12,7 @@ charset-normalizer==3.2.0
 colorama==0.4.6
 contourpy==1.1.0
 cryptography==42.0.4
-csgo @ git+https://github.com/SyberiaK/csgo.git@4a60581f45112f6162fad68e59310f82218b3e9e
+csgo @ git+https://github.com/SyberiaK/csgo.git@ec2b3a3b3971ec066b584524cefb57377ab818dc
 csxhair==1.0.1
 cycler==0.11.0
 filelock==3.18.0
