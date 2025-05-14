@@ -139,8 +139,8 @@ def graph_maker():
 
         try:
             with open(config.GRAPH_IMG_FILE_PATH, 'rb') as f:
-                image_url = upload_image_online(f, 'i.supa.codes')
-        except requests.HTTPError:
+                image_url = upload_image_online(f, 'kappa.lol')
+        except (requests.HTTPError, requests.ConnectionError):
             logger.exception('Caught exception while uploading graph image to the file uploader!')
             image_url = ''
 
