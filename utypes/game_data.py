@@ -24,7 +24,7 @@ __all__ = ('GameVersion', 'GameVersionData',
 
 
 CS2_LEADERBOARD_API = 'https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1/' \
-                      '?lbname=official_leaderboard_premier_season1'
+                      '?lbname=official_leaderboard_premier_season2'
 
 LEADERBOARD_API_REGIONS = ('northamerica', 'southamerica', 'europe', 'asia', 'australia', 'china', 'africa')
 
@@ -37,7 +37,7 @@ SLD = ScoreLeaderboardData()
 MAPS = {1: 'ancient',
         2: 'nuke',
         3: 'dust2',
-        4: 'vertigo',
+        4: 'train',
         5: 'mirage',
         6: 'inferno',
         7: 'anubis'}

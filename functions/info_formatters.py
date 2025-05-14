@@ -203,7 +203,7 @@ def format_user_game_stats(stats, locale: Locale) -> str:
 
 
 def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) -> str:
-    text = f'{locale.game_leaderboard_header_world} (Season 1)\n\n'
+    text = f'{locale.game_leaderboard_header_world}\n\n'
 
     if not data:
         text += f'{locale.data_not_found}'
@@ -216,17 +216,11 @@ def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) 
             name = name[:name_span_limit - 2] + '...'
         text += f'`{person.rank:2d}.` `{name:<{name_span_limit}}` `{person.rating:>6,}` `{person.region}`\n'
 
-    text += ("\n⛔ We are unable to display the Season 2 leaderboard " 
-             "since CS2 developers locked the existing leaderboard's API, "
-             "thus making data retrieval impossible.\n\n"
-             "⛔ We are currently exploring other ways to bring back the leaderboard. "
-             "Thanks for your understanding.")
-
     return text
 
 
 def format_game_regional_leaderboard(data: list[LeaderboardStats], locale: Locale) -> str:
-    text = f'{locale.game_leaderboard_header_regional} (Season 1)\n\n'
+    text = f'{locale.game_leaderboard_header_regional}\n\n'
 
     if not data:
         text += f'{locale.data_not_found}'
@@ -238,11 +232,5 @@ def format_game_regional_leaderboard(data: list[LeaderboardStats], locale: Local
         if len(name) > name_span_limit:
             name = name[:name_span_limit - 2] + '...'
         text += f'`{person.rank:2d}.` `{name:<{name_span_limit}}` `{person.rating:>6,}`\n'
-
-    text += ("\n⛔ We are unable to display the Season 2 leaderboard "
-             "since CS2 developers locked the existing leaderboard's API, "
-             "thus making data retrieval impossible.\n\n"
-             "⛔ We are currently exploring other ways to bring back the leaderboard. "
-             "Thanks for your understanding.")
 
     return text
