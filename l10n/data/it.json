@@ -280,7 +280,7 @@
     "game_dropcaptimer_inline_title": "Reset del limite massimo di drop",
     "game_dropcaptimer_inline_description": "Tempo rimasto prima del ripristino dell'esperienza e dei drop",
     "game_dropcaptimer_text": "⏳ Tempo rimasto prima del ripristino dell'esperienza e dei drop: {}d {}h {}m {}s",
-    "game_leaderboard_button_title": "⛔ CS2 leaderboards",
+    "game_leaderboard_button_title": "\uD83C\uDD95 CS2 leaderboards",
     "game_leaderboard_world": "Mondo",
     "game_leaderboard_header_world": "Best CS2 players in the world:",
     "game_leaderboard_header_regional": "Best CS2 players in this region:",
