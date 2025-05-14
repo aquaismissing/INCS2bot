@@ -19,7 +19,7 @@ from functions import caching, utime
 from functions.ulogging import get_logger
 from l10n import locale
 from utypes import ExchangeRate, GameServers, State, SteamWebAPI
-# from utypes import LeaderboardStats, LEADERBOARD_API_REGIONS
+from utypes import LeaderboardStats, LEADERBOARD_API_REGIONS
 
 execution_start_dt = dt.datetime.now()
 execution_cron = (execution_start_dt + dt.timedelta(minutes=2)).replace(second=0)
@@ -106,7 +106,7 @@ async def update_cache_info():
                          hour=execution_cron.hour, minute=execution_cron.minute, second=0)
 @exception_handler(message='Caught exception while gathering monthly players!', retry=True)
 async def unique_monthly():
-    new_player_count = steam_webapi.csgo_get_monthly_player_count()
+    new_player_count = steam_webapi.cs2_get_monthly_player_count()
 
     cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
 
@@ -130,24 +130,23 @@ async def check_currency():
     caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, {'key_price': new_prices})
 
 
-# fixme: doesn't work since Season 2
-# @scheduler.scheduled_job('cron',
-#                          hour=execution_cron.hour, minute=execution_cron.minute, second=fetch_leaderboard_timing)
-# async def fetch_leaderboard():
-#     # noinspection PyBroadException
-#     try:
-#         world_leaderboard_stats = LeaderboardStats.request_world(steam_webapi.session)
-#         new_data = {'world_leaderboard_stats': world_leaderboard_stats}
-#
-#         for region in LEADERBOARD_API_REGIONS:
-#             regional_leaderboard_stats = LeaderboardStats.request_regional(steam_webapi.session, region)
-#             new_data[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
-#
-#         caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, new_data)
-#     except Exception:
-#         logger.exception('Caught exception fetching leaderboards!')
-#         await asyncio.sleep(45)
-#         return await fetch_leaderboard()
+@scheduler.scheduled_job('cron',
+                         hour=execution_cron.hour, minute=execution_cron.minute, second=0)
+async def fetch_leaderboard():
+    # noinspection PyBroadException
+    try:
+        world_leaderboard_stats = LeaderboardStats.request_world(steam_webapi, season=2)
+        new_data = {'world_leaderboard_stats': world_leaderboard_stats}
+
+        for region in LEADERBOARD_API_REGIONS:
+            regional_leaderboard_stats = LeaderboardStats.request_regional(steam_webapi, season=2, region=region)
+            new_data[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
+
+        caching.dump_cache_changes(config.LEADERBOARD_SEASON2_CACHE_FILE_PATH, new_data)
+    except Exception:
+        logger.exception('Caught exception fetching leaderboards!')
+        await asyncio.sleep(45)
+        return await fetch_leaderboard()
 
 
 @exception_handler(message='Caught exception while gathering key price!', retry=True)

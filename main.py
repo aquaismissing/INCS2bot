@@ -33,9 +33,10 @@ from l10n import LocaleKeys as LK, locale as lc
 from utypes import (DatacenterVariation, ExchangeRate,
                     GameServers, GameVersion, LeaderboardStats,
                     ProfileInfo,
-                    States, UserGameStats, drop_cap_reset_timer)
+                    States, UserGameStats, drop_cap_reset_timer, LeaderboardCache)
 from utypes.gun_info import load_gun_infos
 from utypes.profiles import ErrorCode, FACEITRequestsHandler, ParseUserStatsError  # to clearly indicate relation
+
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -639,14 +640,14 @@ async def send_game_leaderboard(_, session: UserSession, bot_message: Message,
     await bot_message.edit(session.locale.bot_loading,
                            reply_markup=keyboards.leaderboard_markup(session.locale))
 
-    core_cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
+    lb_cache: LeaderboardCache = caching.load_cache(config.LEADERBOARD_SEASON2_CACHE_FILE_PATH)  # noqa
 
     region = region.split('_')[-1]
     if region == 'world':
-        data = LeaderboardStats.cached_world_stats(core_cache)
+        data = LeaderboardStats.cached_world_stats(lb_cache)
         text = info_formatters.format_game_world_leaderboard(data, session.locale)
     else:
-        data = LeaderboardStats.cached_regional_stats(core_cache, region)
+        data = LeaderboardStats.cached_regional_stats(lb_cache, region)  # noqa
         text = info_formatters.format_game_regional_leaderboard(data, session.locale)
 
     await bot_message.edit(text, reply_markup=keyboards.leaderboard_markup(session.locale))

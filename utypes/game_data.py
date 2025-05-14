@@ -3,12 +3,12 @@ from __future__ import annotations
 import dataclasses
 from dataclasses import dataclass
 import datetime as dt
-from typing import NamedTuple, TYPE_CHECKING, Any
+from typing import NamedTuple, TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-from .cache import CoreCache, GCCache, GraphCache
+from .cache import CoreCache, GCCache, GraphCache, LeaderboardCache
 from .states import States
-from .steam_webapi import SteamWebAPI
+from .steam_webapi import SteamWebAPI, CS2_PREMIER_LEADERBOARD_REGIONS
 from .protobufs import ScoreLeaderboardData
 
 if TYPE_CHECKING:
@@ -22,9 +22,6 @@ __all__ = ('GameVersion', 'GameVersionData',
            'LeaderboardStats',
            'drop_cap_reset_timer', 'LEADERBOARD_API_REGIONS')
 
-
-CS2_LEADERBOARD_API = 'https://api.steampowered.com/ICSGOServers_730/GetLeaderboardEntries/v1/' \
-                      '?lbname=official_leaderboard_premier_season1'
 
 LEADERBOARD_API_REGIONS = ('northamerica', 'southamerica', 'europe', 'asia', 'australia', 'china', 'africa')
 
@@ -100,7 +97,7 @@ class ExchangeRateData(NamedTuple):
     KZT: float
 
     @classmethod
-    def converter(cls, data: dict[str, Any]):
+    def converter(cls, data: dict[str, ...]):
         """
         Used for convertion in ``@attrs.define``.
 
@@ -263,7 +260,7 @@ class MockDict(dict):
 class GameServers:
     @classmethod
     def request(cls, webapi: SteamWebAPI):
-        response = webapi.csgo_get_game_servers_status()
+        response = webapi.cs2_get_game_servers_status()
 
         result = response['result']
         services = result['services']
@@ -343,7 +340,8 @@ class GameServers:
         return dt.datetime.fromtimestamp(cache['api_timestamp'], dt.UTC)
 
 
-class LeaderboardStats(NamedTuple):
+@dataclass
+class LeaderboardEntry:
     rank: int
     rating: int
     name: str
@@ -355,7 +353,7 @@ class LeaderboardStats(NamedTuple):
     region: str
 
     @classmethod
-    def from_json(cls, data):
+    def from_binary(cls, data):
         rank = data['rank']
         rating = data['score'] >> 15
         name = data['name']
@@ -370,43 +368,44 @@ class LeaderboardStats(NamedTuple):
         wins = stats.get(16, -1)
         ties = stats.get(17, -1)
         losses = stats.get(18, -1)
-        if stats.get(19):
+        map_stats = stats.get(19)
+        if map_stats:
             for map_id, map_name in MAPS.items():
-                last_wins[map_name] = ((stats[19] << (4 * map_id)) & 0xF0000000) >> 4 * 7
+                last_wins[map_name] = ((map_stats << (4 * map_id)) & 0xF0000000) >> 4 * 7
         timestamp = stats.get(20, -1)
         region = REGIONS.get(stats.get(21), States.UNKNOWN.literal)
-
         return cls(rank, rating, name, wins, ties, losses, last_wins, timestamp, region)
 
+    def asdict(self):
+        return dataclasses.asdict(self)
+
+
+class LeaderboardStats:
     @staticmethod
-    def request_world(session: requests.Session):
-        world_leaderboard_data = session.get(CS2_LEADERBOARD_API).json()
+    def request_world(steam_webapi: SteamWebAPI, *, season: int):
+        world_leaderboard_data = steam_webapi.cs2_get_premier_leaderboard_stats(season=season)
         world_leaderboard_data = world_leaderboard_data['result']['entries']
         world_leaderboard_data = world_leaderboard_data[:10]
 
-        return [LeaderboardStats.from_json(person).asdict() for person in world_leaderboard_data]
+        return [LeaderboardEntry.from_binary(person).asdict() for person in world_leaderboard_data]
 
     @staticmethod
-    def request_regional(session: requests.Session, region: str):
-        api_link = CS2_LEADERBOARD_API + f'_{region}'
-        regional_leaderboard_data = session.get(api_link).json()
+    def request_regional(steam_webapi: SteamWebAPI, *, season: int, region: CS2_PREMIER_LEADERBOARD_REGIONS, ):
+        regional_leaderboard_data = steam_webapi.cs2_get_premier_leaderboard_stats(season=season, region=region)
         regional_leaderboard_data = regional_leaderboard_data['result']['entries']
         regional_leaderboard_data = regional_leaderboard_data[:10]
 
-        return [LeaderboardStats.from_json(person).asdict() for person in regional_leaderboard_data]
+        return [LeaderboardEntry.from_binary(person).asdict() for person in regional_leaderboard_data]
 
     @staticmethod
-    def cached_world_stats(core_cache: CoreCache):
-        world_leaderboard_stats = core_cache.get('world_leaderboard_stats', [])
-        return [LeaderboardStats(**person) for person in world_leaderboard_stats]
+    def cached_world_stats(lb_cache: LeaderboardCache):
+        world_leaderboard_stats = lb_cache.get('world_leaderboard_stats', [])
+        return [LeaderboardEntry(**person) for person in world_leaderboard_stats]
 
     @staticmethod
-    def cached_regional_stats(core_cache: CoreCache, region: str):
-        regional_leaderboard_stats = core_cache.get(f'regional_leaderboard_stats_{region}', [])
-        return [LeaderboardStats(**person) for person in regional_leaderboard_stats]
-
-    def asdict(self):
-        return self._asdict()
+    def cached_regional_stats(lb_cache: LeaderboardCache, region: CS2_PREMIER_LEADERBOARD_REGIONS):
+        regional_leaderboard_stats = lb_cache.get(f'regional_leaderboard_stats_{region}', [])  # noqa
+        return [LeaderboardEntry(**person) for person in regional_leaderboard_stats]
 
 
 def is_pdt(_datetime: dt.datetime) -> bool:
