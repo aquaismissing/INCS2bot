@@ -40,8 +40,8 @@ x_major_locator = mdates.DayLocator()
 x_major_formatter = mdates.DateFormatter('%b %d')
 
 
-def upload_image_online(image: BinaryIO, host: str) -> str:
-    allowed_hosts = {'i.supa.codes', 'kappa.lol', 'gachi.gay', 'femboy.beauty'}  # https://github.com/0Supa/uploader
+def upload_image_online(image: BinaryIO, host: str) -> dict[str, ...]:
+    allowed_hosts = {'kappa.lol', 'gachi.gay', 'femboy.beauty'}  # https://github.com/0Supa/uploader
 
     if host not in allowed_hosts:
         raise TypeError(f'unknown host, choose one of these: {allowed_hosts}')
@@ -53,9 +53,9 @@ def upload_image_online(image: BinaryIO, host: str) -> str:
     if response.status_code != 200:
         logger.error(f'Caught error while uploading graph image to the file uploader ({host})!',
                      response.status_code, response.reason, response.text)
-        return ''
+        return {'link': ''}
 
-    return response.text
+    return response.json()
 
 
 def upload_image_to_catbox(image: BinaryIO) -> str:  # might be blocked on some hostings
@@ -139,7 +139,7 @@ def graph_maker():
 
         try:
             with open(config.GRAPH_IMG_FILE_PATH, 'rb') as f:
-                image_url = upload_image_online(f, 'kappa.lol')
+                image_url = upload_image_online(f, 'kappa.lol')['link']
         except (requests.HTTPError, requests.ConnectionError):
             logger.exception('Caught exception while uploading graph image to the file uploader!')
             image_url = ''
