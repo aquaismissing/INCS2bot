@@ -350,7 +350,7 @@ class FACEITRequestsHandler:
         account = await self.get_account(steamid64)
 
         if account is None:
-            return
+            return None, None, None, None
 
         player_id = account['player_id']
 
@@ -422,7 +422,12 @@ class ProfileInfo:
             _id = parse_steamid(data)
 
             bans = api.get_player_bans(steamids=str(_id.as_64))
-            user_data = api.get_player_summaries(steamids=str(_id.as_64))["response"]["players"][0]
+            user_data = api.get_player_summaries(steamids=str(_id.as_64))
+            if not isinstance(user_data, dict):
+                print(user_data)
+                raise ParseUserStatsError(ErrorCode.INVALID_REQUEST)
+
+            user_data = user_data["response"]["players"][0]
 
             vanity = user_data['profileurl']
 
