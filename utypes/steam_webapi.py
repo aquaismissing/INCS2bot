@@ -1,4 +1,10 @@
+from typing import Literal
+
 import requests
+
+
+CS2_PREMIER_LEADERBOARD_REGIONS = Literal['northamerica', 'southamerica', 'europe',
+                                          'asia', 'australia', 'china', 'africa']
 
 
 class SteamWebAPI:
@@ -64,9 +70,18 @@ class SteamWebAPI:
         return self._method('ISteamUserStats', 'GetNumberOfCurrentPlayers', 1,
                             {'appid': appid})
 
-    def csgo_get_monthly_player_count(self):
+    def cs2_get_monthly_player_count(self):
         response = self._method('ICSGOServers_730', 'GetMonthlyPlayerCount', 1)
         return int(response['result']['players'])
 
-    def csgo_get_game_servers_status(self):
+    def cs2_get_game_servers_status(self):
         return self._method('ICSGOServers_730', 'GetGameServersStatus', 1)
+
+    def cs2_get_premier_leaderboard_stats(self, *, season: int, region: CS2_PREMIER_LEADERBOARD_REGIONS = None):
+        leaderboard_name = f'official_leaderboard_premier_season{season}'
+        if region:
+            leaderboard_name += f'_{region}'
+
+        return self._method('ICSGOServers_730', 'GetLeaderboardEntries', 1,
+                            {'lbname': leaderboard_name})
+

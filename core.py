@@ -24,6 +24,7 @@ from utypes import LeaderboardStats, LEADERBOARD_API_REGIONS
 execution_start_dt = dt.datetime.now()
 execution_cron = (execution_start_dt + dt.timedelta(minutes=2)).replace(second=0)
 
+CURRENT_PREMIER_SEASON = 3
 UPDATE_CACHE_INTERVAL = 40
 
 loc = locale('ru')
@@ -132,16 +133,22 @@ async def check_currency():
 
 @scheduler.scheduled_job('cron',
                          hour=execution_cron.hour, minute=execution_cron.minute, second=0)
-@exception_handler(message='Caught exception fetching leaderboards!', retry=True)
 async def fetch_leaderboard():
-    world_leaderboard_stats = LeaderboardStats.request_world(steam_webapi.session)
-    new_data = {'world_leaderboard_stats': world_leaderboard_stats}
+    # noinspection PyBroadException
+    try:
+        world_leaderboard_stats = LeaderboardStats.request_world(steam_webapi, season=CURRENT_PREMIER_SEASON)
+        new_data = {'world_leaderboard_stats': world_leaderboard_stats}
 
-    for region in LEADERBOARD_API_REGIONS:
-        regional_leaderboard_stats = LeaderboardStats.request_regional(steam_webapi.session, region)
-        new_data[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
+        for region in LEADERBOARD_API_REGIONS:
+            regional_leaderboard_stats = LeaderboardStats.request_regional(steam_webapi,
+                                                                           season=CURRENT_PREMIER_SEASON, region=region)
+            new_data[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
 
-    caching.dump_cache_changes(config.CORE_CACHE_FILE_PATH, new_data)
+        caching.dump_cache_changes(config.LEADERBOARD_SEASON2_CACHE_FILE_PATH, new_data)
+    except Exception:
+        logger.exception('Caught exception fetching leaderboards!')
+        await asyncio.sleep(45)
+        return await fetch_leaderboard()
 
 
 @exception_handler(message='Caught exception while gathering key price!', retry=True)
