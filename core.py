@@ -3,6 +3,7 @@ import datetime as dt
 import platform
 from functools import wraps
 
+import requests
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
 # noinspection PyPackageRequirements
@@ -107,7 +108,7 @@ async def update_cache_info():
                          hour=execution_cron.hour, minute=execution_cron.minute, second=0)
 @exception_handler(message='Caught exception while gathering monthly players!', retry=True)
 async def unique_monthly():
-    new_player_count = steam_webapi.csgo_get_monthly_player_count()
+    new_player_count = steam_webapi.cs2_get_monthly_player_count()
 
     cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
 
@@ -137,6 +138,7 @@ async def fetch_leaderboard():
     # noinspection PyBroadException
     try:
         world_leaderboard_stats = LeaderboardStats.request_world(steam_webapi, season=CURRENT_PREMIER_SEASON)
+
         new_data = {'world_leaderboard_stats': world_leaderboard_stats}
 
         for region in LEADERBOARD_API_REGIONS:
@@ -144,7 +146,9 @@ async def fetch_leaderboard():
                                                                            season=CURRENT_PREMIER_SEASON, region=region)
             new_data[f'regional_leaderboard_stats_{region}'] = regional_leaderboard_stats
 
-        caching.dump_cache_changes(config.LEADERBOARD_SEASON2_CACHE_FILE_PATH, new_data)
+        caching.dump_cache_changes(config.LEADERBOARD_SEASON3_CACHE_FILE_PATH, new_data)
+    except requests.exceptions.JSONDecodeError:  # leaderboards closed?
+        pass
     except Exception:
         logger.exception('Caught exception fetching leaderboards!')
         await asyncio.sleep(45)
