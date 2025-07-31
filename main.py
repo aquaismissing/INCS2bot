@@ -582,9 +582,9 @@ async def send_game_version(_, session: UserSession, bot_message: Message):
 
 @bot.navmenu(LK.game_leaderboard_button_title, came_from=extra_features, ignore_message_not_modified=True)
 async def game_leaderboard(_, session: UserSession, bot_message: Message):
-    core_cache = caching.load_cache(config.CORE_CACHE_FILE_PATH)
+    leaderboard_cache = caching.load_cache(config.LEADERBOARD_SEASON3_CACHE_FILE_PATH)  # todo: make it so we don't have to set it manually here
 
-    world_data = LeaderboardStats.cached_world_stats(core_cache)
+    world_data = LeaderboardStats.cached_world_stats(leaderboard_cache)
     text = info_formatters.format_game_world_leaderboard(world_data, session.locale)
 
     await bot_message.edit(text, reply_markup=keyboards.leaderboard_markup(session.locale))
@@ -640,7 +640,7 @@ async def send_game_leaderboard(_, session: UserSession, bot_message: Message,
     await bot_message.edit(session.locale.bot_loading,
                            reply_markup=keyboards.leaderboard_markup(session.locale))
 
-    lb_cache: LeaderboardCache = caching.load_cache(config.LEADERBOARD_SEASON2_CACHE_FILE_PATH)  # noqa
+    lb_cache: LeaderboardCache = caching.load_cache(config.LEADERBOARD_SEASON3_CACHE_FILE_PATH)  # todo: and here!
 
     region = region.split('_')[-1]
     if region == 'world':
