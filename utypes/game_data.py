@@ -383,7 +383,7 @@ class LeaderboardEntry:
 class LeaderboardStats:
     @staticmethod
     def request_world(steam_webapi: SteamWebAPI, *, season: int):
-        world_leaderboard_data = steam_webapi.cs2_get_premier_leaderboard_stats(season=season)
+        world_leaderboard_data = steam_webapi.cs2_get_premier_leaderboard_stats(season=season).json()
         world_leaderboard_data = world_leaderboard_data['result']['entries']
         world_leaderboard_data = world_leaderboard_data[:10]
 
@@ -391,7 +391,7 @@ class LeaderboardStats:
 
     @staticmethod
     def request_regional(steam_webapi: SteamWebAPI, *, season: int, region: CS2_PREMIER_LEADERBOARD_REGIONS, ):
-        regional_leaderboard_data = steam_webapi.cs2_get_premier_leaderboard_stats(season=season, region=region)
+        regional_leaderboard_data = steam_webapi.cs2_get_premier_leaderboard_stats(season=season, region=region).json()
         regional_leaderboard_data = regional_leaderboard_data['result']['entries']
         regional_leaderboard_data = regional_leaderboard_data[:10]
 
