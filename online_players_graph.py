@@ -15,7 +15,7 @@ import pandas as pd
 import seaborn as sns
 
 import config
-from functions import utime
+from functions import utime, caching
 from functions.ulogging import get_logger
 
 if TYPE_CHECKING:
@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 MINUTE = 60
 MAX_ONLINE_MARKS = (MINUTE // 10) * 24 * 7 * 2  # = 2016 marks - every 10 minutes for the last two weeks
+ALLOWED_HOSTS = {'kappa.lol', 'gachi.gay', 'femboy.beauty', 'segs.lol'}  # https://github.com/0Supa/uploader
 
 logger = get_logger('online_players_graph', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
 
@@ -41,10 +42,8 @@ x_major_formatter = mdates.DateFormatter('%b %d')
 
 
 def upload_image_online(image: BinaryIO, host: str) -> dict[str, ...]:
-    allowed_hosts = {'kappa.lol', 'gachi.gay', 'femboy.beauty'}  # https://github.com/0Supa/uploader
-
-    if host not in allowed_hosts:
-        raise TypeError(f'unknown host, choose one of these: {allowed_hosts}')
+    if host not in ALLOWED_HOSTS:
+        raise TypeError(f'unknown host, choose one of these: {ALLOWED_HOSTS}')
 
     response = requests.post(f'https://{host}/api/upload',
                              headers=config.REQUESTS_HEADERS,
@@ -56,6 +55,22 @@ def upload_image_online(image: BinaryIO, host: str) -> dict[str, ...]:
         return {'link': ''}
 
     return response.json()
+
+
+def delete_uploaded_image(host: str, image_key: str) -> bool:
+    if host not in ALLOWED_HOSTS:
+        raise TypeError(f'unknown host, choose one of these: {ALLOWED_HOSTS}')
+
+    response = requests.post(f'https://{host}/api/delete',
+                             headers=config.REQUESTS_HEADERS,
+                             data={'key': image_key})
+
+    if response.status_code != 200:
+        logger.error(f'Caught error while uploading graph image to the file uploader ({host})!',
+                     response.status_code, response.reason, response.text)
+        return False
+
+    return response.json().get('success', False)
 
 
 def upload_image_to_catbox(image: BinaryIO) -> str:  # might be blocked on some hostings
@@ -137,20 +152,25 @@ def graph_maker():
         fig.savefig(config.GRAPH_IMG_FILE_PATH, dpi=200)
         plt.close()
 
+        cache = caching.load_cache(config.GRAPH_CACHE_FILE_PATH)
+
+        try:
+            response = delete_uploaded_image('kappa.lol', cache['key'])
+        except (requests.HTTPError, requests.ConnectionError):
+            logger.exception('Caught exception while deleting old graph image from the file uploader!')
+            response = False
+
+        if not response:
+            logger.error('Failed to delete old graph image from the file uploader!')
+
         try:
             with open(config.GRAPH_IMG_FILE_PATH, 'rb') as f:
-                image_url = upload_image_online(f, 'kappa.lol')['link']
+                response = upload_image_online(f, 'kappa.lol')
         except (requests.HTTPError, requests.ConnectionError):
             logger.exception('Caught exception while uploading graph image to the file uploader!')
-            image_url = ''
+            response = {'link': '', 'key': ''}
 
-        with open(config.GRAPH_CACHE_FILE_PATH, encoding='utf-8') as f:
-            cache = json.load(f)
-
-        cache['graph_url'] = image_url
-
-        with open(config.GRAPH_CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
-            json.dump(cache, f, indent=4, ensure_ascii=False)
+        caching.dump_cache(config.GRAPH_CACHE_FILE_PATH, response)
         logger.info('Successfully plotted the player count graph.')
     except Exception:
         logger.exception('Caught exception in graph maker!')
