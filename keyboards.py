@@ -149,9 +149,10 @@ dc_eu_markup = ExtendedIKM([
 
 _us_east = ExtendedIKB(LK.dc_east, LK.dc_us_east)
 _us_west = ExtendedIKB(LK.dc_west, LK.dc_us_west)
+_us_south = ExtendedIKB(LK.dc_south, LK.dc_us_south)
 
 dc_us_markup = ExtendedIKM([
-    [_us_east, _us_west],
+    [_us_east, _us_west, _us_south],
     [back_button]
 ])
 

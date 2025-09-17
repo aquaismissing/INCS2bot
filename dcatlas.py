@@ -34,7 +34,7 @@ class DatacenterAtlas(_DCAtlasMethods):
     AUSTRIA = DatacenterRegion(
         "austria",
         [
-            Datacenter("vienna", associated_api_id="EU Austria", l10n_key_title=LK.dc_austria_vienna),
+            Datacenter("vienna", associated_api_id="EU Vienna", l10n_key_title=LK.dc_austria_vienna),
         ],
         "🇦🇹",
         LK.dc_austria,
@@ -44,7 +44,7 @@ class DatacenterAtlas(_DCAtlasMethods):
     FINLAND = DatacenterRegion(
         "finland",
         [
-            Datacenter("helsinki", associated_api_id="EU Finland", l10n_key_title=LK.dc_finland_helsinki),
+            Datacenter("helsinki", associated_api_id="EU Helsinki", l10n_key_title=LK.dc_finland_helsinki),
         ],
         "🇫🇮",
         LK.dc_finland,
@@ -54,7 +54,7 @@ class DatacenterAtlas(_DCAtlasMethods):
     GERMANY = DatacenterRegion(
         "germany",
         [
-            Datacenter("frankfurt", associated_api_id="EU Spain", l10n_key_title=LK.dc_germany_frankfurt),
+            Datacenter("frankfurt", associated_api_id="EU Frankfurt", l10n_key_title=LK.dc_germany_frankfurt),
         ],
         "🇩🇪",
         LK.dc_germany,
@@ -74,7 +74,7 @@ class DatacenterAtlas(_DCAtlasMethods):
     POLAND = DatacenterRegion(
         "poland",
         [
-            Datacenter("warsaw", associated_api_id="EU Poland", l10n_key_title=LK.dc_poland_warsaw),
+            Datacenter("warsaw", associated_api_id="EU Warsaw", l10n_key_title=LK.dc_poland_warsaw),
         ],
         "🇵🇱",
         LK.dc_poland,
@@ -84,7 +84,7 @@ class DatacenterAtlas(_DCAtlasMethods):
     SPAIN = DatacenterRegion(
         "spain",
         [
-            Datacenter("madrid", associated_api_id="EU Spain", l10n_key_title=LK.dc_spain_madrid),
+            Datacenter("madrid", associated_api_id="EU Madrid", l10n_key_title=LK.dc_spain_madrid),
         ],
         "🇪🇸",
         LK.dc_spain,
@@ -94,7 +94,7 @@ class DatacenterAtlas(_DCAtlasMethods):
     SWEDEN = DatacenterRegion(
         "sweden",
         [
-            Datacenter("stockholm", associated_api_id="EU Sweden", l10n_key_title=LK.dc_sweden_stockholm),
+            Datacenter("stockholm", associated_api_id="EU Stockholm", l10n_key_title=LK.dc_sweden_stockholm),
         ],
         "🇸🇪",
         LK.dc_sweden,
@@ -133,6 +133,16 @@ class DatacenterAtlas(_DCAtlasMethods):
         "🇺🇸",
         LK.dc_west,
         LK.dc_us_west_title
+    )
+
+    US_SOUTH = DatacenterRegion(
+        "us_south",
+        [
+            Datacenter("dallas", associated_api_id="US Dallas", l10n_key_title=LK.dc_us_dallas)
+        ],
+        "🇺🇸",
+        LK.dc_south,
+        LK.dc_us_south_title
     )
 
     ARGENTINA = DatacenterRegion(
@@ -199,8 +209,9 @@ class DatacenterAtlas(_DCAtlasMethods):
     CHINA = DatacenterRegion(
         "china",
         [
-            Datacenter("tianjin", associated_api_id="China Tianjin", l10n_key_title=LK.dc_china_tianjin),
-            Datacenter("guangzhou", associated_api_id="China Guangzhou", l10n_key_title=LK.dc_china_guangzhou),
+            # Datacenter("tianjin", associated_api_id="China Tianjin", l10n_key_title=LK.dc_china_tianjin),
+            # Datacenter("guangzhou", associated_api_id="China Guangzhou", l10n_key_title=LK.dc_china_guangzhou),
+            Datacenter("beijing", associated_api_id="China Beijing", l10n_key_title=LK.dc_china_beijing),
             Datacenter("chengdu", associated_api_id="China Chengdu", l10n_key_title=LK.dc_china_chengdu),
             Datacenter("pudong", associated_api_id="China Pudong", l10n_key_title=LK.dc_china_pudong),
             Datacenter("guangdong", associated_api_id="China Guangdong", l10n_key_title=LK.dc_china_guangdong)

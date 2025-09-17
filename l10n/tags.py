@@ -49,6 +49,7 @@ class Tags(NamedTuple):
     dc_us: set  # USA
     dc_us_east: set  # East
     dc_us_west: set  # West
+    dc_us_south: set  # South
 
     dc_asia: set  # Asia
     dc_asia_india: set  # India
@@ -132,7 +133,7 @@ class Tags(NamedTuple):
 
         result = []
         for k, tags in self._asdict().items():
-            if k.startswith('currencies'):
+            if k.startswith('currencies_'):
                 result.extend(tags)
         return result
 

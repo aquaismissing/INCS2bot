@@ -155,6 +155,10 @@ class Locale(SLocale):
     dc_us_west_inline_title: str  # Western USA DC
     dc_us_seattle: str  # Seattle
     dc_us_los_angeles: str  # Los Angeles
+    dc_us_south: str  # South
+    dc_us_south_title: str  # South USA DC
+    dc_us_south_inline_title: str  # Southern USA DC
+    dc_us_dallas: str  # Dallas
 
     dc_argentina: str  # Argentina
     dc_argentina_title: str  # Argentinaʼs DC
@@ -187,6 +191,7 @@ class Locale(SLocale):
 
     dc_china_title: str  # Chinaʼs DC
     dc_china_inline_title: str  # Chinese DC
+    dc_china_beijing: str  # Beijing
     dc_china_shanghai: str  # Shanghai
     dc_china_tianjin: str  # Tianjin
     dc_china_guangzhou: str  # Guangzhou

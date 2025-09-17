@@ -254,6 +254,11 @@ async def send_dc_us_west(client: BotClient, session: UserSession, bot_message: 
     await send_dc_state(client, session, bot_message, DatacenterAtlas.US_WEST, keyboards.dc_us_markup)
 
 
+@bot.funcmenu(LK.dc_us_south, came_from=dc_us)
+async def send_dc_us_south(client: BotClient, session: UserSession, bot_message: Message):
+    await send_dc_state(client, session, bot_message, DatacenterAtlas.US_SOUTH, keyboards.dc_us_markup)
+
+
 @bot.navmenu(LK.regions_southamerica, came_from=datacenters, ignore_message_not_modified=True)
 async def dc_southamerica(_, session: UserSession, bot_message: Message):
     await bot_message.edit(session.locale.dc_status_specify_country,
@@ -583,6 +588,8 @@ async def send_game_version(_, session: UserSession, bot_message: Message):
 @bot.navmenu(LK.game_leaderboard_button_title, came_from=extra_features, ignore_message_not_modified=True)
 async def game_leaderboard(_, session: UserSession, bot_message: Message):
     leaderboard_cache = caching.load_cache(config.LEADERBOARD_SEASON3_CACHE_FILE_PATH)  # todo: make it so we don't have to set it manually here
+
+    keyboards.leaderboard_markup.select_button_by_key(LK.game_leaderboard_world)
 
     world_data = LeaderboardStats.cached_world_stats(leaderboard_cache)
     text = info_formatters.format_game_world_leaderboard(world_data, session.locale)
