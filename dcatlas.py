@@ -55,6 +55,7 @@ class DatacenterAtlas(_DCAtlasMethods):
         "germany",
         [
             Datacenter("frankfurt", associated_api_id="EU Frankfurt", l10n_key_title=LK.dc_germany_frankfurt),
+            Datacenter("falkenstein", associated_api_id="EU Falkenstein", l10n_key_title=LK.dc_germany_falkenstein)
         ],
         "🇩🇪",
         LK.dc_germany,

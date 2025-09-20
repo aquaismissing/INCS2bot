@@ -120,6 +120,7 @@ class Locale(SLocale):
     dc_germany_title: str  # Germanyʼs DC
     dc_germany_inline_title: str  # Deutsch DC
     dc_germany_frankfurt: str  # Frankfurt
+    dc_germany_falkenstein: str  # Frankfurt
     dc_netherlands: str  # Netherlands
     dc_netherlands_title: str  # Netherlandsʼ DC
     dc_netherlands_inline_title: str  # Dutch DC
