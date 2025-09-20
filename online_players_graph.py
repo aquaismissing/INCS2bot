@@ -159,6 +159,9 @@ def graph_maker():
         except (requests.HTTPError, requests.ConnectionError):
             logger.exception('Caught exception while deleting old graph image from the file uploader!')
             response = False
+        except KeyError:
+            logger.warning('No deletion key was in the cache file, ignoring the deletion sequence...')
+            response = True
 
         if not response:
             logger.error('Failed to delete old graph image from the file uploader!')
