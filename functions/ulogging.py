@@ -12,11 +12,13 @@ def get_rotating_file_handler(name: str, logs_path: Path) -> logging.handlers.Ba
     if not logs_folder.exists():
         logs_folder.mkdir()
 
-    # return logging.handlers.RotatingFileHandler(
-    #     logs_folder / f'{name.lower()}.log',
-    #     maxBytes=270 * 1024, backupCount=5  # each log file is <=270 KB, ~1.32 MB in total)
-    # )
-    return logging.handlers.TimedRotatingFileHandler(logs_folder / 'latest.log', when='midnight', backupCount=5)
+    return logging.handlers.RotatingFileHandler(
+        logs_folder / 'app.log',
+        maxBytes=4 * 1024 * 1024, backupCount=5  # each log file is <=4 MBs, ~20 MB in total
+    )
+    # todo: make a TimedRotatingFileHandler with file size limit (this thread might be helpful)
+    # todo: https://stackoverflow.com/questions/6167587/the-logging-handlers-how-to-rollover-after-time-or-maxbytes
+    # return logging.handlers.TimedRotatingFileHandler(logs_folder / 'latest.log', when='midnight', backupCount=5)
 
 
 def get_logger(name: str, logs_path: Path, config_path: str | Path):
