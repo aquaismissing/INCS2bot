@@ -289,7 +289,7 @@ async def get_game_version(session: requests.Session, cs2_client_version: int | 
         logger.exception('Caught an exception while trying to get new version!')
 
 
-@gevent_scheduler.scheduled_job('interval', seconds=45)
+@gevent_scheduler.scheduled_job('interval', seconds=45, misfire_grace_time=10)
 def online_players():
     player_count = client.get_player_count(730)
 
