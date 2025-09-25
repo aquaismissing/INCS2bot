@@ -2,19 +2,14 @@ import asyncio
 import json
 import logging
 import random
-import re
-from io import BytesIO
 
 from pyrogram import Client, filters
 from pyrogram.enums import ChatMembersFilter
 from pyrogram.types import Chat, Message, MessageEntity, User
-import requests
-from tgentity import to_md
 
 import config
 
 
-DISCORD_MESSAGE_LENGTH_LIMIT = 2000
 MESSAGE_FILTERS_FILE = config.DATA_FOLDER / 'filtered.json'
 
 if not MESSAGE_FILTERS_FILE.exists():
@@ -78,108 +73,6 @@ def correct_message_entities(entities: list[MessageEntity] | None,
         entities.pop(i)
 
     return entities
-
-
-def to_discord_markdown(message: Message) -> str:
-    text = (to_md(message)
-            .replace(r'\.', '.')
-            .replace(r'\(', '(')  # god bless this feels awful
-            .replace(r'\)', ')'))
-    text = re.sub(r'~([^~]+)~', r'~~\1~~', text)
-
-    return text
-
-
-def wrap_text(text: str, max_length: int) -> list[str]:
-    """
-    Wraps the given text into multiple sections with a length <= ``max_length``.
-
-    Prioritises wrapping by newlines, then spaces.
-    """
-
-    if len(text) <= max_length:
-        return [text]
-
-    text_parts = []
-    while len(text) > max_length:
-        longest_possible_part = text[:max_length]
-        last_char_index = longest_possible_part.rfind('\n')
-        if last_char_index == -1:
-            last_char_index = longest_possible_part.rfind(' ')
-        if last_char_index == -1:
-            last_char_index = max_length
-
-        new_part = text[:last_char_index]
-        text_parts.append(new_part)
-        if text[last_char_index].isspace():
-            last_char_index += 1
-        text = text[last_char_index:]
-
-    text_parts.append(text)
-
-    return text_parts
-
-
-def process_discord_text(message: Message) -> list[str]:
-    text = (to_discord_markdown(message) if message.entities
-            else message.caption if message.caption
-            else message.text if message.text
-            else '')
-
-    # fixme: can break formatting if wrapping happens in the middle of formatted section
-    # fixme: (e.g. "**some [split] wise words**")
-    # fixme severity: low
-    return wrap_text(text, DISCORD_MESSAGE_LENGTH_LIMIT)
-
-
-def translate_text(text: str, source_lang: str = 'RU', target_lang: str = 'EN') -> str | None:
-    headers = {'Authorization': f'DeepL-Auth-Key {config.DEEPL_TOKEN}', 'Content-Type': 'application/json'}
-    data = {'text': [text], 'source_lang': source_lang, 'target_lang': target_lang}
-
-    r = requests.post('https://api-free.deepl.com/v2/translate', headers=headers, json=data)
-    if r.status_code == 200:
-        return r.json()['translations'][0]['text']
-
-    logger.error('Failed to translate text.')
-    logger.error(f'{text=}')
-    logger.error(f'{r.status_code=}, {r.reason=}')
-
-
-def post_to_discord_webhook(url: str, text: str, attachment: BytesIO = None):
-    payload = {'content': text}
-
-    if attachment:
-        payload = {'payload_json': (None, json.dumps(payload)), 'files[0]': (attachment.name, attachment.getbuffer())}
-        r = requests.post(url, files=payload)
-    else:
-        headers = {'Content-Type': 'application/json'}
-        r = requests.post(url, json=payload, headers=headers)
-
-    if r.status_code not in [200, 204]:  # Discord uses 204 as a success code (yikes)
-        logger.error('Failed to post to Discord webhook.')
-        logger.error(f'{payload=}')
-        logger.error(f'{r.status_code=}, {r.reason=}, {r.text=}')
-
-
-async def forward_to_discord(client: Client, message: Message):
-    texts = process_discord_text(message)
-
-    attachment: BytesIO | None
-    try:
-        # fixme: for every attachment this ^ function will be called multiple times
-        # fixme: this could be fixed if we keep track of media groups but too lazy to implement it properly
-        attachment = await client.download_media(message, in_memory=True)
-    except ValueError:
-        attachment = None
-
-    for text in texts:
-        if attachment:
-            post_to_discord_webhook(config.DS_WEBHOOK_URL, text, attachment)
-            post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'), attachment)
-            attachment = None
-        else:
-            post_to_discord_webhook(config.DS_WEBHOOK_URL, text)
-            post_to_discord_webhook(config.DS_WEBHOOK_URL_EN, translate_text(text, 'RU', 'EN'))
 
 
 async def cs_l10n_update(message: Message):
@@ -300,19 +193,6 @@ async def ban(client: Client, message: Message):
         await message.reply(f"{who_to_ban.first_name} получил(а) VAC бан.")
 
 
-@Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("check"))
-async def check(client: Client, message: Message):
-    chat = await client.get_chat(config.INCS2CHAT)
-
-    await message.delete()
-    if not await is_administrator(chat, message.from_user):
-        return
-
-    original_message = message.reply_to_message
-    receipt = message.from_user
-    await client.send_message(receipt.id, f'```\n{original_message}\n```')
-
-
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.command("unban"))
 async def unban(client: Client, message: Message):
     chat = await client.get_chat(config.INCS2CHAT)
@@ -395,13 +275,12 @@ async def echo(client: Client, message: Message):
 
 
 @Client.on_message(filters.linked_channel & filters.chat(config.INCS2CHAT))
-async def handle_new_post(client: Client, message: Message):
+async def handle_new_post(_: Client, message: Message):
     is_sent_by_correct_chat = (message.sender_chat and message.sender_chat.id == config.INCS2CHANNEL)
     is_forwarded_from_correct_chat = (message.forward_from_chat and message.forward_from_chat.id == config.INCS2CHANNEL)
 
     if is_sent_by_correct_chat and is_forwarded_from_correct_chat:
         await cs_l10n_update(message)
-        await forward_to_discord(client, message)
 
 
 @Client.on_message(filters.chat(config.INCS2CHAT) & filters.dice)
