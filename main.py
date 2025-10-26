@@ -394,8 +394,9 @@ async def user_profile_info_process(client: BotClient, session: UserSession, bot
         info.vanity_url = session.locale.user_profileinfo_notset
 
     if info.account_created:
-        info.account_created = dt.datetime.fromtimestamp(info.account_created)
-        info.account_created = format_datetime(info.account_created, "dd MMM yyyy", locale=session.lang_code).title()
+        datetime = dt.datetime.fromtimestamp(info.account_created)
+        # noinspection PyTypeChecker
+        info.account_created = format_datetime(datetime, "dd MMM yyyy", locale=session.lang_code).title()
     else:
         info.account_created = session.locale.states_unknown
 
@@ -588,7 +589,9 @@ async def send_game_version(_, session: UserSession, bot_message: Message):
 
 @bot.navmenu(LK.game_leaderboard_button_title, came_from=extra_features, ignore_message_not_modified=True)
 async def game_leaderboard(_, session: UserSession, bot_message: Message):
-    leaderboard_cache = caching.load_cache(config.LEADERBOARD_SEASON3_CACHE_FILE_PATH)  # todo: make it so we don't have to set it manually here
+    # todo: make it so we don't have to set it manually here
+    # noinspection PyTypeChecker
+    leaderboard_cache: LeaderboardCache = caching.load_cache(config.LEADERBOARD_SEASON3_CACHE_FILE_PATH)
 
     keyboards.leaderboard_markup.select_button_by_key(LK.game_leaderboard_world)
 
@@ -648,6 +651,7 @@ async def send_game_leaderboard(_, session: UserSession, bot_message: Message,
     await bot_message.edit(session.locale.bot_loading,
                            reply_markup=keyboards.leaderboard_markup(session.locale))
 
+    # noinspection PyTypeChecker
     lb_cache: LeaderboardCache = caching.load_cache(config.LEADERBOARD_SEASON3_CACHE_FILE_PATH)  # todo: and here!
 
     region = region.split('_')[-1]
@@ -915,7 +919,7 @@ async def reply_through_logger_command(client: BotClient, message: Message):
                                                     f'<blockquote>{message_to_send}</blockquote>')
     await client.log(f'Sent a message to {formatted_username}\n'
                      f'\n'
-                     f'<blockquote>{message_to_send.text}</blockquote>', instant=True)
+                     f'<blockquote>{message_to_send}</blockquote>', instant=True)
 
     await message.reply('Successfully sent the message.')
     session.current_menu_id = main_menu.id

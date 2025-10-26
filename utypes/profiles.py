@@ -374,7 +374,7 @@ class FACEITRequestsHandler:
 
 @dataclass(slots=True)
 class ProfileInfo:
-    vanity_url: str
+    vanity_url: str | None
     steamid64: int
     account_id: int
     account_created: int

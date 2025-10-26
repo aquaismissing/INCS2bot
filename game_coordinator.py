@@ -15,7 +15,7 @@ from steam.client import SteamClient
 from steam.enums import EResult
 
 if platform.system() == 'Linux':
-    # noinspection PyPackageRequirements
+    # noinspection PyPackageRequirements,PyUnresolvedReferences
     import uvloop
 
     uvloop.install()
@@ -265,7 +265,7 @@ async def get_game_version_loop(cs2_client_version: int | None) -> GameVersionDa
     # because of this, we retry in an hour
     logger.warning('Reached a timeout while trying to pull the game version data, retry in an hour...')
     await asyncio.sleep(60 * 60)
-    await get_game_version_loop(cs2_client_version)
+    return await get_game_version_loop(cs2_client_version)
 
 
 async def get_game_version(session: requests.Session, cs2_client_version: int | None) -> GameVersionData | None:
@@ -345,7 +345,7 @@ async def mainloop():
     # ESSENTIALS FOR MAINLOOP END
 
     while True:
-        task = asyncio.create_task(asyncio.sleep(10))
+        task = asyncio.create_task(asyncio.sleep(1))
         try:
             await task
             if going_to_shutdown:
