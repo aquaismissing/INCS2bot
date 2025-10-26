@@ -7,7 +7,7 @@ Babel==2.14.0
 betterproto==2.0.0b6
 cachetools==5.3.1
 certifi==2023.7.22
-cffi==1.15.1
+cffi==2.0.0
 charset-normalizer==3.2.0
 colorama==0.4.6
 contourpy==1.3.3
@@ -17,7 +17,7 @@ csxhair==1.0.1
 cycler==0.11.0
 filelock==3.18.0
 fonttools==4.43.0
-gevent==24.2.1
+gevent==24.2.1  # 25.9.1
 gevent-eventemitter==2.1
 greenlet==3.0.3
 grpclib==0.4.7
@@ -30,12 +30,12 @@ hyperframe==6.0.1
 idna==3.7
 iniconfig==2.0.0
 Jinja2==3.1.3
-kiwisolver==1.4.4
+kiwisolver==1.4.9
 Mako==1.2.4
 MarkupSafe==2.1.3
 matplotlib==3.10.5
-multidict==6.0.4
-numpy==1.26.4
+multidict==6.7.0
+numpy==1.26.4  # 2.3.4
 packaging==23.1
 pandas==2.3.1
 pillow==10.3.0
