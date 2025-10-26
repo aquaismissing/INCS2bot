@@ -17,7 +17,7 @@ if platform.system() == 'Linux':
 import config
 from dcatlas import DatacenterAtlas
 from functions import caching, utime
-from functions.ulogging import get_logger
+from functions.ulogging import *
 from l10n import locale
 from utypes import ExchangeRate, GameServers, State, SteamWebAPI
 from utypes import LeaderboardStats, LEADERBOARD_API_REGIONS
@@ -30,7 +30,8 @@ UPDATE_CACHE_INTERVAL = 40
 
 loc = locale('ru')
 
-logger = get_logger('core', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
+setup_logging(config.LOGS_CONFIG_FILE_PATH)
+logger = get_logger(f'{config.NAME}.core')
 
 scheduler = AsyncIOScheduler()
 bot = Client(config.BOT_CORE_MODULE_NAME,

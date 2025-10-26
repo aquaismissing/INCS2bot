@@ -22,7 +22,7 @@ if platform.system() == 'Linux':
 
 import config
 from functions import caching, locale, utime
-from functions.ulogging import get_logger
+from functions.ulogging import *
 from utypes import GameVersion, States, GameVersionData
 
 VALVE_TIMEZONE = ZoneInfo('America/Los_Angeles')
@@ -41,8 +41,8 @@ AVAILABLE_ALERTS = {'public_branch_updated': loc.notifs_build_public,
                     'branch_deleted': loc.notifs_branch_deleted}
 MAIN_BRANCHES = {'public', '<null>'}  # <null> is for other important things
 
-logger = get_logger('game_coordinator', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
-
+setup_logging(config.LOGS_CONFIG_FILE_PATH)
+logger = get_logger(f'{config.NAME}.gc')
 
 class PatchedSteamClient(SteamClient):
     """Fixes an infinite program blocking when unable to connect to CM."""

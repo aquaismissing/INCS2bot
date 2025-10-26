@@ -4,7 +4,7 @@
   "formatters": {
     "simple": {
       "format": "{asctime} | {name}: {message}",
-      "datefmt": "%H:%M:%S — %d/%m/%Y (%z)",
+      "datefmt": "%H:%M:%S - %d/%m/%Y (%z)",
       "style": "{"
     },
     "detailed": {
@@ -19,13 +19,30 @@
       "level": "WARNING",
       "formatter": "simple",
       "stream": "ext://sys.stderr"
+    },
+    "file": {
+      "()": "ulogging.EnhancedRotatingFileHandler",
+      "filename": "logs/app.log",
+      "when": "MIDNIGHT",
+      "maxBytes": 4194304,
+      "backupCount": 10,
+      "level": "WARNING",
+      "formatter": "simple"
+    },
+    "queue_handler": {
+      "class": "logging.handlers.QueueHandler",
+      "handlers": [
+        "stderr",
+        "file"
+      ],
+      "respect_handler_level": true
     }
   },
   "loggers": {
     "root": {
       "level": "DEBUG",
       "handlers": [
-        "stderr"
+        "queue_handler"
       ]
     }
   }

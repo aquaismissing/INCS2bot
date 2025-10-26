@@ -16,7 +16,7 @@ import seaborn as sns
 
 import config
 from functions import utime, caching
-from functions.ulogging import get_logger
+from functions.ulogging import *
 
 if TYPE_CHECKING:
     from typing import BinaryIO
@@ -25,7 +25,8 @@ MINUTE = 60
 MAX_ONLINE_MARKS = (MINUTE // 10) * 24 * 7 * 2  # = 2016 marks - every 10 minutes for the last two weeks
 ALLOWED_HOSTS = {'kappa.lol', 'gachi.gay', 'femboy.beauty', 'segs.lol'}  # https://github.com/0Supa/uploader
 
-logger = get_logger('online_players_graph', config.LOGS_FOLDER, config.LOGS_CONFIG_FILE_PATH)
+setup_logging(config.LOGS_CONFIG_FILE_PATH)
+logger = get_logger(f'{config.NAME}.graph')
 
 scheduler = BlockingScheduler()
 
