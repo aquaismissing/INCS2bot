@@ -299,7 +299,7 @@ async def default_inline(_, session: UserSession, inline_query: InlineQuery):
     graph_cache = caching.load_cache(config.GRAPH_CACHE_FILE_PATH)
 
     servers_status_data = GameServers.cached_server_status(core_cache, gc_cache)
-    matchmaking_stats_data = GameServers.cached_matchmaking_stats(core_cache, gc_cache, graph_cache)
+    matchmaking_stats_data = GameServers.cached_matchmaking_stats(core_cache, gc_cache, graph_cache.get('link', ''))
     game_version_data = GameVersion.cached_data(gc_cache)
 
     server_status_text = info_formatters.format_server_status(servers_status_data, session.locale)

@@ -6,7 +6,7 @@ import datetime as dt
 from typing import NamedTuple, TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-from .cache import CoreCache, GCCache, GraphCache, LeaderboardCache
+from .cache import CoreCache, GCCache, LeaderboardCache
 from .states import States
 from .steam_webapi import SteamWebAPI, CS2_PREMIER_LEADERBOARD_REGIONS
 from .protobufs import ScoreLeaderboardData
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 __all__ = ('GameVersion', 'GameVersionData',
            'ExchangeRate', 'ExchangeRateData',
            'GameServers', 'OverallGameServersData', 'ServerStatusData', 'MatchmakingStatsData',
-           'LeaderboardStats',
+           'LeaderboardStats', 'LeaderboardEntry',
            'drop_cap_reset_timer', 'LEADERBOARD_API_REGIONS')
 
 
@@ -141,7 +141,7 @@ class ServerStatusData(BasicServerStatusData):
 
 @dataclass(frozen=True, slots=True)
 class MatchmakingStatsData(BasicServerStatusData):
-    graph_url: str
+    graph_image: str
     online_servers: int
     online_players: int
     active_players: int
@@ -305,7 +305,7 @@ class GameServers:
                                 gc_state, sl_state, ms_state, sc_state, webapi_state)
     
     @staticmethod
-    def cached_matchmaking_stats(core_cache: CoreCache, gc_cache: GCCache, graph_cache: GraphCache):
+    def cached_matchmaking_stats(core_cache: CoreCache, gc_cache: GCCache, graph_image: str):
         game_server_dt = GameServers.latest_info_update(core_cache)
         if game_server_dt is States.UNKNOWN:
             return States.UNKNOWN
@@ -313,7 +313,6 @@ class GameServers:
         gc_state = States.get_or_unknown(core_cache.get('game_coordinator_state'))
         sl_state = States.get_or_unknown(core_cache.get('sessions_logon_state'))
 
-        graph_url = graph_cache.get('graph_url', '')  # graph!!!!
         online_players = gc_cache.get('online_players', 0)  # GC!!!!
 
         online_servers = core_cache.get('online_servers', 0)
@@ -327,7 +326,7 @@ class GameServers:
 
         return MatchmakingStatsData(game_server_dt,
                                     gc_state, sl_state,
-                                    graph_url,
+                                    graph_image,
                                     online_servers,
                                     online_players, active_players, searching_players, average_search_time,
                                     player_24h_peak, player_alltime_peak, monthly_unique_players)

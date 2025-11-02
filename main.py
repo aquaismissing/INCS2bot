@@ -164,7 +164,7 @@ async def send_matchmaking_stats(client: BotClient, session: UserSession, bot_me
     gc_cache = caching.load_cache(config.GC_CACHE_FILE_PATH)
     graph_cache = caching.load_cache(config.GRAPH_CACHE_FILE_PATH)
 
-    data = GameServers.cached_matchmaking_stats(core_cache, gc_cache, graph_cache)
+    data = GameServers.cached_matchmaking_stats(core_cache, gc_cache, graph_cache.get('link', ''))
 
     if data is States.UNKNOWN:
         return await something_went_wrong(client, session, bot_message)

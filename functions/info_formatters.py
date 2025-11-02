@@ -7,10 +7,11 @@ from babel.dates import format_datetime as babel_format_datetime
 from jinja2 import Environment, FileSystemLoader
 
 from l10n import Locale
+from utypes.game_data import LeaderboardEntry
 from .locale import get_refined_lang_code
 from utypes import (DatacenterState, DatacenterRegionState, DatacenterGroupState,
                     DatacenterStateVariation, GameVersionData, ServerStatusData,
-                    MatchmakingStatsData, States, LeaderboardStats, Datacenter, DatacenterRegion)
+                    MatchmakingStatsData, States, Datacenter, DatacenterRegion)
 
 
 MINUTE = 60
@@ -99,7 +100,7 @@ def format_matchmaking_stats(data: MatchmakingStatsData, locale: Locale) -> str:
 
     game_servers_dt = format_datetime(data.info_requested_datetime, locale)
 
-    packed = (data.graph_url, data.online_servers, data.online_players,
+    packed = (data.graph_image, data.online_servers, data.online_players,
               data.active_players, data.searching_players, data.average_search_time)
     text = (
         f'{locale.stats_matchmaking_text.format(*packed)}'
@@ -202,7 +203,7 @@ def format_user_game_stats(stats, locale: Locale) -> str:
     return rendered_page.format(*stats)
 
 
-def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) -> str:
+def format_game_world_leaderboard(data: list[LeaderboardEntry], locale: Locale) -> str:
     text = f'{locale.game_leaderboard_header_world}\n\n'
 
     if not data:
@@ -219,7 +220,7 @@ def format_game_world_leaderboard(data: list[LeaderboardStats], locale: Locale) 
     return text
 
 
-def format_game_regional_leaderboard(data: list[LeaderboardStats], locale: Locale) -> str:
+def format_game_regional_leaderboard(data: list[LeaderboardEntry], locale: Locale) -> str:
     text = f'{locale.game_leaderboard_header_regional}\n\n'
 
     if not data:

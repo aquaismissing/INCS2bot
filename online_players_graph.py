@@ -23,7 +23,6 @@ if TYPE_CHECKING:
 
 MINUTE = 60
 MAX_ONLINE_MARKS = (MINUTE // 10) * 24 * 7 * 2  # = 2016 marks - every 10 minutes for the last two weeks
-ALLOWED_HOSTS = {'kappa.lol', 'gachi.gay', 'femboy.beauty', 'segs.lol'}  # https://github.com/0Supa/uploader
 
 setup_logging(config.LOGS_CONFIG_FILE_PATH)
 logger = get_logger(f'{config.NAME}.graph')
@@ -43,49 +42,29 @@ x_major_formatter = mdates.DateFormatter('%b %d')
 
 
 def upload_image_online(image: BinaryIO, host: str) -> dict[str, ...]:
-    if host not in ALLOWED_HOSTS:
-        raise TypeError(f'unknown host, choose one of these: {ALLOWED_HOSTS}')
-
     response = requests.post(f'https://{host}/api/upload',
                              headers=config.REQUESTS_HEADERS,
                              files={'file': image})
 
     if response.status_code != 200:
-        logger.error(f'Caught error while uploading graph image to the file uploader ({host})!',
-                     response.status_code, response.reason, response.text)
+        logger.error(f'Caught error while uploading graph image to the file uploader ({host})! '
+                     f'{response.status_code} {response.reason} {response.text} {response.headers}')
         return {'link': ''}
 
     return response.json()
 
 
 def delete_uploaded_image(host: str, image_key: str) -> bool:
-    if host not in ALLOWED_HOSTS:
-        raise TypeError(f'unknown host, choose one of these: {ALLOWED_HOSTS}')
-
     response = requests.post(f'https://{host}/api/delete',
                              headers=config.REQUESTS_HEADERS,
-                             data={'key': image_key})
+                             params={'key': image_key})
 
     if response.status_code != 200:
-        logger.error(f'Caught error while uploading graph image to the file uploader ({host})!',
-                     response.status_code, response.reason, response.text)
+        logger.error(f'Caught error while deleting an uploaded graph image ({host})! '
+                     f'{response.status_code} {response.reason} {response.text}')
         return False
 
     return response.json().get('success', False)
-
-
-def upload_image_to_catbox(image: BinaryIO) -> str:  # might be blocked on some hostings
-    response = requests.post('https://catbox.moe/user/api.php',
-                             headers=config.REQUESTS_HEADERS,
-                             data={'reqtype': 'fileupload'},
-                             files={'fileToUpload': image})
-
-    if response.status_code != 200:
-        logger.error('Caught error while uploading graph image to the file uploader (catbox.moe)!',
-                     response.status_code, response.reason, response.text)
-        return ''
-
-    return response.text
 
 
 @scheduler.scheduled_job('cron', hour='*', minute='0,10,20,30,40,50', second='0')
