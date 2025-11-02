@@ -1034,6 +1034,7 @@ async def regular_stats_report(client: BotClient):
             f'📁 **Other stats:**\n'
             f'\n'
             f'• Bot started up at: {client.startup_dt:%Y-%m-%d %H:%M:%S} (UTC)\n'
+            f'• Current active sessions: {len(client.user_sessions)}\n'
             f'• Is working for: {info_formatters.format_timedelta(now - client.startup_dt)}')
     await client.log(text, instant=True)
     client.rstats.clear()
