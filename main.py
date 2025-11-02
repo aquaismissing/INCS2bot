@@ -106,9 +106,9 @@ async def handle_callbacks(client: BotClient, callback_query: CallbackQuery):
 
 async def handle_callbacks_in_logger(client: BotClient, callback_query: CallbackQuery):
     user = callback_query.from_user
-    session = client.sessions.get(user.id)
+    session = client.user_sessions.get(user.id)
     if session is None:
-        session = await client.register_session(user, callback_query.message)
+        session = await client.register_user_session(user, callback_query.message)
 
     if callback_query.data.startswith("reply_through_logger_"):
         userid = int(callback_query.data.removeprefix("reply_through_logger_"))
@@ -800,8 +800,6 @@ async def rifles_process(client: BotClient, session: UserSession, callback_query
 
 async def send_gun_info(client: BotClient, session: UserSession, bot_message: Message, _from: Callable,
                         gun_info: GunInfo, reply_markup: ExtendedIKM):
-    """Send archived data about guns"""
-
     try:
         gun_info_dict = gun_info.asdict()
         gun_info_dict['origin'] = session.locale.get(GUN_ORIGINS[gun_info.origin])
@@ -816,6 +814,8 @@ async def send_gun_info(client: BotClient, session: UserSession, bot_message: Me
         finally:
             return await _from(client, session, bot_message, loop=True)
     except Exception as e:
+        # pycharm thinks that function arguments might be undefined??
+        # noinspection PyUnboundLocalVariable
         return await handle_exceptions_in_callback(client, session, bot_message, e)
 
 
@@ -898,9 +898,9 @@ async def reply_through_logger_command(client: BotClient, message: Message):
     if sender.id not in config.DEVS_IDS:
         return
 
-    session = client.sessions.get(sender.id)
+    session = client.user_sessions.get(sender.id)
     if session is None:
-        session = await client.register_session(sender, message)
+        session = await client.register_user_session(sender, message)
 
     _, recipient_id, message_to_send = message.text.split(maxsplit=2)
 
@@ -1069,4 +1069,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    bot.run(main())
+    asyncio.get_event_loop().run_until_complete(main())  # asyncio.run(main()) throws a bunch of errors

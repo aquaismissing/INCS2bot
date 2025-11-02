@@ -45,7 +45,7 @@ pyaes==1.6.1
 pycparser==2.21
 pycryptodomex==3.20.0
 pyparsing==3.0.9
-Pyrogram @ git+https://github.com/KurimuzonAkuma/pyrogram.git@086f25f9932f9fce3198179b416288b3e6660981
+Kurigram==2.2.13
 pyropatch==2.1
 PySocks==1.7.1
 pytest==8.2.0

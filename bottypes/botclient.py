@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime as dt
 import logging
-from typing import Type
+from typing import Callable, Type
 
 from pyrogram import Client
 from pyrogram.enums import ChatAction, ChatType, ParseMode
@@ -55,25 +55,27 @@ class BotClient(Client):
         self.is_in_mainloop = False
 
         # injects
-        self._func_at_exception: callable = None
+        # todo: rename to smth like _func_at_callback_exc and type-hint properly
+        self._func_at_exception: Callable | None = None
 
         self.startup_dt = None
 
         self.rstats = BotRegularStats()
 
     @property
-    def sessions(self) -> UserSessions:
+    def user_sessions(self) -> UserSessions:
         return self._sessions
 
-    async def start(self):
+    async def start(self, **kwargs):
         self.startup_dt = dt.datetime.now(dt.UTC)
-        await super().start()
+        return await super().start(**kwargs)
 
     async def mainloop(self):
         # ESSENTIALS FOR MAINLOOP
         import signal
         from signal import signal as signal_fn, SIGINT, SIGTERM, SIGABRT
 
+        # noinspection PyUnresolvedReferences
         signals = {k: v for v, k in signal.__dict__.items()
                    if v.startswith('SIG') and not v.startswith('SIG_')}
         task = None
@@ -95,7 +97,7 @@ class BotClient(Client):
             except asyncio.CancelledError:
                 self.is_in_mainloop = False
 
-    async def register_session(self, user: User, message: Message = None) -> UserSession:
+    async def register_user_session(self, user: User, message: Message = None) -> UserSession:
         session = await self._sessions.register_session(user, message)
         self.rstats.unique_users_served.add(user.id)
         return session
@@ -140,7 +142,7 @@ class BotClient(Client):
                       came_from: Menu,  # menu where we clicked on button
                       ignore_message_not_modified: bool,
                       **kwargs):
-        def decorator(func: callable | Menu):
+        def decorator(func: Callable | Menu):
             nonlocal _id
 
             if isinstance(func, Menu):
@@ -175,7 +177,7 @@ class BotClient(Client):
                 query: str,
                 *args,
                 _id: str = None,
-                came_from: callable | Menu = None,
+                came_from: Callable | Menu = None,
                 ignore_message_not_modified: bool = False,
                 **kwargs):
         """
@@ -197,7 +199,7 @@ class BotClient(Client):
                  query: str,
                  *args,
                  _id: str = None,
-                 came_from: callable | Menu = None,
+                 came_from: Callable | Menu = None,
                  ignore_message_not_modified: bool = False,
                  **kwargs):
         """
@@ -215,8 +217,8 @@ class BotClient(Client):
                                   **kwargs)
 
     @staticmethod
-    def callback_process(of: callable | NavMenu):
-        def decorator(func: callable):
+    def callback_process(of: Callable | NavMenu):
+        def decorator(func: Callable):
             if not isinstance(of, NavMenu):
                 raise TypeError('Process can only be attached to a NavMenu object.')
 
@@ -232,8 +234,8 @@ class BotClient(Client):
         return decorator
 
     @staticmethod
-    def message_process(of: callable | NavMenu):
-        def decorator(func: callable):
+    def message_process(of: Callable | NavMenu):
+        def decorator(func: Callable):
             if not isinstance(of, NavMenu):
                 raise TypeError('Process can only be attached to a NavMenu object.')
 
@@ -242,7 +244,10 @@ class BotClient(Client):
                 await client.log_message(session, user_input)
                 if bot_message.chat is None:  # if user blocked the bot and deleted the message history before
                     bot_message = await client.send_message(user_input.chat.id, ".")
-                    message = await client._func_at_exception(client, session, bot_message, None)
+                    if client._func_at_exception is not None:
+                        message = await client._func_at_exception(client, session, bot_message, None)
+                    else:
+                        message = bot_message
                 else:
                     try:
                         message = await func(client, session, bot_message, user_input, *args, **kwargs)
@@ -267,11 +272,11 @@ class BotClient(Client):
         if message.chat.type != ChatType.PRIVATE:
             text = message.text
             if text.startswith(self.commands_prefix) and self.has_a_command(text):
-                session = await self.register_session(user, message)  # early command handling in group chats
+                session = await self.register_user_session(user, message)  # early command handling in group chats
                 return await self.handle_command(session, message)    # of every single user of these
             return
 
-        session = await self.register_session(user, message)
+        session = await self.register_user_session(user, message)
 
         current_menu = self.get_menu_by_id(session.current_menu_id)
         if isinstance(current_menu, NavMenu) and current_menu.has_message_process():
@@ -315,9 +320,9 @@ class BotClient(Client):
             return
 
         user = callback_query.from_user
-        session = self.sessions.get(user.id)
+        session = self.user_sessions.get(user.id)
         if session is None:
-            session = await self.register_session(user, callback_query.message)
+            session = await self.register_user_session(user, callback_query.message)
 
         if callback_query.message.chat.id != self.telegram_logger.log_channel_id:
             await self.log_callback(session, callback_query)
@@ -365,7 +370,8 @@ class BotClient(Client):
             await self.go_to_menu(session, bot_message, menu)
         except Exception as e:
             self.rstats.exceptions_caught += 1
-            await self._func_at_exception(self, session, bot_message, e)
+            if self._func_at_exception is not None:
+                await self._func_at_exception(self, session, bot_message, e)
 
     def register_menu(self, menu: Menu):
         if menu not in self._menus.values():

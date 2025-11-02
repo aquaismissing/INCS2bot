@@ -92,7 +92,7 @@ def dc_articles_factory(dcs: list[DatacenterInlineResult],
 @BotClient.on_inline_query()
 async def sync_user_data_inline(client: BotClient, inline_query: InlineQuery):
     user = inline_query.from_user
-    session = await client.register_session(user)
+    session = await client.register_user_session(user)
 
     await client.log_inline(session, inline_query)
 
