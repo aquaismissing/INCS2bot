@@ -21,12 +21,12 @@
       "stream": "ext://sys.stderr"
     },
     "file": {
-      "()": "ulogging.EnhancedRotatingFileHandler",
+      "()": "functions.ulogging.EnhancedRotatingFileHandler",
       "filename": "logs/app.log",
       "when": "MIDNIGHT",
       "maxBytes": 4194304,
-      "backupCount": 10,
-      "level": "WARNING",
+      "backupCount": 5,
+      "level": "INFO",
       "formatter": "simple"
     },
     "queue_handler": {
