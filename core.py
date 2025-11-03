@@ -183,7 +183,7 @@ async def send_alert(key, new_value):
             await msg.pin(disable_notification=True)
 
 
-def main():
+async def main():
     logger.info('Started.')
     try:
         scheduler.start()
@@ -197,4 +197,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.get_event_loop().run_until_complete(main())
