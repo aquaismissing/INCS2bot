@@ -7,7 +7,7 @@ import requests
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pandas as pd
 # noinspection PyPackageRequirements
-from pyrogram import Client
+from pyrogram import Client, idle
 if platform.system() == 'Linux':
     # noinspection PyPackageRequirements,PyUnresolvedReferences
     import uvloop
@@ -187,11 +187,13 @@ async def main():
     logger.info('Started.')
     try:
         scheduler.start()
-        bot.run()
+        await bot.start()
+        await idle()
     except TypeError:  # catching TypeError because Pyrogram propagates it at stop for some reason
         logger.info('Shutting down the bot...')
     finally:
         scheduler.shutdown()
+        await bot.stop()
         steam_webapi.close()
         logger.info('Terminated.')
 
