@@ -16,7 +16,10 @@
         "janubiy afrika",
         "yoxannesburg",
         "آفریقا",
-        "sud africa"
+        "sud africa",
+        "africa do Sul",
+        "joanesburgo"
+        
     ],
     "dc_australia": [
         "🇦🇺",
@@ -30,7 +33,9 @@
         "sidney",
         "австралія",
         "сідней",
-        "استرالیا"
+        "استرالیا",
+        "Austrália",
+        "sydney"
     ],
     "dc_southamerica": [
         "america",
@@ -45,7 +50,9 @@
         "amerika",
         "janubiy amerika",
         "آمریکا جنوبی",
-        "sud america"
+        "sud america",
+        "américa",
+        "américa do Sul"
     ],
     "dc_southamerica_argentina": [
         "🇦🇷",
@@ -68,7 +75,9 @@
         "buenos-ayres",
         "buenos ayres",
         "آرژانتین",
-        "بوینس آیرس"
+        "بوینس آیرس",
+        "argentina",
+        "buenos Aires"
     ],
     "dc_southamerica_brazil": [
         "🇧🇷",
@@ -89,7 +98,9 @@
         "brasile",
         "san paolo",
         "برزیل",
-        "سائو پائولو"
+        "سائو پائولو",
+        "brasil",
+        "são paulo"
     ],
     "dc_southamerica_chile": [
         "🇨🇱",
@@ -105,7 +116,9 @@
         "santyago",
         "سانتیاگو",
         "شیلی",
-        "cile"
+        "cile",
+        "chile",
+        "santiago"
     ],
     "dc_southamerica_peru": [
         "🇵🇪",
@@ -116,7 +129,9 @@
         "ліма",
         "پرو",
         "لیما",
-        "perù"
+        "perù",
+        "peru",
+        "lima"
     ],
     "dc_europe": [
         "🇪🇺",
@@ -138,7 +153,9 @@
         "avstriya",
         "vena",
         "اتریش",
-        "وین"
+        "وین",
+        "áustria",
+        "viena"
     ],
     "dc_europe_finland": [
         "🇫🇮",
@@ -146,10 +163,12 @@
         "finlandia",
         "finlandiya",
         "finlyandiya",
+        "finlândia",
         "финляндия",
         "фінляндыя",
         "фінляндія",
         "helsinki",
+        "helsínque",
         "хельсинки",
         "хельсінкі",
         "гельсінкі",
@@ -168,7 +187,9 @@
         "آلمان",
         "فرانکفورت",
         "germania",
-        "francoforte"
+        "francoforte",
+        "alemanha",
+        "frankfurt"
     ],
     "dc_europe_netherlands": [
         "🇳🇱",
@@ -181,7 +202,9 @@
         "амстэрдам",
         "هلند",
         "آمستردام",
-        "olanda"
+        "olanda",
+        "holanda",
+        "amsterdã"
     ],
     "dc_europe_poland": [
         "🇵🇱",
@@ -195,7 +218,9 @@
         "لهستان",
         "ورشو",
         "polonia",
-        "varsavia"
+        "varsavia",
+        "polônia",
+        "varsóvia"
     ],
     "dc_europe_spain": [
         "🇪🇸",
@@ -208,7 +233,9 @@
         "іспанія",
         "اسپانیا",
         "مادرید",
-        "spagna"
+        "spagna",
+        "espanha",
+        "madri"
     ],
     "dc_europe_sweden": [
         "🇸🇪",
@@ -223,7 +250,9 @@
         "سوئد",
         "استکهلم",
         "svezia",
-        "stoccolma"
+        "stoccolma",
+        "suécia",
+        "estocolmo"
     ],
     "dc_europe_uk": [
         "🇬🇧",
@@ -243,7 +272,10 @@
         "londra",
         "лондон",
         "лондан",
-        "لندن"
+        "لندن",
+        "reino Unido",
+        "grã-Bretanha",
+        "inglaterra"
     ],
     "dc_us": [
         "🇺🇸",
@@ -260,7 +292,10 @@
         "aqsh",
         "amerika qo'shma shtatlari",
         "آمریکا",
-        "stati uniti d'america"
+        "stati uniti d'america",
+        "EUA",
+        "américa",
+        "estados Unidos da américa"
     ],
     "dc_us_east": [
         "east",
@@ -274,6 +309,7 @@
         "чыкага",
         "стерлинг",
         "стэрлінг",
+        "nova iorque",
         "sharqiy",
         "chikago",
         "чікаго",
@@ -314,7 +350,8 @@
         "азия",
         "osiyo",
         "азія",
-        "آسیا"
+        "آسیا",
+        "asia"
     ],
     "dc_asia_india": [
         "🇮🇳",
@@ -329,7 +366,8 @@
         "hindiston",
         "mumbay",
         "індія",
-        "هند"
+        "هند",
+        "bombaim"
     ],
     "dc_asia_japan": [
         "🇯🇵",
@@ -343,7 +381,9 @@
         "tokio",
         "токіо",
         "توکیو",
-        "giappone"
+        "giappone",
+        "japão",
+        "tóquio"
     ],
     "dc_asia_china": [
         "🇨🇳",
@@ -386,7 +426,8 @@
         "сингапур",
         "сінгапур",
         "singapur",
-        "سنگاپور"
+        "سنگاپور",
+        "cingapura"
     ],
     "dc_asia_hongkong": [
         "🇭🇰",
@@ -410,6 +451,8 @@
         "کره جنوبی",
         "corea del sud",
         "sud corea",
+        "seul",
+        "coréia do sul",
         "seul"
     ],
     "currencies_usd": [
@@ -418,7 +461,8 @@
         "доллар",
         "долар",
         "دلار",
-        "dollaro"
+        "dollaro",
+        "dólar"
     ],
     "currencies_gbp": [
         "gbp",
@@ -426,6 +470,7 @@
         "фунт",
         "funt",
         "sterling",
+        "libra",
         "پوند",
         "sterlina"
     ],
@@ -462,7 +507,8 @@
         "иена",
         "ена",
         "iyen",
-        "ین"
+        "ین",
+        "iene"
     ],
     "currencies_nok": [
         "nok",
@@ -470,6 +516,7 @@
         "крона",
         "krona",
         "کرون",
+        "coroa",
         "corona"
     ],
     "currencies_idr": [
